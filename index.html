@@ -1,14 +1,117 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Mzansi Market Place</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mzansi Market Place</title>
+
+<style>
+body {
+  font-family: Arial;
+  margin: 0;
+  background: #f4f4f4;
+}
+
+/* Header */
+header {
+  background: #0077cc;
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
+
+/* Navigation */
+nav {
+  background: #333;
+  padding: 10px;
+  text-align: center;
+}
+
+nav a {
+  color: white;
+  margin: 10px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+/* Main content */
+.container {
+  padding: 20px;
+}
+
+.card {
+  background: white;
+  padding: 15px;
+  margin: 15px 0;
+  border-radius: 8px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.2);
+}
+
+/* Button */
+button {
+  padding: 10px 20px;
+  background: green;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+/* Footer */
+footer {
+  background: #333;
+  color: white;
+  text-align: center;
+  padding: 10px;
+}
+</style>
+
 </head>
 
 <body>
 
-<h1>Mzansi Market Place 🚀</h1>
-<p>Your website is now LIVE!</p>
+<header>
+  <h1>Mzansi Market Place</h1>
+  <p>Advertise Your Services Across South Africa</p>
+</header>
+
+<nav>
+  <a href="#">Home</a>
+  <a href="#">Services</a>
+  <a href="#">Contact</a>
+</nav>
+
+<div class="container">
+
+  <h2>Available Services</h2>
+
+  <div class="card">
+    <h3>Plumbing Services</h3>
+    <p>Professional plumbing available in your area.</p>
+  </div>
+
+  <div class="card">
+    <h3>Hair Styling</h3>
+    <p>Book experienced stylists for all occasions.</p>
+  </div>
+
+  <div class="card">
+    <h3>Car Repairs</h3>
+    <p>Affordable mobile mechanics ready to help.</p>
+  </div>
+
+  <button onclick="showMessage()">Post Your Service</button>
+
+</div>
+
+<footer>
+  <p>© 2026 Mzansi Market Place</p>
+</footer>
+
+<script>
+function showMessage() {
+  alert("Feature coming soon! 🚀");
+}
+</script>
 
 </body>
 </html>
-<!-- force rebuild -->
