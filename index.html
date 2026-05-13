@@ -1,26 +1,19 @@
-function loadServices() {
-  db.collection("services")
-    .orderBy("createdAt", "desc")
-    .onSnapshot(snapshot => {
+<html>
 
-      let html = "";
+<style>  ← 🎨 DESIGN (CSS)
+...
+</style>
 
-      snapshot.forEach(doc => {
-        let s = doc.data();
+<body>
 
-        html += `
-          <div class="card">
-            <h3>${s.title}</h3>
-            <p>${s.desc}</p>
-            <p><strong>Phone:</strong> ${s.phone}</p>
+<header>  ← 🔵 HEADER
+<nav>     ← MENU
 
-            <a href="https://wa.me/${s.phone}">
-              <button class="whatsapp">WhatsApp</button>
-            </a>
-          </div>
-        `;
-      });
+<div id="services"></div>  ← 📦 SERVICES DISPLAY
 
-      document.getElementById("services").innerHTML = html;
-    });
-}
+<script> ← ⚙️ ALL LOGIC (Firebase + functions)
+
+</script>
+
+</body>
+</html>
