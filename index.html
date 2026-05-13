@@ -6,13 +6,8 @@
 <title>Mzansi Market Place</title>
 
 <style>
-body {
-  font-family: Arial;
-  margin: 0;
-  background: #f4f4f4;
-}
+body { font-family: Arial; margin: 0; background: #f4f4f4; }
 
-/* Header */
 header {
   background: #0077cc;
   color: white;
@@ -20,51 +15,55 @@ header {
   text-align: center;
 }
 
-/* Navigation */
 nav {
   background: #333;
-  padding: 10px;
   text-align: center;
+  padding: 10px;
 }
 
-nav a {
+nav button {
+  margin: 5px;
+  padding: 10px 15px;
+  background: #555;
   color: white;
-  margin: 10px;
-  text-decoration: none;
-  font-weight: bold;
+  border: none;
 }
 
-/* Main content */
-.container {
-  padding: 20px;
-}
+.container { padding: 20px; }
 
 .card {
   background: white;
   padding: 15px;
   margin: 15px 0;
   border-radius: 8px;
-  box-shadow: 0 0 5px rgba(0,0,0,0.2);
+  box-shadow: 0 0 5px rgba(0,0,0,0.3);
 }
 
-/* Button */
+.card img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+input, textarea {
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+}
+
 button {
-  padding: 10px 20px;
+  padding: 10px;
   background: green;
   color: white;
   border: none;
-  cursor: pointer;
 }
 
-/* Footer */
-footer {
-  background: #333;
-  color: white;
-  text-align: center;
-  padding: 10px;
+.whatsapp {
+  background: #25D366;
+  margin-top: 10px;
 }
 </style>
-
 </head>
 
 <body>
@@ -75,42 +74,150 @@ footer {
 </header>
 
 <nav>
-  <a href="#">Home</a>
-  <a href="#">Services</a>
-  <a href="#">Contact</a>
+  <button onclick="showSection('home')">Home</button>
+  <button onclick="showSection('register')">Register</button>
+  <button onclick="showSection('login')">Login</button>
+  <button onclick="showSection('post')">Post Service</button>
 </nav>
 
 <div class="container">
 
+<!-- HOME -->
+<div id="home">
   <h2>Available Services</h2>
+  <div id="services"></div>
+</div>
 
-  <div class="card">
-    <h3>Plumbing Services</h3>
-    <p>Professional plumbing available in your area.</p>
-  </div>
+<!-- REGISTER -->
+<div id="register" style="display:none;">
+  <h2>Create Account</h2>
+  <input id="regUser" placeholder="Username">
+  <input id="regPass" type="password" placeholder="Password">
+  <button onclick="register()">Register</button>
+</div>
 
-  <div class="card">
-    <h3>Hair Styling</h3>
-    <p>Book experienced stylists for all occasions.</p>
-  </div>
+<!-- LOGIN -->
+<div id="login" style="display:none;">
+  <h2>Login</h2>
+  <input id="loginUser" placeholder="Username">
+  <input id="loginPass" type="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+</div>
 
-  <div class="card">
-    <h3>Car Repairs</h3>
-    <p>Affordable mobile mechanics ready to help.</p>
-  </div>
-
-  <button onclick="showMessage()">Post Your Service</button>
+<!-- POST -->
+<div id="post" style="display:none;">
+  <h2>Post Your Service</h2>
+  <input id="title" placeholder="Service Title">
+  <input id="phone" placeholder="Phone Number">
+  <input id="image" type="file">
+  <textarea id="description" placeholder="Description"></textarea>
+  <button onclick="postService()">Post</button>
+</div>
 
 </div>
 
-<footer>
-  <p>© 2026 Mzansi Market Place</p>
-</footer>
-
 <script>
-function showMessage() {
-  alert("Feature coming soon! 🚀");
+
+let currentUser = localStorage.getItem("user");
+
+// SWITCH SECTIONS
+function showSection(id) {
+  ["home","register","login","post"].forEach(sec=>{
+    document.getElementById(sec).style.display="none";
+  });
+  document.getElementById(id).style.display="block";
 }
+
+// REGISTER
+function register() {
+  let u = regUser.value;
+  let p = regPass.value;
+
+  localStorage.setItem(u, p);
+  alert("Account created!");
+}
+
+// LOGIN
+function login() {
+  let u = loginUser.value;
+  let p = loginPass.value;
+
+  if(localStorage.getItem(u) === p){
+    localStorage.setItem("user", u);
+    currentUser=u;
+    alert("Login success!");
+  } else {
+    alert("Wrong details!");
+  }
+}
+
+// POST SERVICE
+function postService() {
+
+  if(!currentUser){
+    alert("Login first!");
+    return;
+  }
+
+  let title = document.getElementById("title").value;
+  let phone = document.getElementById("phone").value;
+  let desc = document.getElementById("description").value;
+
+  let file = document.getElementById("image").files[0];
+
+  let reader = new FileReader();
+
+  reader.onload = function() {
+
+    let services = JSON.parse(localStorage.getItem("services")) || [];
+
+    services.push({
+      user: currentUser,
+      title: title,
+      phone: phone,
+      desc: desc,
+      image: reader.result
+    });
+
+    localStorage.setItem("services", JSON.stringify(services));
+    loadServices();
+    alert("Service posted!");
+  };
+
+  if(file){
+    reader.readAsDataURL(file);
+  } else {
+    alert("Upload image!");
+  }
+}
+
+// LOAD SERVICES
+function loadServices() {
+  let services = JSON.parse(localStorage.getItem("services")) || "";
+  let html = "";
+
+  services.forEach(s=>{
+    html += `
+      <div class="card">
+        ${s.image}
+        <h3>${s.title}</h3>
+        <p>${s.desc}</p>
+        <p><strong>Phone:</strong> ${s.phone}</p>
+        
+        https://wa.me/${s.phone}
+          <button class="whatsapp">WhatsApp</button>
+        </a>
+
+        <small>Posted by: ${s.user}</small>
+      </div>
+    `;
+  });
+
+  document.getElementById("services").innerHTML = html;
+}
+
+loadServices();
+
 </script>
 
 </body>
