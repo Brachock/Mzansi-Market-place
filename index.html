@@ -2,6 +2,7 @@ function loadServices() {
   db.collection("services")
     .orderBy("createdAt", "desc")
     .onSnapshot(snapshot => {
+
       let html = "";
 
       snapshot.forEach(doc => {
