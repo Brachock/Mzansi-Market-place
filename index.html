@@ -1,70 +1,19 @@
-<!-- Firebase CDN -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.jsript src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
 
-<script>
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyBgJZL1w5KWMTiDqrRziBM64wA8donunIs",
+    authDomain: "mzansimarket-ac296.firebaseapp.com",
+    projectId: "mzansimarket-ac296",
+    storageBucket: "mzansimarket-ac296.firebasestorage.app",
+    messagingSenderId: "613890587901",
+    appId: "1:613890587901:web:8b7e278cc00a3610d11294"
+  };
 
-// 🔥 YOUR CONFIG
-const firebaseConfig = {
-  apiKey: "AIzaSyBgJZl1w5KWMtiDqrRziBM64wA8donunIs",
-  authDomain: "mzansimarket-ac296.firebaseapp.com",
-  projectId: "mzansimarket-ac296",
-  storageBucket: "mzansimarket-ac296.firebasestorage.app",
-  messagingSenderId: "613890587901",
-  appId: "1:613890587901:web:8b7e278cc00a3610d11294"
-};
-
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-// ✅ POST SERVICE (GLOBAL)
-function postService() {
-
-  let title = document.getElementById("title").value;
-  let phone = document.getElementById("phone").value;
-  let desc = document.getElementById("description").value;
-
-  db.collection("services").add({
-    title: title,
-    phone: phone,
-    desc: desc,
-    createdAt: new Date()
-  })
-  .then(() => {
-    alert("Service posted!");
-  });
-}
-
-// ✅ LOAD SERVICES (REAL-TIME)
-function loadServices() {
-
-  db.collection("services")
-    .orderBy("createdAt", "desc")
-    .onSnapshot(snapshot => {
-
-      let html = "";
-
-      snapshot.forEach(doc => {
-        let s = doc.data();
-
-        html += `
-          <div class="card">
-            <h3>${s.title}</h3>
-            <p>${s.desc}</p>
-            <p><strong>Phone:</strong> ${s.phone}</p>
-
-            <a href="https://wa.me<button class="whatsapp">WhatsApp</button>
-            </a>
-          </div>
-        `;
-      });
-
-      document.getElementById("services").innerHTML = html;
-    });
-}
-
-// Load on start
-loadServices();
-
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
 </script>
-``
