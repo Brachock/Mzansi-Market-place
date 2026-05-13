@@ -9,7 +9,7 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: #f0f0f0;
+  background: #f4f4f4;
 }
 
 header {
@@ -39,19 +39,11 @@ nav a {
 }
 
 .card {
-  background: #fff;
+  background: white;
   padding: 20px;
   margin: 15px 0;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.card-img {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-  border-radius: 10px;
-  margin-bottom: 10px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
 }
 
 input, textarea, button {
@@ -71,12 +63,55 @@ button {
   font-weight: bold;
 }
 
+button:hover {
+  background: #0b5ed7;
+}
+
+.auth-box {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.auth-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.auth-tabs button {
+  flex: 1;
+  background: #e9ecef;
+  color: #333;
+}
+
+.auth-tabs button.active {
+  background: #0d6efd;
+  color: white;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.user-bar {
+  background: #d4edda;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
 .whatsapp {
   background: #25D366;
   color: white;
   padding: 10px 15px;
-  border-radius: 6px;
   margin-top: 10px;
+  border-radius: 6px;
   display: inline-block;
   text-decoration: none;
   font-weight: bold;
@@ -99,30 +134,47 @@ button {
 
 <div class="container">
 
-<h2>Account</h2>
-<button onclick="register()">Register</button>
-<button onclick="login()">Login</button>
-<button onclick="logout()">Logout</button>
-<div id="userStatus"></div>
+<div id="userBar" class="user-bar" style="display:none;">
+  Logged in as: <span id="userEmail"></span>
+  <button onclick="logout()" style="width:auto; float:right; padding:5px 10px;">Logout</button>
+</div>
 
-<h2>Post a Service</h2>
+<div id="authBox" class="auth-box">
+  <div class="auth-tabs">
+    <button id="loginTab" class="active" onclick="showTab('login')">Login</button>
+    <button id="registerTab" onclick="showTab('register')">Register</button>
+  </div>
 
-<input id="title" placeholder="Service Title">
-<input id="phone" placeholder="Phone Number e.g. 0831234567">
-<textarea id="desc" placeholder="Description" rows="4"></textarea>
-<input type="file" id="image" accept="image/*">
-<button onclick="postService()">Post</button>
+  <div id="login" class="tab-content active">
+    <input id="loginEmail" type="email" placeholder="Email">
+    <input id="loginPassword" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+  </div>
+
+  <div id="register" class="tab-content">
+    <input id="regEmail" type="email" placeholder="Email">
+    <input id="regPassword" type="password" placeholder="Password">
+    <button onclick="register()">Register</button>
+  </div>
+</div>
+
+<div id="postSection" style="display:none;">
+  <h2>Post a Service</h2>
+  <input id="title" placeholder="Service Title">
+  <input id="phone" placeholder="Phone Number e.g. 0831234567">
+  <textarea id="desc" placeholder="Description" rows="4"></textarea>
+  <button onclick="postService()">Post</button>
+</div>
 
 <h2>Available Services</h2>
 <div id="services">Loading...</div>
 
 </div>
 
-<!-- Firebase Scripts -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
 <script>
 const firebaseConfig = {
@@ -137,85 +189,94 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
-const storage = firebase.storage();
 
+// Tab switching
+function showTab(tab) {
+  document.getElementById('login').classList.remove('active');
+  document.getElementById('register').classList.remove('active');
+  document.getElementById('loginTab').classList.remove('active');
+  document.getElementById('registerTab').classList.remove('active');
+  
+  document.getElementById(tab).classList.add('active');
+  document.getElementById(tab + 'Tab').classList.add('active');
+}
+
+// Auth state
 auth.onAuthStateChanged(user => {
-  document.getElementById("userStatus").textContent = user ? `Logged in as: ${user.email}` : "Not logged in";
+  if (user) {
+    document.getElementById('authBox').style.display = 'none';
+    document.getElementById('postSection').style.display = 'block';
+    document.getElementById('userBar').style.display = 'block';
+    document.getElementById('userEmail').textContent = user.email;
+  } else {
+    document.getElementById('authBox').style.display = 'block';
+    document.getElementById('postSection').style.display = 'none';
+    document.getElementById('userBar').style.display = 'none';
+  }
 });
 
 // REGISTER
 function register() {
-  let email = prompt("Enter email:");
-  let password = prompt("Enter password:");
-  if (!email || !password) return;
+  let email = document.getElementById('regEmail').value;
+  let password = document.getElementById('regPassword').value;
+  
+  if (!email || !password) return alert('Fill both fields');
+  
   auth.createUserWithEmailAndPassword(email, password)
-    .then(() => alert("Account created ✅"))
-    .catch(error => alert(error.message));
+    .then(() => alert('Account created ✅'))
+    .catch(error => alert('Register Error: ' + error.message));
 }
 
 // LOGIN
 function login() {
-  let email = prompt("Enter email:");
-  let password = prompt("Enter password:");
-  if (!email || !password) return;
+  let email = document.getElementById('loginEmail').value;
+  let password = document.getElementById('loginPassword').value;
+  
+  if (!email || !password) return alert('Fill both fields');
+  
   auth.signInWithEmailAndPassword(email, password)
-    .then(() => alert("Logged in ✅"))
-    .catch(error => alert(error.message));
+    .then(() => alert('Logged in ✅'))
+    .catch(error => alert('Login Error: ' + error.message));
 }
 
 // LOGOUT
 function logout() {
-  auth.signOut().then(() => alert("Logged out ✅"));
+  auth.signOut();
 }
 
-// POST WITH IMAGE UPLOAD
-async function postService() {
+// POST SERVICE
+function postService() {
   let user = auth.currentUser;
-  if (!user) return alert("Please login first ❌");
+  if (!user) return alert('Please login first');
 
-  let title = document.getElementById("title").value.trim();
-  let phone = document.getElementById("phone").value.trim();
-  let desc = document.getElementById("desc").value.trim();
-  let file = document.getElementById("image").files[0];
+  let title = document.getElementById('title').value.trim();
+  let phone = document.getElementById('phone').value.trim();
+  let desc = document.getElementById('desc').value.trim();
 
-  if (!title || !phone || !desc || !file) {
-    return alert("Fill all fields + image");
-  }
+  if (!title || !phone || !desc) return alert('Fill all fields');
 
-  try {
-    let storageRef = storage.ref("images/" + Date.now() + "_" + file.name);
-    let snapshot = await storageRef.put(file);
-    let url = await snapshot.ref.getDownloadURL();
-
-    await db.collection("services").add({
-      title,
-      phone,
-      desc,
-      image: url,
-      user: user.email,
-      userId: user.uid,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-
-    alert("Service posted ✅");
-    document.getElementById("title").value = "";
-    document.getElementById("phone").value = "";
-    document.getElementById("desc").value = "";
-    document.getElementById("image").value = "";
-  } catch (err) {
-    alert("Error: " + err.message);
-  }
+  db.collection('services').add({
+    title, phone, desc,
+    user: user.email,
+    userId: user.uid,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    alert('Service posted ✅');
+    document.getElementById('title').value = '';
+    document.getElementById('phone').value = '';
+    document.getElementById('desc').value = '';
+  }).catch(err => alert(err.message));
 }
 
-// LOAD SERVICES WITH IMAGE
+// LOAD SERVICES
 function loadServices() {
-  db.collection("services")
-    .orderBy("createdAt", "desc")
+  db.collection('services')
+    .orderBy('createdAt', 'desc')
     .onSnapshot(snapshot => {
-      let html = "";
+      let html = '';
 
       if (snapshot.empty) {
-        document.getElementById("services").innerHTML = "<p>No services yet.</p>";
+        document.getElementById('services').innerHTML = '<p>No services yet.</p>';
         return;
       }
 
@@ -225,20 +286,19 @@ function loadServices() {
 
         html += `
           <div class="card">
-            ${s.image ? `<img src="${s.image}" class="card-img">` : ''}
             <h3>${s.title}</h3>
             <p>${s.desc}</p>
             <p><strong>Phone:</strong> ${s.phone}</p>
-            <p><small>Posted by: ${s.user}</small></p>
-            <a href="https://wa.me/${cleanPhone}" target="_blank" class="whatsapp">Chat on WhatsApp</a>
+            <p><strong>Posted by:</strong> ${s.user}</p>
+            <a href="https://wa.me/${cleanPhone}" target="_blank" class="whatsapp">Message on WhatsApp</a>
           </div>
         `;
       });
 
-      document.getElementById("services").innerHTML = html;
+      document.getElementById('services').innerHTML = html;
     }, err => {
       console.error(err);
-      document.getElementById("services").innerHTML = "<p>Error loading services.</p>";
+      document.getElementById('services').innerHTML = '<p>Error loading services.</p>';
     });
 }
 
