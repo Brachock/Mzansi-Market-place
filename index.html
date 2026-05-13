@@ -1,5 +1,6 @@
 <!-- ✅ Firebase CDN -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.jsript src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
 <script>
 
@@ -18,37 +19,28 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 
-// ✅ POST SERVICE (GLOBAL)
+// ✅ POST SERVICE
 function postService() {
-
   let title = document.getElementById("title").value;
   let phone = document.getElementById("phone").value;
   let desc = document.getElementById("description").value;
 
-  if (!title || !phone || !desc) {
-    alert("Fill all fields");
-    return;
-  }
-
   db.collection("services").add({
-    title: title,
-    phone: phone,
-    desc: desc,
+    title,
+    phone,
+    desc,
     createdAt: new Date()
-  })
-  .then(() => {
+  }).then(() => {
     alert("Service posted!");
   });
 }
 
 
-// ✅ LOAD SERVICES (REAL-TIME)
+// ✅ LOAD SERVICES
 function loadServices() {
-
   db.collection("services")
     .orderBy("createdAt", "desc")
     .onSnapshot(snapshot => {
-
       let html = "";
 
       snapshot.forEach(doc => {
@@ -60,7 +52,7 @@ function loadServices() {
             <p>${s.desc}</p>
             <p><strong>Phone:</strong> ${s.phone}</p>
 
-            <a href="https://wa.me/${ston class="whatsapp">WhatsApp</button>
+            <a href="https://wa.me/${/button>
             </a>
           </div>
         `;
@@ -70,8 +62,6 @@ function loadServices() {
     });
 }
 
-// ✅ Load automatically
 loadServices();
 
 </script>
-``
