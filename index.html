@@ -1,41 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mzansi Market Place</title>
-
-<style>
-body {
-  margin: 0;
-  font-family: Arial;
-  background: #f4f4f4;
-}
-
-header {
-  background: #0d6efd;
-  color: white;
-  text-align: center;
-  padding: 30px 10px;
-}
-
-nav {
-  background: #333;
-  text-align: center;
-  padding: 12px;
-}
-
-nav a {
-  color: white;
-  margin: 10px;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-.container {
-  padding: 20px;
-}
-
 .card {
   background: white;
   padding: 20px;
@@ -43,3 +5,109 @@ nav a {
   border-radius: 12px;
   box-shadow: 0 3px 10px rgba(0,0,0,0.1);
 }
+
+.whatsapp {
+  background: #25D366;
+  color: white;
+  border: none;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 6px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Mzansi Market Place</h1>
+  <p>Advertise Your Services Across South Africa</p>
+</header>
+
+<nav>
+  <a href="#">Home</a>
+  <a href="#">Services</a>
+  <a href="#">Contact</a>
+</nav>
+
+<div class="container">
+
+<h2>Post a Service</h2>
+
+<input id="title" placeholder="Service Title"><br><br>
+<input id="phone" placeholder="Phone Number"><br><br>
+<textarea id="desc" placeholder="Description"></textarea><br><br>
+
+<button onclick="postService()">Post</button>
+
+<h2>Available Services</h2>
+
+<div id="services"></div>
+
+</div>
+
+<!-- ✅ Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBgJZL1w5KWMTiDqrRziBM64wA8donunIs",
+  authDomain: "mzansimarket-ac296.firebaseapp.com",
+  projectId: "mzansimarket-ac296",
+  storageBucket: "mzansimarket-ac296.firebasestorage.app",
+  messagingSenderId: "613890587901",
+  appId: "1:613890587901:web:8b7e278cc00a3610d11294"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ✅ POST
+function postService() {
+  let title = document.getElementById("title").value;
+  let phone = document.getElementById("phone").value;
+  let desc = document.getElementById("desc").value;
+
+  if (!title || !phone || !desc) {
+    alert("Fill all fields");
+    return;
+  }
+
+  db.collection("services").add({
+    title: title,
+    phone: phone,
+    desc: desc,
+    createdAt: new Date()
+  }).then(() => {
+    alert("Service posted!");
+  });
+}
+
+// ✅ LOAD (FINAL SAFE VERSION)
+function loadServices() {
+  db.collection("services")
+    .onSnapshot(snapshot => {
+
+      let html = "";
+
+      snapshot.forEach(doc => {
+        let s = doc.data();
+
+        html += `
+          <div class="card">
+            <h2>${s.title}</h2>
+            <p>${s.desc}</p>
+            <p><strong>Phone:</strong> ${s.phone}</p>
+
+            <a href="https://wa.me/${s.phone}" target="_blank   });
+
+      document.getElementById("services").innerHTML = html;
+    });
+}
+
+loadServices();
+</script>
+
+</body>
+</html>
