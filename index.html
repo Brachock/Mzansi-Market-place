@@ -4,38 +4,38 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mzansi Market Place</title>
+
 <style>
 body {
-  font-family: Arial, sans-serif;
-  background: #f5f5f5;
   margin: 0;
-  padding: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
 }
 
 header {
-  background: #333;
+  background: #0d6efd;
   color: white;
   text-align: center;
-  padding: 20px;
+  padding: 30px;
 }
 
 nav {
-  background: #444;
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  padding: 10px;
+  background: #333;
+  text-align: center;
+  padding: 12px;
 }
 
 nav a {
   color: white;
+  margin: 10px;
   text-decoration: none;
+  font-weight: bold;
 }
 
 .container {
   max-width: 800px;
   margin: 20px auto;
-  padding: 0 15px;
+  padding: 20px;
 }
 
 .card {
@@ -44,12 +44,6 @@ nav a {
   margin: 15px 0;
   border-radius: 12px;
   box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-}
-
-.card img {
-  max-width: 100%;
-  border-radius: 8px;
-  margin: 10px 0;
 }
 
 input, textarea, button {
@@ -62,20 +56,20 @@ input, textarea, button {
 }
 
 button {
-  background: #333;
+  background: #0d6efd;
   color: white;
   border: none;
   cursor: pointer;
+  font-weight: bold;
 }
 
 button:hover {
-  background: #555;
+  background: #0b5ed7;
 }
 
 .whatsapp {
   background: #25D366;
   color: white;
-  border: none;
   padding: 10px 15px;
   margin-top: 10px;
   border-radius: 6px;
@@ -88,22 +82,14 @@ button:hover {
   background: #1ebe57;
 }
 
-.location-btn {
-  background: #007bff;
+.auth-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.auth-buttons button {
   width: auto;
-  padding: 8px 12px;
-  font-size: 14px;
-}
-
-.location-text {
-  color: #666;
-  font-size: 14px;
-}
-
-.loading {
-  text-align: center;
-  padding: 20px;
-  color: #666;
+  padding: 8px 15px;
 }
 </style>
 </head>
@@ -123,27 +109,30 @@ button:hover {
 
 <div class="container">
 
+<h2>Account</h2>
+<div class="auth-buttons">
+  <button onclick="register()">Register</button>
+  <button onclick="login()">Login</button>
+  <button onclick="logout()">Logout</button>
+</div>
+<div id="userStatus"></div>
+
 <h2>Post a Service</h2>
 
 <input id="title" placeholder="Service Title">
 <input id="phone" placeholder="Phone Number e.g. 0831234567">
 <textarea id="desc" placeholder="Description" rows="4"></textarea>
-<input id="location" placeholder="Location e.g. Johannesburg, Gauteng">
-
-<button class="location-btn" onclick="getLocation()">📍 Use My Location</button>
-
-<input type="file" id="photo" accept="image/*">
 <button onclick="postService()">Post</button>
 
 <h2>Available Services</h2>
-<div id="services" class="loading">Loading...</div>
+<div id="services">Loading...</div>
 
 </div>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
 <script>
 const firebaseConfig = {
@@ -157,68 +146,77 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-const storage = firebase.storage();
+const auth = firebase.auth();
 
-// Get user location
-function getLocation() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      document.getElementById("location").value =
-        `Lat: ${pos.coords.latitude.toFixed(4)}, Lng: ${pos.coords.longitude.toFixed(4)}`;
-    }, err => {
-      alert("Could not get location. Please type it manually.");
-    });
-  } else {
-    alert("Geolocation not supported by your browser.");
-  }
+// Show login status
+auth.onAuthStateChanged(user => {
+  document.getElementById("userStatus").textContent = user ? `Logged in as: ${user.email}` : "Not logged in";
+});
+
+// REGISTER
+function register() {
+  let email = prompt("Enter email:");
+  let password = prompt("Enter password:");
+  if (!email || !password) return;
+
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(() => alert("Account created ✅"))
+    .catch(error => alert(error.message));
 }
 
-// POST
-async function postService() {
-  let title = document.getElementById("title").value.trim();
-  let phone = document.getElementById("phone").value.trim();
-  let desc = document.getElementById("desc").value.trim();
-  let location = document.getElementById("location").value.trim();
-  let file = document.getElementById("photo").files[0];
+// LOGIN
+function login() {
+  let email = prompt("Enter email:");
+  let password = prompt("Enter password:");
+  if (!email || !password) return;
 
-  if (!title ||!phone ||!desc) {
-    alert("Fill title, phone and description");
+  auth.signInWithEmailAndPassword(email, password)
+    .then(() => alert("Logged in ✅"))
+    .catch(error => alert(error.message));
+}
+
+// LOGOUT
+function logout() {
+  auth.signOut().then(() => alert("Logged out ✅"));
+}
+
+// POST SERVICE
+function postService() {
+  let user = auth.currentUser;
+  if (!user) {
+    alert("Please login first ❌");
     return;
   }
 
-  let photoURL = "";
+  let title = document.getElementById("title").value.trim();
+  let phone = document.getElementById("phone").value.trim();
+  let desc = document.getElementById("desc").value.trim();
 
-  // Upload photo if selected
-  if (file) {
-    let storageRef = storage.ref(`services/${Date.now()}_${file.name}`);
-    let snapshot = await storageRef.put(file);
-    photoURL = await snapshot.ref.getDownloadURL();
+  if (!title || !phone || !desc) {
+    alert("Fill all fields");
+    return;
   }
 
   db.collection("services").add({
     title: title,
     phone: phone,
     desc: desc,
-    location: location,
-    photoURL: photoURL,
-    createdAt: new Date()
+    user: user.email,
+    userId: user.uid,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
   }).then(() => {
-    alert("Service posted!");
+    alert("Service posted ✅");
     document.getElementById("title").value = "";
     document.getElementById("phone").value = "";
     document.getElementById("desc").value = "";
-    document.getElementById("location").value = "";
-    document.getElementById("photo").value = "";
-  }).catch(err => {
-    alert("Error: " + err.message);
-  });
+  }).catch(err => alert(err.message));
 }
 
-// LOAD
+// LOAD SERVICES
 function loadServices() {
   db.collection("services")
-   .orderBy("createdAt", "desc")
-   .onSnapshot(snapshot => {
+    .orderBy("createdAt", "desc")
+    .onSnapshot(snapshot => {
       let html = "";
 
       if (snapshot.empty) {
@@ -228,15 +226,15 @@ function loadServices() {
 
       snapshot.forEach(doc => {
         let s = doc.data();
+        // Clean phone for WhatsApp: remove spaces, dashes, replace 0 with 27
         let cleanPhone = s.phone.replace(/\D/g, '').replace(/^0/, '27');
 
         html += `
           <div class="card">
             <h3>${s.title}</h3>
-            ${s.photoURL? `<img src="${s.photoURL}" alt="Service photo">` : ''}
             <p>${s.desc}</p>
-            ${s.location? `<p class="location-text">📍 ${s.location}</p>` : ''}
             <p><strong>Phone:</strong> ${s.phone}</p>
+            <p><strong>Posted by:</strong> ${s.user}</p>
             <a href="https://wa.me/${cleanPhone}" target="_blank" class="whatsapp">Message on WhatsApp</a>
           </div>
         `;
@@ -244,8 +242,8 @@ function loadServices() {
 
       document.getElementById("services").innerHTML = html;
     }, err => {
-      document.getElementById("services").innerHTML = "<p>Error loading services.</p>";
       console.error(err);
+      document.getElementById("services").innerHTML = "<p>Error loading services.</p>";
     });
 }
 
