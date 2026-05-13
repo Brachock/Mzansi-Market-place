@@ -1,18 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mzansi Market Place</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f0f0f0;
+}
+
+header {
+  background: #0d6efd;
+  color: white;
+  text-align: center;
+  padding: 30px;
+}
+
+nav {
+  background: #333;
+  text-align: center;
+  padding: 12px;
+}
+
+nav a {
+  color: white;
+  margin: 10px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.container {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+}
+
 .card {
-  background: white;
+  background: #fff;
   padding: 20px;
   margin: 15px 0;
   border-radius: 12px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.card-img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+input, textarea, button {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+button {
+  background: #0d6efd;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
 }
 
 .whatsapp {
   background: #25D366;
   color: white;
-  border: none;
-  padding: 10px;
-  margin-top: 10px;
+  padding: 10px 15px;
   border-radius: 6px;
+  margin-top: 10px;
+  display: inline-block;
+  text-decoration: none;
+  font-weight: bold;
 }
 </style>
 </head>
@@ -32,77 +99,146 @@
 
 <div class="container">
 
+<h2>Account</h2>
+<button onclick="register()">Register</button>
+<button onclick="login()">Login</button>
+<button onclick="logout()">Logout</button>
+<div id="userStatus"></div>
+
 <h2>Post a Service</h2>
 
-<input id="title" placeholder="Service Title"><br><br>
-<input id="phone" placeholder="Phone Number"><br><br>
-<textarea id="desc" placeholder="Description"></textarea><br><br>
-
+<input id="title" placeholder="Service Title">
+<input id="phone" placeholder="Phone Number e.g. 0831234567">
+<textarea id="desc" placeholder="Description" rows="4"></textarea>
+<input type="file" id="image" accept="image/*">
 <button onclick="postService()">Post</button>
 
 <h2>Available Services</h2>
-
-<div id="services"></div>
+<div id="services">Loading...</div>
 
 </div>
 
-<!-- ✅ Firebase -->
+<!-- Firebase Scripts -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyBgJZL1w5KWMTiDqrRziBM64wA8donunIs",
   authDomain: "mzansimarket-ac296.firebaseapp.com",
   projectId: "mzansimarket-ac296",
-  storageBucket: "mzansimarket-ac296.firebasestorage.app",
+  storageBucket: "mzansimarket-ac296.appspot.com",
   messagingSenderId: "613890587901",
   appId: "1:613890587901:web:8b7e278cc00a3610d11294"
 };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const auth = firebase.auth();
+const storage = firebase.storage();
 
-// ✅ POST
-function postService() {
-  let title = document.getElementById("title").value;
-  let phone = document.getElementById("phone").value;
-  let desc = document.getElementById("desc").value;
+auth.onAuthStateChanged(user => {
+  document.getElementById("userStatus").textContent = user ? `Logged in as: ${user.email}` : "Not logged in";
+});
 
-  if (!title || !phone || !desc) {
-    alert("Fill all fields");
-    return;
-  }
-
-  db.collection("services").add({
-    title: title,
-    phone: phone,
-    desc: desc,
-    createdAt: new Date()
-  }).then(() => {
-    alert("Service posted!");
-  });
+// REGISTER
+function register() {
+  let email = prompt("Enter email:");
+  let password = prompt("Enter password:");
+  if (!email || !password) return;
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(() => alert("Account created ✅"))
+    .catch(error => alert(error.message));
 }
 
-// ✅ LOAD (FINAL SAFE VERSION)
+// LOGIN
+function login() {
+  let email = prompt("Enter email:");
+  let password = prompt("Enter password:");
+  if (!email || !password) return;
+  auth.signInWithEmailAndPassword(email, password)
+    .then(() => alert("Logged in ✅"))
+    .catch(error => alert(error.message));
+}
+
+// LOGOUT
+function logout() {
+  auth.signOut().then(() => alert("Logged out ✅"));
+}
+
+// POST WITH IMAGE UPLOAD
+async function postService() {
+  let user = auth.currentUser;
+  if (!user) return alert("Please login first ❌");
+
+  let title = document.getElementById("title").value.trim();
+  let phone = document.getElementById("phone").value.trim();
+  let desc = document.getElementById("desc").value.trim();
+  let file = document.getElementById("image").files[0];
+
+  if (!title || !phone || !desc || !file) {
+    return alert("Fill all fields + image");
+  }
+
+  try {
+    let storageRef = storage.ref("images/" + Date.now() + "_" + file.name);
+    let snapshot = await storageRef.put(file);
+    let url = await snapshot.ref.getDownloadURL();
+
+    await db.collection("services").add({
+      title,
+      phone,
+      desc,
+      image: url,
+      user: user.email,
+      userId: user.uid,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    alert("Service posted ✅");
+    document.getElementById("title").value = "";
+    document.getElementById("phone").value = "";
+    document.getElementById("desc").value = "";
+    document.getElementById("image").value = "";
+  } catch (err) {
+    alert("Error: " + err.message);
+  }
+}
+
+// LOAD SERVICES WITH IMAGE
 function loadServices() {
   db.collection("services")
+    .orderBy("createdAt", "desc")
     .onSnapshot(snapshot => {
-
       let html = "";
+
+      if (snapshot.empty) {
+        document.getElementById("services").innerHTML = "<p>No services yet.</p>";
+        return;
+      }
 
       snapshot.forEach(doc => {
         let s = doc.data();
+        let cleanPhone = s.phone.replace(/\D/g, '').replace(/^0/, '27');
 
         html += `
           <div class="card">
-            <h2>${s.title}</h2>
+            ${s.image ? `<img src="${s.image}" class="card-img">` : ''}
+            <h3>${s.title}</h3>
             <p>${s.desc}</p>
             <p><strong>Phone:</strong> ${s.phone}</p>
-
-            <a href="https://wa.me/${s.phone}" target="_blank   });
+            <p><small>Posted by: ${s.user}</small></p>
+            <a href="https://wa.me/${cleanPhone}" target="_blank" class="whatsapp">Chat on WhatsApp</a>
+          </div>
+        `;
+      });
 
       document.getElementById("services").innerHTML = html;
+    }, err => {
+      console.error(err);
+      document.getElementById("services").innerHTML = "<p>Error loading services.</p>";
     });
 }
 
