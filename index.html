@@ -49,6 +49,12 @@ input, textarea {
   border: 1px solid #ddd;
   border-radius: 5px;
   font-family: inherit;
+  font-size: 14px;
+}
+
+input:focus, textarea:focus {
+  outline: 2px solid #0066ff;
+  border-color: #0066ff;
 }
 
 .form-box,.post {
@@ -84,6 +90,7 @@ button:hover { opacity: 0.9; }
 
 .sold-label { color: red; font-weight: bold; }
 .empty { text-align: center; padding: 20px; color: #666; }
+small { color: #666; }
 </style>
 </head>
 
@@ -112,7 +119,7 @@ button:hover { opacity: 0.9; }
 </div>
 </div>
 
-<div class="form-box">
+<div class="form-box" id="postForm" style="display:none;">
 <h2>Post a Service</h2>
 <input id="title" placeholder="Service Title">
 <input id="phone" placeholder="Phone Number">
@@ -167,15 +174,21 @@ function updateUI() {
   if (user) {
     document.getElementById("authArea").style.display = "none";
     document.getElementById("userArea").style.display = "block";
+    document.getElementById("postForm").style.display = "block";
     document.getElementById("currentUser").innerText = user;
   } else {
     document.getElementById("authArea").style.display = "block";
     document.getElementById("userArea").style.display = "none";
+    document.getElementById("postForm").style.display = "none";
   }
+  displayPosts();
 }
 
-// ✅ ADD POST
+// ✅ ADD POST - LOGIN REQUIRED
 function addPost() {
+  let user = localStorage.getItem("currentUser");
+  if (!user) return alert("You must log in to post");
+
   let title = document.getElementById("title").value.trim();
   let phone = document.getElementById("phone").value.trim();
   let description = document.getElementById("description").value.trim();
@@ -186,7 +199,7 @@ function addPost() {
     id: Date.now(),
     title, phone, description,
     sold: false,
-    owner: localStorage.getItem("currentUser")
+    owner: user
   });
 
   localStorage.setItem("posts", JSON.stringify(posts));
@@ -199,6 +212,7 @@ function addPost() {
 // ✅ DISPLAY POSTS
 function displayPosts() {
   let posts = JSON.parse(localStorage.getItem("posts")) || [];
+  let currentUser = localStorage.getItem("currentUser");
   let container = document.getElementById("posts");
 
   if (posts.length === 0) {
@@ -206,25 +220,41 @@ function displayPosts() {
     return;
   }
 
-  container.innerHTML = posts.map(post => `
-    <div class="post" id="post-${post.id}">
-      <h3>${escapeHtml(post.title)}</h3>
-      <p>${escapeHtml(post.description)}</p>
-      <p><strong>📞 ${escapeHtml(post.phone)}</strong></p>
-      ${post.sold? "<p class='sold-label'>SOLD ✅</p>" : ""}
+  container.innerHTML = posts.map(post => {
+    let isOwner = currentUser === post.owner;
 
-      <button class="edit" onclick="editPost(${post.id})">Edit</button>
-      <button class="delete" onclick="deletePost(${post.id})">Delete</button>
-      <button class="sold" onclick="markSold(${post.id})">Sold</button>
-      <button class="share" onclick="sharePost(${post.id})">Share</button>
-      <button class="copy" onclick="copyLink(${post.id})">Copy Link</button>
-    </div>
-  `).join("");
+    return `
+      <div class="post" id="post-${post.id}">
+        <h3>${escapeHtml(post.title)}</h3>
+        <p>${escapeHtml(post.description)}</p>
+        <p><strong>📞 ${escapeHtml(post.phone)}</strong></p>
+        <small>Posted by: ${escapeHtml(post.owner || "Anonymous")}</small>
+        ${post.sold? "<p class='sold-label'>SOLD ✅</p>" : ""}
+
+        ${isOwner? `
+          <button class="edit" onclick="editPost(${post.id})">Edit</button>
+          <button class="delete" onclick="deletePost(${post.id})">Delete</button>
+          <button class="sold" onclick="markSold(${post.id})">Sold</button>
+        ` : ""}
+
+        <button class="share" onclick="sharePost(${post.id})">Share</button>
+        <button class="copy" onclick="copyLink(${post.id})">Copy Link</button>
+      </div>
+    `;
+  }).join("");
 }
 
-// ✅ DELETE
+// ✅ DELETE - LOGIN & OWNER REQUIRED
 function deletePost(id) {
+  let user = localStorage.getItem("currentUser");
+  if (!user) return alert("You must log in to delete posts");
+
   let posts = JSON.parse(localStorage.getItem("posts")) || [];
+  let post = posts.find(p => p.id === id);
+
+  if (!post) return alert("Post not found");
+  if (post.owner!== user) return alert("You can only delete your own posts");
+
   if (confirm("Delete post?")) {
     posts = posts.filter(p => p.id!== id);
     localStorage.setItem("posts", JSON.stringify(posts));
@@ -232,11 +262,16 @@ function deletePost(id) {
   }
 }
 
-// ✅ EDIT
+// ✅ EDIT - LOGIN & OWNER REQUIRED
 function editPost(id) {
+  let user = localStorage.getItem("currentUser");
+  if (!user) return alert("You must log in to edit posts");
+
   let posts = JSON.parse(localStorage.getItem("posts")) || [];
   let post = posts.find(p => p.id === id);
-  if (!post) return;
+
+  if (!post) return alert("Post not found");
+  if (post.owner!== user) return alert("You can only edit your own posts");
 
   let title = prompt("Edit title:", post.title);
   let description = prompt("Edit description:", post.description);
@@ -250,22 +285,27 @@ function editPost(id) {
   }
 }
 
-// ✅ SOLD
+// ✅ MARK SOLD - LOGIN & OWNER REQUIRED
 function markSold(id) {
+  let user = localStorage.getItem("currentUser");
+  if (!user) return alert("You must log in to mark posts as sold");
+
   let posts = JSON.parse(localStorage.getItem("posts")) || [];
   let post = posts.find(p => p.id === id);
-  if (post) {
-    post.sold = true;
-    localStorage.setItem("posts", JSON.stringify(posts));
-    displayPosts();
-  }
+
+  if (!post) return alert("Post not found");
+  if (post.owner!== user) return alert("You can only mark your own posts as sold");
+
+  post.sold = true;
+  localStorage.setItem("posts", JSON.stringify(posts));
+  displayPosts();
 }
 
 // ✅ SHARE WITH DIRECT LINK
 function sharePost(id) {
-  let post = JSON.parse(localStorage.getItem("posts")) || [];
-  post = post.find(p => p.id === id);
-  if (!post) return;
+  let posts = JSON.parse(localStorage.getItem("posts")) || [];
+  let post = posts.find(p => p.id === id);
+  if (!post) return alert("Post not found");
 
   let shareUrl = `${window.location.origin}${window.location.pathname}?post=${id}`;
   let msg = `📢 ${post.title}\n${post.description}\n📞 ${post.phone}\n\n${shareUrl}`;
@@ -281,8 +321,8 @@ function sharePost(id) {
 function copyLink(id) {
   let url = `${window.location.origin}${window.location.pathname}?post=${id}`;
   navigator.clipboard.writeText(url)
-   .then(() => alert("Link copied!"))
-   .catch(() => prompt("Copy this link:", url));
+  .then(() => alert("Link copied!"))
+  .catch(() => prompt("Copy this link:", url));
 }
 
 // ✅ XSS PROTECTION
@@ -292,22 +332,21 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-// ✅ HANDLE DIRECT LINK & INIT
+// ✅ INIT
 document.addEventListener("DOMContentLoaded", () => {
   updateUI();
-  displayPosts();
 
   const params = new URLSearchParams(window.location.search);
   const postId = params.get("post");
   if (postId) {
-    const el = document.getElementById(`post-${postId}`);
-    if (el) {
-      setTimeout(() => {
+    setTimeout(() => {
+      const el = document.getElementById(`post-${postId}`);
+      if (el) {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
         el.style.outline = "3px solid #0066ff";
         setTimeout(() => el.style.outline = "", 2500);
-      }, 200);
-    }
+      }
+    }, 200);
   }
 });
 
