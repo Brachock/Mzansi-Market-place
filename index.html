@@ -43,12 +43,65 @@ header {
 
 /* NAV */
 nav {
+/* NAV */
+nav {
   background: #333;
   color: white;
   display: flex;
   justify-content: center;
   gap: 20px;
   padding: 10px;
+  flex-wrap: wrap; /* lets nav wrap on small screens */
+}
+
+nav div {
+  cursor: pointer;
+}
+
+nav div:hover {
+  text-decoration: underline;
+}
+
+/* ACCOUNT */
+.account-box {
+  background: #ddd;
+  padding: 10px 20px;
+  margin: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 8px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* FORM */
+.form-box {
+  background: white;
+  max-width: 500px;
+  margin: 20px auto;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* adds depth */
+  box-sizing: border-box;
+}
+
+/* INPUT */
+input, textarea {
+  width: 100%;
+  padding: 10px;
+  margin: 5px 0;
+  box-sizing: border-box; /* prevents overflow */
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+input:focus, textarea:focus {
+  outline: 2px solid #0066ff;
+  border-color: #0066ff;
+}
 }
 
 /* ACCOUNT */
