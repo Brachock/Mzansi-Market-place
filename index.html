@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,12 +7,12 @@
 
 <style>
 body {
-  font-family: Arial, sans-serif;
-  background: #f5f5f5;
+  font-family: Arial;
   margin: 0;
-  padding: 0;
+  background: #f5f5f5;
 }
 
+/* HEADER */
 header {
   background: #0066ff;
   color: white;
@@ -20,37 +20,65 @@ header {
   padding: 20px;
 }
 
-header h1 {
-  margin: 0;
-  font-size: 24px;
+/* NAV */
+nav {
+  background: #333;
+  color: white;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 10px;
 }
 
-.post, .form-box {
+/* ACCOUNT */
+.account-box {
+  background: #ddd;
+  padding: 10px 20px;
+  margin: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 8px;
+}
+
+/* FORM */
+.form-box {
   background: white;
-  padding: 15px;
-  margin: 15px auto;
   max-width: 500px;
+  margin: 20px auto;
+  padding: 15px;
   border-radius: 10px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  transition: outline 0.3s;
 }
 
 input, textarea {
   width: 100%;
-  margin: 5px 0;
   padding: 10px;
+  margin: 5px 0;
   box-sizing: border-box;
   border: 1px solid #ddd;
   border-radius: 5px;
   font-family: inherit;
 }
 
+/* POSTS */
+.post {
+  background: white;
+  margin: 15px auto;
+  padding: 15px;
+  max-width: 500px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: outline 0.3s;
+}
+
+/* BUTTONS */
 button {
   padding: 10px 15px;
-  margin: 5px 5px 5px 0;
   border: none;
   border-radius: 6px;
-  font-size: 14px;
+  color: white;
+  margin: 5px 5px 5px 0;
   cursor: pointer;
   font-weight: 600;
   transition: opacity 0.2s;
@@ -60,22 +88,18 @@ button:hover {
   opacity: 0.9;
 }
 
-.edit { background: orange; color: white; }
-.delete { background: red; color: white; }
-.sold { background: green; color: white; }
-.share { background: #25D366; color: white; }
-.copy { background: #6c757d; color: white; }
-.post-btn { background: #0066ff; color: white; }
+.auth { background: #0066ff; }
+.logout { background: red; }
+.edit { background: orange; }
+.delete { background: red; }
+.sold { background: green; }
+.share { background: #25D366; }
+.copy { background: #6c757d; }
+.post-btn { background: #0066ff; }
 
 .sold-label {
   color: red;
   font-weight: bold;
-}
-
-.empty {
-  text-align: center;
-  color: #666;
-  padding: 20px;
 }
 </style>
 </head>
@@ -86,6 +110,22 @@ button:hover {
   <h1>Mzansi Market Place 🇿🇦</h1>
   <p>Advertise Your Services Across South Africa</p>
 </header>
+
+<nav>
+  <div>Home</div>
+  <div>Services</div>
+  <div>Contact</div>
+</nav>
+
+<div class="account-box">
+  <div>
+    <button class="auth">Register</button>
+    <button class="auth">Login</button>
+  </div>
+  <div>
+    brachock@gmail.com <button class="logout">Logout</button>
+  </div>
+</div>
 
 <div class="form-box">
   <h2>Post a Service</h2>
@@ -106,7 +146,7 @@ function addPost() {
   let description = document.getElementById("description").value.trim();
 
   if (!title || !phone || !description) {
-    alert("Please fill all fields");
+    alert("Fill all fields");
     return;
   }
 
@@ -121,7 +161,7 @@ function addPost() {
   });
 
   localStorage.setItem("posts", JSON.stringify(posts));
-
+  
   document.getElementById("title").value = '';
   document.getElementById("phone").value = '';
   document.getElementById("description").value = '';
@@ -135,18 +175,17 @@ function displayPosts() {
   let container = document.getElementById("posts");
 
   if (posts.length === 0) {
-    container.innerHTML = "<p class='empty'>No posts yet. Be the first to post!</p>";
+    container.innerHTML = "<p style='text-align:center; padding:20px;'>No posts yet</p>";
     return;
   }
 
-  container.innerHTML = posts.map((post, index) => `
+  container.innerHTML = posts.map(post => `
     <div class="post" id="post-${post.id}">
       <h3>${escapeHtml(post.title)}</h3>
       <p>${escapeHtml(post.description)}</p>
       <p><strong>📞 ${escapeHtml(post.phone)}</strong></p>
-
       ${post.sold ? "<p class='sold-label'>SOLD ✅</p>" : ""}
-
+      
       <button class="edit" onclick="editPost(${post.id})">Edit</button>
       <button class="delete" onclick="deletePost(${post.id})">Delete</button>
       <button class="sold" onclick="markSold(${post.id})">Mark Sold</button>
@@ -215,15 +254,10 @@ View post 👇
 ${shareUrl}`;
 
   if (navigator.share) {
-    navigator.share({
-      title: post.title,
-      text: message,
-      url: shareUrl
-    }).catch(() => {});
+    navigator.share({ title: post.title, text: message, url: shareUrl }).catch(() => {});
   }
   else if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    let url = "https://wa.me/?text=" + encodeURIComponent(message);
-    window.open(url, "_blank");
+    window.open("https://wa.me/?text=" + encodeURIComponent(message), "_blank");
   }
   else {
     navigator.clipboard.writeText(message)
@@ -247,7 +281,7 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-// ✅ HANDLE DIRECT LINK ?post=123
+// ✅ HANDLE DIRECT LINK ?post=123 AND LOAD POSTS
 document.addEventListener("DOMContentLoaded", () => {
   displayPosts();
 
@@ -267,6 +301,5 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 </script>
-
 </body>
 </html>
