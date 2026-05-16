@@ -17,18 +17,25 @@ function sharePost(index) {
 Visit here 👇
 https://brachock.github.io/Mzansi-Market-place`;
 
+  // Mobile share - best experience
   if (navigator.share) {
     navigator.share({
       title: post.title,
       text: message,
       url: window.location.href
     }).catch(err => console.log("Share cancelled:", err));
-  } else if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+  }
+
+  // WhatsApp fallback for mobile browsers without Web Share
+  else if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
     let url = "https://wa.me/?text=" + encodeURIComponent(message);
     window.open(url, "_blank");
-  } else {
+  }
+
+  // Desktop fallback - copy to clipboard
+  else {
     navigator.clipboard.writeText(message).then(() => {
-      alert("Post copied to clipboard!");
+      alert("Post copied! Paste it anywhere ✅");
     }).catch(() => {
       prompt("Copy this text to share:", message);
     });
