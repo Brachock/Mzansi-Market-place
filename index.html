@@ -7,215 +7,277 @@
 
 <style>
 body {
-  font-family: Arial;
-  background: #f5f5f5;
   margin: 0;
-  padding: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
 }
 
 header {
-  background: #0066ff;
+  background: #0d6efd;
   color: white;
   text-align: center;
+  padding: 30px;
+}
+
+nav {
+  background: #333;
+  text-align: center;
+  padding: 12px;
+}
+
+nav a {
+  color: white;
+  margin: 10px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.container {
+  max-width: 800px;
+  margin: 20px auto;
   padding: 20px;
 }
 
-.post,.form-box {
+.card {
   background: white;
-  padding: 15px;
-  margin: 15px auto;
-  max-width: 500px;
-  border-radius: 10px;
-  transition: outline 0.3s;
+  padding: 20px;
+  margin: 15px 0;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
 }
 
-input, textarea {
+.card img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin: 10px 0;
+}
+
+input, textarea, button {
   width: 100%;
-  margin: 5px 0;
   padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #ddd;
+  border-radius: 6px;
   box-sizing: border-box;
 }
 
 button {
-  margin: 5px;
-  padding: 8px 12px;
-  border: none;
+  background: #0d6efd;
   color: white;
+  border: none;
   cursor: pointer;
-  border-radius: 5px;
+  font-weight: bold;
 }
 
-.edit { background: orange; }
-.delete { background: red; }
-.sold { background: green; }
-.share { background: #25D366; }
-.copy { background: #6c757d; }
+button:hover {
+  background: #0b5ed7;
+}
 
+.whatsapp {
+  background: #25D366;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  margin-top: 10px;
+  border-radius: 6px;
+  display: inline-block;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.whatsapp:hover {
+  background: #1ebe57;
+}
+
+.hidden {
+  display: none;
+}
+
+.user-bar {
+  background: #e9ecef;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  text-align: right;
+}
+
+.location-text {
+  color: #666;
+  font-size: 14px;
+}
 </style>
 </head>
 
 <body>
 
 <header>
-  <h1>Mzansi Market Place 🇿🇦</h1>
+  <h1>Mzansi Market Place</h1>
   <p>Advertise Your Services Across South Africa</p>
 </header>
 
-<div class="form-box">
-  <h2>Post a Service</h2>
-  <input id="title" placeholder="Service Title">
-  <input id="phone" placeholder="Phone Number">
-  <textarea id="description" placeholder="Description"></textarea>
-  <button onclick="addPost()">Post</button>
+<nav>
+  <a href="#">Home</a>
+  <a href="#">Services</a>
+  <a href="#">Contact</a>
+</nav>
+
+<div class="container">
+
+<div id="userBar" class="user-bar hidden">
+  <span id="userEmail"></span>
+  <button onclick="logout()" style="width:auto; padding:5px 10px; margin-left:10px;">Logout</button>
 </div>
 
-<div id="posts"></div>
+<div id="authSection">
+  <h2>Account</h2>
+  <input id="email" type="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
+  <button onclick="register()">Register</button>
+  <button onclick="login()">Login</button>
+</div>
+
+<div id="postSection" class="hidden">
+  <h2>Post a Service</h2>
+  <input id="title" placeholder="Service Title">
+  <input id="phone" placeholder="Phone Number e.g. 0831234567">
+  <textarea id="desc" placeholder="Description" rows="4"></textarea>
+  <input id="location" placeholder="Location e.g. Johannesburg, Gauteng">
+  <input type="file" id="photo" accept="image/*">
+  <button onclick="postService()">Post</button>
+</div>
+
+<h2>Available Services</h2>
+<div id="services">Loading...</div>
+
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
 <script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBgJZL1w5KWMTiDqrRziBM64wA8donunIs",
+  authDomain: "mzansimarket-ac296.firebaseapp.com",
+  projectId: "mzansimarket-ac296",
+  storageBucket: "mzansimarket-ac296.appspot.com",
+  messagingSenderId: "613890587901",
+  appId: "1:613890587901:web:8b7e278cc00a3610d11294"
+};
 
-// ✅ ADD POST
-function addPost() {
-  let title = document.getElementById("title").value.trim();
-  let phone = document.getElementById("phone").value.trim();
-  let description = document.getElementById("description").value.trim();
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
 
-  if (!title ||!phone ||!description) {
-    alert("Fill all fields");
-    return;
-  }
-
-  let posts = JSON.parse(localStorage.getItem("posts")) || [];
-
-  posts.unshift({ title, phone, description, sold: false });
-
-  localStorage.setItem("posts", JSON.stringify(posts));
-
-  document.getElementById("title").value = '';
-  document.getElementById("phone").value = '';
-  document.getElementById("description").value = '';
-
-  displayPosts();
-}
-
-// ✅ DISPLAY POSTS
-function displayPosts() {
-  let posts = JSON.parse(localStorage.getItem("posts")) || [];
-  let container = document.getElementById("posts");
-
-  if (posts.length === 0) {
-    container.innerHTML = "<p style='text-align:center;'>No posts yet</p>";
-    return;
-  }
-
-  container.innerHTML = posts.map((post, index) => `
-    <div class="post" id="post-${index}">
-      <h3>${post.title}</h3>
-      <p>${post.description}</p>
-      <p><strong>📞 ${post.phone}</strong></p>
-
-      ${post.sold? "<p style='color:red;font-weight:bold;'>SOLD ✅</p>" : ""}
-
-      <button class="edit" onclick="editPost(${index})">Edit</button>
-      <button class="delete" onclick="deletePost(${index})">Delete</button>
-      <button class="sold" onclick="markSold(${index})">Mark Sold</button>
-      <button class="share" onclick="sharePost(${index})">Share</button>
-      <button class="copy" onclick="copyLink(${index})">Copy Link</button>
-    </div>
-  `).join("");
-}
-
-// ✅ DELETE
-function deletePost(index) {
-  let posts = JSON.parse(localStorage.getItem("posts")) || [];
-  if (confirm("Delete this post?")) {
-    posts.splice(index, 1);
-    localStorage.setItem("posts", JSON.stringify(posts));
-    displayPosts();
-  }
-}
-
-// ✅ EDIT
-function editPost(index) {
-  let posts = JSON.parse(localStorage.getItem("posts")) || [];
-  let post = posts[index];
-
-  let title = prompt("Edit title:", post.title);
-  let description = prompt("Edit description:", post.description);
-  let phone = prompt("Edit phone:", post.phone);
-
-  if (title && description && phone) {
-    posts[index] = {...post, title, description, phone };
-    localStorage.setItem("posts", JSON.stringify(posts));
-    displayPosts();
-  }
-}
-
-// ✅ MARK SOLD
-function markSold(index) {
-  let posts = JSON.parse(localStorage.getItem("posts")) || [];
-  posts[index].sold = true;
-  localStorage.setItem("posts", JSON.stringify(posts));
-  displayPosts();
-}
-
-// ✅ SHARE WITH DIRECT LINK
-function sharePost(index) {
-  let posts = JSON.parse(localStorage.getItem("posts")) || [];
-  let post = posts[index];
-  if (!post) return alert("Post not found");
-
-  let shareUrl = `${window.location.origin}${window.location.pathname}?post=${index}`;
-
-  let message = `🔥 Check this out on Mzansi Market Place 🇿🇦
-
-📌 ${post.title}
-📖 ${post.description}
-
-📞 ${post.phone}
-
-View post 👇
-${shareUrl}`;
-
-  if (navigator.share) {
-    navigator.share({ title: post.title, text: message, url: shareUrl })
-   .catch(() => {});
-  } else if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    let url = "https://wa.me/?text=" + encodeURIComponent(message);
-    window.open(url, "_blank");
+// Auth state listener
+auth.onAuthStateChanged(user => {
+  if (user) {
+    document.getElementById("authSection").classList.add("hidden");
+    document.getElementById("postSection").classList.remove("hidden");
+    document.getElementById("userBar").classList.remove("hidden");
+    document.getElementById("userEmail").textContent = user.email;
   } else {
-    navigator.clipboard.writeText(message)
-   .then(() => alert("Post copied ✅"))
-   .catch(() => prompt("Copy this text:", message));
-  }
-}
-
-// ✅ COPY LINK ONLY
-function copyLink(index) {
-  let shareUrl = `${window.location.origin}${window.location.pathname}?post=${index}`;
-  navigator.clipboard.writeText(shareUrl)
- .then(() => alert("Link copied!"))
- .catch(() => prompt("Copy this link:", shareUrl));
-}
-
-// ✅ HANDLE DIRECT LINK?post=2
-document.addEventListener("DOMContentLoaded", () => {
-  displayPosts();
-
-  const params = new URLSearchParams(window.location.search);
-  const postIndex = params.get("post");
-
-  if (postIndex!== null) {
-    const el = document.getElementById(`post-${postIndex}`);
-    if (el) {
-      setTimeout(() => {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-        el.style.outline = "3px solid #0066ff";
-        setTimeout(() => el.style.outline = "", 2500);
-      }, 100);
-    }
+    document.getElementById("authSection").classList.remove("hidden");
+    document.getElementById("postSection").classList.add("hidden");
+    document.getElementById("userBar").classList.add("hidden");
   }
 });
 
+// Register
+function register() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  auth.createUserWithEmailAndPassword(email, password)
+   .catch(err => alert(err.message));
+}
+
+// Login
+function login() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  auth.signInWithEmailAndPassword(email, password)
+   .catch(err => alert(err.message));
+}
+
+// Logout
+function logout() {
+  auth.signOut();
+}
+
+// Post Service
+async function postService() {
+  const user = auth.currentUser;
+  if (!user) return alert("Login first");
+
+  let title = document.getElementById("title").value.trim();
+  let phone = document.getElementById("phone").value.trim();
+  let desc = document.getElementById("desc").value.trim();
+  let location = document.getElementById("location").value.trim();
+  let file = document.getElementById("photo").files[0];
+
+  if (!title ||!phone ||!desc) {
+    return alert("Fill title, phone and description");
+  }
+
+  let photoURL = "";
+  if (file) {
+    let storageRef = storage.ref(`services/${Date.now()}_${file.name}`);
+    let snapshot = await storageRef.put(file);
+    photoURL = await snapshot.ref.getDownloadURL();
+  }
+
+  db.collection("services").add({
+    title, phone, desc, location, photoURL,
+    userId: user.uid,
+    userEmail: user.email,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    alert("Service posted!");
+    document.getElementById("title").value = "";
+    document.getElementById("phone").value = "";
+    document.getElementById("desc").value = "";
+    document.getElementById("location").value = "";
+    document.getElementById("photo").value = "";
+  }).catch(err => alert(err.message));
+}
+
+// Load Services
+function loadServices() {
+  db.collection("services")
+   .orderBy("createdAt", "desc")
+   .onSnapshot(snapshot => {
+      let html = "";
+
+      if (snapshot.empty) {
+        document.getElementById("services").innerHTML = "<p>No services yet.</p>";
+        return;
+      }
+
+      snapshot.forEach(doc => {
+        let s = doc.data();
+        let cleanPhone = s.phone.replace(/\D/g, '').replace(/^0/, '27');
+
+        html += `
+          <div class="card">
+            <h3>${s.title}</h3>
+            ${s.photoURL? `<img src="${s.photoURL}" alt="Service photo">` : ''}
+            <p>${s.desc}</p>
+            ${s.location? `<p class="location-text">📍 ${s.location}</p>` : ''}
+            <p><strong>Phone:</strong> ${s.phone}</p>
+            <p><small>Posted by: ${s.userEmail}</small></p>
+            <a href="https://wa.me/${cleanPhone}" target="_blank" class="whatsapp">Message on WhatsApp</a>
+          </div>
+        `;
+      });
+
+      document.getElementById("services").innerHTML = html;
+    });
+}
+
+loadServices();
 </script>
 
 </body>
