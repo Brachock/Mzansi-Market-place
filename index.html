@@ -6,7 +6,7 @@
 <title>Mzansi Market Place</title>
 
 <style>
-body { font-family: Arial, sans-serif; background:#f5f5f5; margin:0; }
+body { margin:0; font-family:Arial, sans-serif; background:#f5f5f5; }
 
 header {
   background:#0066ff; color:white; text-align:center; padding:20px;
@@ -18,9 +18,9 @@ nav {
 }
 
 .account-box {
-  background:#ddd; padding:10px 20px; margin:10px;
-  display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center;
-  border-radius:8px;
+  background:#ddd; padding:10px 20px;
+  display:flex; justify-content:space-between; flex-wrap:wrap; align-items:center;
+  border-radius:8px; margin:10px;
 }
 
 .form-box,.post {
@@ -28,26 +28,15 @@ nav {
   border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
 
-input, textarea {
-  width:100%; padding:10px; margin:5px 0;
-  box-sizing:border-box; border:1px solid #ddd; border-radius:5px;
-  font-family:inherit;
-  font-size:14px;
-}
-
-input:focus, textarea:focus {
-  outline:2px solid #0066ff;
-  border-color:#0066ff;
+input,textarea {
+  width:100%; padding:10px; margin:5px 0; box-sizing:border-box;
+  border:1px solid #ddd; border-radius:5px; font-family:inherit;
 }
 
 button {
   padding:10px 15px; border:none; border-radius:5px;
-  color:white; margin:3px; cursor:pointer; font-weight:600;
-  transition:opacity 0.2s;
+  color:white; margin:4px; cursor:pointer; font-weight:600;
 }
-
-button:hover { opacity:0.9; }
-button:disabled { opacity:0.6; cursor:not-allowed; }
 
 .auth { background:#0066ff; }
 .logout { background:red; }
@@ -55,11 +44,9 @@ button:disabled { opacity:0.6; cursor:not-allowed; }
 .delete { background:red; }
 .sold { background:green; }
 .share { background:#25D366; }
-
+.sold-label { color:red; font-weight:bold; }
 .empty { text-align:center; color:#666; padding:20px; }
 small { color:#666; }
-.sold-label { color:red; font-weight:bold; }
-.loading { text-align:center; padding:20px; color:#666; }
 </style>
 </head>
 
@@ -90,36 +77,39 @@ small { color:#666; }
 
 <div class="form-box" id="postForm" style="display:none;">
 <h2>Post a Service</h2>
-<input id="title" placeholder="Service Title">
-<input id="phone" placeholder="Phone Number">
+<input id="title" placeholder="Service title">
+<input id="phone" placeholder="Phone number">
 <textarea id="description" placeholder="Description" rows="3"></textarea>
 <button class="auth" id="postBtn" onclick="addPost()">Post</button>
 </div>
 
 <div id="posts">
-  <p class="loading">Loading posts...</p>
+  <p class="empty">Loading posts...</p>
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { 
-  getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, 
-  query, orderBy, onSnapshot 
-} from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
-import { 
-  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, 
-  signOut, onAuthStateChanged 
-} from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+// ✅ FIREBASE IMPORTS
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, updateDoc, query, orderBy
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+import {
+  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  signOut, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+// ✅ YOUR CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyBgJZL1w5KWMTiDqrRziBM64wA8donunIs",
   authDomain: "mzansimarket-ac296.firebaseapp.com",
   projectId: "mzansimarket-ac296",
-  storageBucket: "mzansimarket-ac296.firebasestorage.app",
+  storageBucket: "mzansimarket-ac296.appspot.com",
   messagingSenderId: "613890587901",
   appId: "1:613890587901:web:8b7e278cc00a3610d11294"
 };
 
+// ✅ INIT
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
@@ -127,214 +117,209 @@ const auth = getAuth(app);
 const postsCol = collection(db, "posts");
 let currentUser = null;
 
-// AUTH STATE LISTENER
+// ✅ AUTH STATE
 onAuthStateChanged(auth, (user) => {
   currentUser = user;
   updateUI();
 });
 
-// REGISTER
+// ✅ REGISTER
 window.registerUser = async () => {
   let email = prompt("Email:");
-  let pass = prompt("Password:");
-  if(!email ||!pass) return;
+  let pass = prompt("Password (min 6 chars):");
+  if (!email || !pass) return;
+
+  if (pass.length < 6) return alert("Password must be 6+ characters ❌");
 
   try {
     await createUserWithEmailAndPassword(auth, email, pass);
-    alert("Registered & logged in ✅");
-  } catch(e) {
+    alert("Registered ✅");
+  } catch (e) {
     alert(e.message);
   }
-}
+};
 
-// LOGIN
+// ✅ LOGIN
 window.loginUser = async () => {
   let email = prompt("Email:");
   let pass = prompt("Password:");
-  if(!email ||!pass) return;
-
   try {
     await signInWithEmailAndPassword(auth, email, pass);
-  } catch(e) {
-    alert("Wrong details ❌");
+  } catch (e) {
+    alert(e.message);
   }
-}
+};
 
-// LOGOUT
+// ✅ LOGOUT
 window.logoutUser = async () => {
   await signOut(auth);
-}
+};
 
-// UI UPDATE
-function updateUI(){
-  if(currentUser){
-    document.getElementById("authArea").style.display="none";
-    document.getElementById("userArea").style.display="block";
-    document.getElementById("postForm").style.display="block";
-    document.getElementById("currentUser").innerText=currentUser.email;
+// ✅ UI
+function updateUI() {
+  if (currentUser) {
+    document.getElementById("authArea").style.display = "none";
+    document.getElementById("userArea").style.display = "block";
+    document.getElementById("postForm").style.display = "block";
+    document.getElementById("currentUser").innerText = currentUser.email;
   } else {
-    document.getElementById("authArea").style.display="block";
-    document.getElementById("userArea").style.display="none";
-    document.getElementById("postForm").style.display="none";
+    document.getElementById("authArea").style.display = "block";
+    document.getElementById("userArea").style.display = "none";
+    document.getElementById("postForm").style.display = "none";
   }
 }
 
-// ADD POST
+// ✅ ADD POST
 window.addPost = async () => {
-  if(!currentUser) return alert("Please login first 🔐");
+  if (!currentUser) return alert("Please login first 🔐");
 
   let title = document.getElementById("title").value.trim();
   let phone = document.getElementById("phone").value.trim();
-  let desc = document.getElementById("description").value.trim();
-  if(!title ||!phone ||!desc) return alert("Fill all fields");
+  let description = document.getElementById("description").value.trim();
+  if (!title || !phone || !description) return alert("Fill all fields");
 
   const btn = document.getElementById("postBtn");
   btn.disabled = true;
-  btn.textContent = "Posting...";
 
   try {
     await addDoc(postsCol, {
-      title, phone, description: desc,
+      title, phone, description,
       sold: false,
       ownerId: currentUser.uid,
       ownerEmail: currentUser.email,
       createdAt: Date.now()
     });
-
     document.getElementById("title").value = "";
     document.getElementById("phone").value = "";
     document.getElementById("description").value = "";
-  } catch(e) {
-    alert("Error posting: " + e.message);
+  } catch (e) {
+    alert("Error: " + e.message);
   } finally {
     btn.disabled = false;
-    btn.textContent = "Post";
   }
-}
+};
 
-// REALTIME DISPLAY POSTS
+// ✅ LIVE POSTS - ordered by newest first
 const q = query(postsCol, orderBy("createdAt", "desc"));
 onSnapshot(q, (snapshot) => {
   let container = document.getElementById("posts");
-  
-  if(snapshot.empty){
-    container.innerHTML="<p class='empty'>No posts yet</p>";
+
+  if (snapshot.empty) {
+    container.innerHTML = "<p class='empty'>No posts yet</p>";
     return;
   }
 
-  container.innerHTML = snapshot.docs.map(docSnap => {
-    let p = docSnap.data();
-    let id = docSnap.id;
-    let isOwner = currentUser && currentUser.uid === p.ownerId;
+  container.innerHTML = snapshot.docs.map(d => {
+    let p = d.data();
+    let id = d.id;
+    let isOwner = currentUser && p.ownerId === currentUser.uid;
 
     return `
-      <div class="post" id="post-${id}">
-        <h3>${escapeHtml(p.title)}</h3>
-        <p>${escapeHtml(p.description)}</p>
-        <p><strong>📞 ${escapeHtml(p.phone)}</strong></p>
-        <small>Posted by: ${escapeHtml(p.ownerEmail)} • ${timeAgo(p.createdAt)}</small>
-        ${p.sold? "<p class='sold-label'>SOLD ✅</p>" : ""}
+    <div class="post" id="post-${id}">
+      <h3>${escapeHtml(p.title)}</h3>
+      <p>${escapeHtml(p.description)}</p>
+      <p><strong>📞 ${escapeHtml(p.phone)}</strong></p>
+      <small>Posted by: ${escapeHtml(p.ownerEmail)} • ${timeAgo(p.createdAt)}</small>
+      ${p.sold ? "<p class='sold-label'>SOLD ✅</p>" : ""}
 
-        ${isOwner? `
-          <button class="edit" onclick="editPost('${id}')">Edit</button>
-          <button class="delete" onclick="deletePost('${id}')">Delete</button>
-          <button class="sold" onclick="markSold('${id}')">Sold</button>
-        `:""}
+      ${isOwner ? `
+        <button class="edit" onclick="editPost('${id}')">Edit</button>
+        <button class="delete" onclick="deletePost('${id}')">Delete</button>
+        <button class="sold" onclick="markSold('${id}')">Sold</button>
+      ` : ""}
 
-        <button class="share" onclick="sharePost('${id}')">Share</button>
-      </div>
-    `;
+      <button class="share" onclick="sharePost('${id}')">Share</button>
+    </div>`;
   }).join("");
 }, (error) => {
   console.error(error);
   document.getElementById("posts").innerHTML = "<p class='empty'>Error loading posts</p>";
 });
 
-// EDIT POST
+// ✅ EDIT
 window.editPost = async (id) => {
-  if(!currentUser) return alert("Please login first 🔐");
+  if (!currentUser) return alert("Please login first 🔐");
   
   let docRef = doc(db, "posts", id);
-  let newTitle = prompt("New title:");
-  let newDesc = prompt("New description:");
-  let newPhone = prompt("New phone:");
+  let newTitle = prompt("Edit title:");
+  let newDesc = prompt("Edit description:");
+  let newPhone = prompt("Edit phone:");
   
-  if(newTitle && newDesc && newPhone){
+  if (newTitle && newDesc && newPhone) {
     try {
       await updateDoc(docRef, {
         title: newTitle.trim(),
         description: newDesc.trim(),
         phone: newPhone.trim()
       });
-    } catch(e) {
+    } catch (e) {
       alert("Error updating: " + e.message);
     }
   }
-}
+};
 
-// DELETE POST
+// ✅ DELETE
 window.deletePost = async (id) => {
-  if(!currentUser) return alert("Please login first 🔐");
-  if(confirm("Delete this post?")){
+  if (!currentUser) return alert("Please login first 🔐");
+  if (confirm("Delete this post?")) {
     try {
       await deleteDoc(doc(db, "posts", id));
-    } catch(e) {
+    } catch (e) {
       alert("Error deleting: " + e.message);
     }
   }
-}
+};
 
-// MARK SOLD
+// ✅ SOLD
 window.markSold = async (id) => {
-  if(!currentUser) return alert("Please login first 🔐");
+  if (!currentUser) return alert("Please login first 🔐");
   try {
     await updateDoc(doc(db, "posts", id), { sold: true });
-  } catch(e) {
+  } catch (e) {
     alert("Error updating: " + e.message);
   }
-}
+};
 
-// SHARE
+// ✅ SHARE
 window.sharePost = (id) => {
   let url = `${location.origin}${location.pathname}?post=${id}`;
   let msg = `Check this out on Mzansi Market Place:\n${url}`;
-  if(navigator.share){
-    navigator.share({text:msg});
+  if (navigator.share) {
+    navigator.share({ text: msg });
   } else {
-    window.open("https://wa.me/?text="+encodeURIComponent(msg));
+    window.open("https://wa.me/?text=" + encodeURIComponent(msg));
   }
-}
+};
 
-// XSS PROTECTION
-function escapeHtml(text){
+// ✅ XSS PROTECTION
+function escapeHtml(text) {
   let div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
 }
 
-// TIME AGO
+// ✅ TIME AGO
 function timeAgo(ts) {
-  if(!ts) return "";
+  if (!ts) return "";
   let diff = Date.now() - ts;
   let days = Math.floor(diff / 86400000);
   let hours = Math.floor(diff / 3600000);
   let mins = Math.floor(diff / 60000);
-  
-  if(days > 0) return `${days}d ago`;
-  if(hours > 0) return `${hours}h ago`;
-  if(mins > 0) return `${mins}m ago`;
+  if (days > 0) return `${days}d ago`;
+  if (hours > 0) return `${hours}h ago`;
+  if (mins > 0) return `${mins}m ago`;
   return "Just now";
 }
 
-// AUTO-SCROLL TO POST FROM URL
+// ✅ AUTO-SCROLL TO POST FROM URL
 window.addEventListener("load", () => {
   const params = new URLSearchParams(window.location.search);
   const postId = params.get("post");
-  if(postId){
+  if (postId) {
     setTimeout(() => {
       const el = document.getElementById(`post-${postId}`);
-      if(el){
-        el.scrollIntoView({ behavior:"smooth", block:"center" });
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
         el.style.outline = "3px solid #0066ff";
         setTimeout(() => el.style.outline = "", 2500);
       }
