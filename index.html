@@ -12,28 +12,6 @@ body {
   background: #f5f5f5;
 }
 
-/* HEADER */
-header {
-  background: #0066ff;
-  color: white;
-  text-align: center;
-  padding: 20px;
-}
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mzansi Market Place</title>
-
-<style>
-body {
-  font-family: Arial;
-  margin: 0;
-  background: #f5f5f5;
-}
-
-/* HEADER */
 header {
   background: #0066ff;
   color: white;
@@ -41,125 +19,44 @@ header {
   padding: 20px;
 }
 
-/* NAV */
-nav {
-/* NAV */
 nav {
   background: #333;
-  color: white;
   display: flex;
   justify-content: center;
   gap: 20px;
+  color: white;
   padding: 10px;
-  flex-wrap: wrap; /* lets nav wrap on small screens */
 }
 
-nav div {
-  cursor: pointer;
-}
-
-nav div:hover {
-  text-decoration: underline;
-}
-
-/* ACCOUNT */
 .account-box {
   background: #ddd;
-  padding: 10px 20px;
-  margin: 20px;
+  padding: 10px;
+  margin: 10px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-radius: 8px;
   flex-wrap: wrap;
   gap: 10px;
-}
-
-/* FORM */
-.form-box {
-  background: white;
-  max-width: 500px;
-  margin: 20px auto;
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* adds depth */
-  box-sizing: border-box;
-}
-
-/* INPUT */
-input, textarea {
-  width: 100%;
-  padding: 10px;
-  margin: 5px 0;
-  box-sizing: border-box; /* prevents overflow */
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-family: inherit;
-  font-size: 14px;
-}
-
-input:focus, textarea:focus {
-  outline: 2px solid #0066ff;
-  border-color: #0066ff;
-}
-}
-
-/* ACCOUNT */
-.account-box {
-  background: #ddd;
-  padding: 10px 20px;
-  margin: 20px;
-  display: flex;
   justify-content: space-between;
-  align-items: center;
-  border-radius: 8px;
-}
-
-/* FORM */
-.form-box {
-  background: white;
-  max-width: 500px;
-  margin: 20px auto;
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 input, textarea {
   width: 100%;
   padding: 10px;
   margin: 5px 0;
-  box-sizing: border-box;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-family: inherit;
 }
 
-/* POSTS */
-.post {
+.form-box, .post {
   background: white;
-  margin: 15px auto;
+  margin: 15px;
   padding: 15px;
-  max-width: 500px;
   border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  transition: outline 0.3s;
 }
 
-/* BUTTONS */
 button {
-  padding: 10px 15px;
+  padding: 10px;
   border: none;
   border-radius: 6px;
   color: white;
-  margin: 5px 5px 5px 0;
   cursor: pointer;
-  font-weight: 600;
-  transition: opacity 0.2s;
-}
-
-button:hover {
-  opacity: 0.9;
 }
 
 .auth { background: #0066ff; }
@@ -168,56 +65,103 @@ button:hover {
 .delete { background: red; }
 .sold { background: green; }
 .share { background: #25D366; }
-.copy { background: #6c757d; }
-.post-btn { background: #0066ff; }
-
-.sold-label {
-  color: red;
-  font-weight: bold;
-}
 </style>
 </head>
 
 <body>
 
 <header>
-  <h1>Mzansi Market Place 🇿🇦</h1>
-  <p>Advertise Your Services Across South Africa</p>
+<h1>Mzansi Market Place 🇿🇦</h1>
+<p>Advertise Your Services Across South Africa</p>
 </header>
 
 <nav>
-  <div>Home</div>
-  <div>Services</div>
-  <div>Contact</div>
+<div>Home</div>
+<div>Services</div>
+<div>Contact</div>
 </nav>
 
 <div class="account-box">
-  <div>
-    <button class="auth">Register</button>
-    <button class="auth">Login</button>
-  </div>
-  <div>
-    brachock@gmail.com <button class="logout">Logout</button>
-  </div>
+<div id="authArea">
+<button class="auth" onclick="registerUser()">Register</button>
+<button class="auth" onclick="loginUser()">Login</button>
+</div>
+
+<div id="userArea" style="display:none;">
+<span id="currentUser"></span>
+<button class="logout" onclick="logoutUser()">Logout</button>
+</div>
 </div>
 
 <div class="form-box">
-  <h2>Post a Service</h2>
-  <input id="title" placeholder="Service Title">
-  <input id="phone" placeholder="Phone Number">
-  <textarea id="description" placeholder="Description" rows="3"></textarea>
-  <button class="post-btn" onclick="addPost()">Post</button>
+<h2>Post a Service</h2>
+
+<input id="title" placeholder="Service Title">
+<input id="phone" placeholder="Phone Number">
+<textarea id="description" placeholder="Description"></textarea>
+
+<button class="auth" onclick="addPost()">Post</button>
 </div>
 
 <div id="posts"></div>
 
 <script>
 
+// ✅ REGISTER
+function registerUser() {
+  let email = prompt("Enter email:");
+  let password = prompt("Enter password:");
+
+  if (!email || !password) return;
+
+  let users = JSON.parse(localStorage.getItem("users")) || [];
+  users.push({ email, password });
+
+  localStorage.setItem("users", JSON.stringify(users));
+  alert("Registered ✅");
+}
+
+// ✅ LOGIN
+function loginUser() {
+  let email = prompt("Enter email:");
+  let password = prompt("Enter password:");
+
+  let users = JSON.parse(localStorage.getItem("users")) || [];
+  let user = users.find(u => u.email === email && u.password === password);
+
+  if (user) {
+    localStorage.setItem("currentUser", email);
+    updateUI();
+  } else {
+    alert("Wrong login ❌");
+  }
+}
+
+// ✅ LOGOUT
+function logoutUser() {
+  localStorage.removeItem("currentUser");
+  updateUI();
+}
+
+// ✅ UI UPDATE
+function updateUI() {
+  let user = localStorage.getItem("currentUser");
+
+  if (user) {
+    document.getElementById("authArea").style.display = "none";
+    document.getElementById("userArea").style.display = "block";
+    document.getElementById("currentUser").innerText = user;
+  } else {
+    document.getElementById("authArea").style.display = "block";
+    document.getElementById("userArea").style.display = "none";
+  }
+}
+
 // ✅ ADD POST
 function addPost() {
-  let title = document.getElementById("title").value.trim();
-  let phone = document.getElementById("phone").value.trim();
-  let description = document.getElementById("description").value.trim();
+  let title = document.getElementById("title").value;
+  let phone = document.getElementById("phone").value;
+  let description = document.getElementById("description").value;
 
   if (!title || !phone || !description) {
     alert("Fill all fields");
@@ -225,9 +169,8 @@ function addPost() {
   }
 
   let posts = JSON.parse(localStorage.getItem("posts")) || [];
-  
-  posts.unshift({
-    id: Date.now(),
+
+  posts.push({
     title,
     phone,
     description,
@@ -235,11 +178,6 @@ function addPost() {
   });
 
   localStorage.setItem("posts", JSON.stringify(posts));
-  
-  document.getElementById("title").value = '';
-  document.getElementById("phone").value = '';
-  document.getElementById("description").value = '';
-
   displayPosts();
 }
 
@@ -248,414 +186,84 @@ function displayPosts() {
   let posts = JSON.parse(localStorage.getItem("posts")) || [];
   let container = document.getElementById("posts");
 
+  container.innerHTML = "";
+
   if (posts.length === 0) {
-    container.innerHTML = "<p style='text-align:center; padding:20px;'>No posts yet</p>";
-    return;
+    container.innerHTML = "<p style='text-align:center;'>No posts yet</p>";
   }
 
-  container.innerHTML = posts.map(post => `
-    <div class="post" id="post-${post.id}">
-      <h3>${escapeHtml(post.title)}</h3>
-      <p>${escapeHtml(post.description)}</p>
-      <p><strong>📞 ${escapeHtml(post.phone)}</strong></p>
-      ${post.sold ? "<p class='sold-label'>SOLD ✅</p>" : ""}
-      
-      <button class="edit" onclick="editPost(${post.id})">Edit</button>
-      <button class="delete" onclick="deletePost(${post.id})">Delete</button>
-      <button class="sold" onclick="markSold(${post.id})">Mark Sold</button>
-      <button class="share" onclick="sharePost(${post.id})">Share</button>
-      <button class="copy" onclick="copyLink(${post.id})">Copy Link</button>
-    </div>
-  `).join("");
-}
+  posts.forEach((post, index) => {
+    container.innerHTML += `
+      <div class="post">
+        <h3>${post.title}</h3>
+        <p>${post.description}</p>
+        <p><strong>${post.phone}</strong></p>
 
-// ✅ DELETE POST
-function deletePost(id) {
-  let posts = JSON.parse(localStorage.getItem("posts")) || [];
-  if (confirm("Delete this post?")) {
-    posts = posts.filter(p => p.id !== id);
-    localStorage.setItem("posts", JSON.stringify(posts));
-    displayPosts();
-  }
-}
+        ${post.sold ? "<p style='color:red;'>SOLD ✅</p>" : ""}
 
-// ✅ EDIT POST
-function editPost(id) {
-  let posts = JSON.parse(localStorage.getItem("posts")) || [];
-  let post = posts.find(p => p.id === id);
-  if (!post) return;
-
-  let title = prompt("Edit title:", post.title);
-  let description = prompt("Edit description:", post.description);
-  let phone = prompt("Edit phone:", post.phone);
-
-  if (title && description && phone) {
-    post.title = title.trim();
-    post.description = description.trim();
-    post.phone = phone.trim();
-    localStorage.setItem("posts", JSON.stringify(posts));
-    displayPosts();
-  }
-}
-
-// ✅ MARK SOLD
-function markSold(id) {
-  let posts = JSON.parse(localStorage.getItem("posts")) || [];
-  let post = posts.find(p => p.id === id);
-  if (!post) return;
-  
-  post.sold = true;
-  localStorage.setItem("posts", JSON.stringify(posts));
-  displayPosts();
-}
-
-// ✅ SHARE POST WITH DIRECT LINK
-function sharePost(id) {
-  let posts = JSON.parse(localStorage.getItem("posts")) || [];
-  let post = posts.find(p => p.id === id);
-  if (!post) return alert("Post not found");
-
-  let shareUrl = `${window.location.origin}${window.location.pathname}?post=${id}`;
-
-  let message = `🔥 Check this out on Mzansi Market Place 🇿🇦
-
-📌 ${post.title}
-📖 ${post.description}
-
-📞 ${post.phone}
-
-View post 👇
-${shareUrl}`;
-
-  if (navigator.share) {
-    navigator.share({ title: post.title, text: message, url: shareUrl }).catch(() => {});
-  }
-  else if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    window.open("https://wa.me/?text=" + encodeURIComponent(message), "_blank");
-  }
-  else {
-    navigator.clipboard.writeText(message)
-   .then(() => alert("Post copied ✅"))
-   .catch(() => prompt("Copy this text:", message));
-  }
-}
-
-// ✅ COPY LINK ONLY
-function copyLink(id) {
-  let shareUrl = `${window.location.origin}${window.location.pathname}?post=${id}`;
-  navigator.clipboard.writeText(shareUrl)
- .then(() => alert("Link copied!"))
- .catch(() => prompt("Copy this link:", shareUrl));
-}
-
-// ✅ PREVENT XSS
-function escapeHtml(text) {
-  let div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-// ✅ HANDLE DIRECT LINK ?post=123 AND LOAD POSTS
-document.addEventListener("DOMContentLoaded", () => {
-  displayPosts();
-
-  const params = new URLSearchParams(window.location.search);
-  const postId = params.get("post");
-
-  if (postId) {
-    const el = document.getElementById(`post-${postId}`);
-    if (el) {
-      setTimeout(() => {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-        el.style.outline = "3px solid #0066ff";
-        setTimeout(() => el.style.outline = "", 2500);
-      }, 200);
-    }
-  }
-});
-
-</script>
-</body>
-</html>
-/* NAV */
-nav {
-  background: #333;
-  color: white;
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  padding: 10px;
-}
-
-/* ACCOUNT */
-.account-box {
-  background: #ddd;
-  padding: 10px 20px;
-  margin: 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-radius: 8px;
-}
-
-/* FORM */
-.form-box {
-  background: white;
-  max-width: 500px;
-  margin: 20px auto;
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-input, textarea {
-  width: 100%;
-  padding: 10px;
-  margin: 5px 0;
-  box-sizing: border-box;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-family: inherit;
-}
-
-/* POSTS */
-.post {
-  background: white;
-  margin: 15px auto;
-  padding: 15px;
-  max-width: 500px;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  transition: outline 0.3s;
-}
-
-/* BUTTONS */
-button {
-  padding: 10px 15px;
-  border: none;
-  border-radius: 6px;
-  color: white;
-  margin: 5px 5px 5px 0;
-  cursor: pointer;
-  font-weight: 600;
-  transition: opacity 0.2s;
-}
-
-button:hover {
-  opacity: 0.9;
-}
-
-.auth { background: #0066ff; }
-.logout { background: red; }
-.edit { background: orange; }
-.delete { background: red; }
-.sold { background: green; }
-.share { background: #25D366; }
-.copy { background: #6c757d; }
-.post-btn { background: #0066ff; }
-
-.sold-label {
-  color: red;
-  font-weight: bold;
-}
-</style>
-</head>
-
-<body>
-
-<header>
-  <h1>Mzansi Market Place 🇿🇦</h1>
-  <p>Advertise Your Services Across South Africa</p>
-</header>
-
-<nav>
-  <div>Home</div>
-  <div>Services</div>
-  <div>Contact</div>
-</nav>
-
-<div class="account-box">
-  <div>
-    <button class="auth">Register</button>
-    <button class="auth">Login</button>
-  </div>
-  <div>
-    brachock@gmail.com <button class="logout">Logout</button>
-  </div>
-</div>
-
-<div class="form-box">
-  <h2>Post a Service</h2>
-  <input id="title" placeholder="Service Title">
-  <input id="phone" placeholder="Phone Number">
-  <textarea id="description" placeholder="Description" rows="3"></textarea>
-  <button class="post-btn" onclick="addPost()">Post</button>
-</div>
-
-<div id="posts"></div>
-
-<script>
-
-// ✅ ADD POST
-function addPost() {
-  let title = document.getElementById("title").value.trim();
-  let phone = document.getElementById("phone").value.trim();
-  let description = document.getElementById("description").value.trim();
-
-  if (!title || !phone || !description) {
-    alert("Fill all fields");
-    return;
-  }
-
-  let posts = JSON.parse(localStorage.getItem("posts")) || [];
-  
-  posts.unshift({
-    id: Date.now(),
-    title,
-    phone,
-    description,
-    sold: false
+        <button class="edit" onclick="editPost(${index})">Edit</button>
+        <button class="delete" onclick="deletePost(${index})">Delete</button>
+        <button class="sold" onclick="markSold(${index})">Sold</button>
+        <button class="share" onclick="sharePost(${index})">Share</button>
+      </div>
+    `;
   });
-
-  localStorage.setItem("posts", JSON.stringify(posts));
-  
-  document.getElementById("title").value = '';
-  document.getElementById("phone").value = '';
-  document.getElementById("description").value = '';
-
-  displayPosts();
 }
 
-// ✅ DISPLAY POSTS
-function displayPosts() {
+// ✅ DELETE
+function deletePost(index) {
   let posts = JSON.parse(localStorage.getItem("posts")) || [];
-  let container = document.getElementById("posts");
 
-  if (posts.length === 0) {
-    container.innerHTML = "<p style='text-align:center; padding:20px;'>No posts yet</p>";
-    return;
-  }
-
-  container.innerHTML = posts.map(post => `
-    <div class="post" id="post-${post.id}">
-      <h3>${escapeHtml(post.title)}</h3>
-      <p>${escapeHtml(post.description)}</p>
-      <p><strong>📞 ${escapeHtml(post.phone)}</strong></p>
-      ${post.sold ? "<p class='sold-label'>SOLD ✅</p>" : ""}
-      
-      <button class="edit" onclick="editPost(${post.id})">Edit</button>
-      <button class="delete" onclick="deletePost(${post.id})">Delete</button>
-      <button class="sold" onclick="markSold(${post.id})">Mark Sold</button>
-      <button class="share" onclick="sharePost(${post.id})">Share</button>
-      <button class="copy" onclick="copyLink(${post.id})">Copy Link</button>
-    </div>
-  `).join("");
-}
-
-// ✅ DELETE POST
-function deletePost(id) {
-  let posts = JSON.parse(localStorage.getItem("posts")) || [];
-  if (confirm("Delete this post?")) {
-    posts = posts.filter(p => p.id !== id);
+  if (confirm("Delete post?")) {
+    posts.splice(index, 1);
     localStorage.setItem("posts", JSON.stringify(posts));
     displayPosts();
   }
 }
 
-// ✅ EDIT POST
-function editPost(id) {
+// ✅ EDIT
+function editPost(index) {
   let posts = JSON.parse(localStorage.getItem("posts")) || [];
-  let post = posts.find(p => p.id === id);
-  if (!post) return;
+  let post = posts[index];
 
   let title = prompt("Edit title:", post.title);
   let description = prompt("Edit description:", post.description);
   let phone = prompt("Edit phone:", post.phone);
 
   if (title && description && phone) {
-    post.title = title.trim();
-    post.description = description.trim();
-    post.phone = phone.trim();
+    posts[index] = { ...post, title, description, phone };
     localStorage.setItem("posts", JSON.stringify(posts));
     displayPosts();
   }
 }
 
-// ✅ MARK SOLD
-function markSold(id) {
+// ✅ SOLD
+function markSold(index) {
   let posts = JSON.parse(localStorage.getItem("posts")) || [];
-  let post = posts.find(p => p.id === id);
-  if (!post) return;
-  
-  post.sold = true;
+  posts[index].sold = true;
   localStorage.setItem("posts", JSON.stringify(posts));
   displayPosts();
 }
 
-// ✅ SHARE POST WITH DIRECT LINK
-function sharePost(id) {
+// ✅ SHARE
+function sharePost(index) {
   let posts = JSON.parse(localStorage.getItem("posts")) || [];
-  let post = posts.find(p => p.id === id);
-  if (!post) return alert("Post not found");
+  let post = posts[index];
 
-  let shareUrl = `${window.location.origin}${window.location.pathname}?post=${id}`;
-
-  let message = `🔥 Check this out on Mzansi Market Place 🇿🇦
-
-📌 ${post.title}
-📖 ${post.description}
-
+  let msg = `📢 ${post.title}
+${post.description}
 📞 ${post.phone}
-
-View post 👇
-${shareUrl}`;
+${window.location.href}`;
 
   if (navigator.share) {
-    navigator.share({ title: post.title, text: message, url: shareUrl }).catch(() => {});
-  }
-  else if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    window.open("https://wa.me/?text=" + encodeURIComponent(message), "_blank");
-  }
-  else {
-    navigator.clipboard.writeText(message)
-   .then(() => alert("Post copied ✅"))
-   .catch(() => prompt("Copy this text:", message));
+    navigator.share({ text: msg });
+  } else {
+    window.open("https://wa.me/?text=" + encodeURIComponent(msg));
   }
 }
 
-// ✅ COPY LINK ONLY
-function copyLink(id) {
-  let shareUrl = `${window.location.origin}${window.location.pathname}?post=${id}`;
-  navigator.clipboard.writeText(shareUrl)
- .then(() => alert("Link copied!"))
- .catch(() => prompt("Copy this link:", shareUrl));
-}
-
-// ✅ PREVENT XSS
-function escapeHtml(text) {
-  let div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-// ✅ HANDLE DIRECT LINK ?post=123 AND LOAD POSTS
-document.addEventListener("DOMContentLoaded", () => {
-  displayPosts();
-
-  const params = new URLSearchParams(window.location.search);
-  const postId = params.get("post");
-
-  if (postId) {
-    const el = document.getElementById(`post-${postId}`);
-    if (el) {
-      setTimeout(() => {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-        el.style.outline = "3px solid #0066ff";
-        setTimeout(() => el.style.outline = "", 2500);
-      }, 200);
-    }
-  }
-});
+updateUI();
+displayPosts();
 
 </script>
 </body>
