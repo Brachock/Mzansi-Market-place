@@ -6,91 +6,47 @@
 <title>Mzansi Market Place</title>
 
 <style>
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  background: #f5f5f5;
-}
+body { font-family: Arial, sans-serif; background:#f5f5f5; margin:0; }
 
 header {
-  background: #0066ff;
-  color: white;
-  text-align: center;
-  padding: 20px;
+  background:#0066ff; color:white; text-align:center; padding:20px;
 }
 
 nav {
-  background: #333;
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  color: white;
-  padding: 10px;
-  flex-wrap: wrap;
+  background:#333; color:white;
+  display:flex; justify-content:center; gap:20px; padding:10px; flex-wrap:wrap;
 }
 
 .account-box {
-  background: #ddd;
-  padding: 10px 20px;
-  margin: 10px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: space-between;
-  align-items: center;
-  border-radius: 8px;
-}
-
-input, textarea {
-  width: 100%;
-  padding: 10px;
-  margin: 5px 0;
-  box-sizing: border-box;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-family: inherit;
-  font-size: 14px;
-}
-
-input:focus, textarea:focus {
-  outline: 2px solid #0066ff;
-  border-color: #0066ff;
+  background:#ddd; padding:10px 20px; margin:10px;
+  display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center;
+  border-radius:8px;
 }
 
 .form-box,.post {
-  background: white;
-  max-width: 500px;
-  margin: 15px auto;
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  transition: outline 0.3s;
+  background:white; max-width:500px; margin:15px auto; padding:15px;
+  border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+
+input, textarea {
+  width:100%; padding:10px; margin:5px 0;
+  box-sizing:border-box; border:1px solid #ddd; border-radius:5px;
+  font-family:inherit;
 }
 
 button {
-  padding: 10px 15px;
-  border: none;
-  border-radius: 6px;
-  color: white;
-  cursor: pointer;
-  font-weight: 600;
-  margin: 5px 5px 0 0;
-  transition: opacity 0.2s;
+  padding:10px 15px; border:none; border-radius:5px;
+  color:white; margin:3px; cursor:pointer; font-weight:600;
 }
 
-button:hover { opacity: 0.9; }
-
-.auth { background: #0066ff; }
-.logout { background: red; }
-.edit { background: orange; }
-.delete { background: red; }
-.sold { background: green; }
-.share { background: #25D366; }
-.copy { background: #6c757d; }
-
-.sold-label { color: red; font-weight: bold; }
-.empty { text-align: center; padding: 20px; color: #666; }
-small { color: #666; }
+.auth { background:#0066ff; }
+.logout { background:red; }
+.edit { background:orange; }
+.delete { background:red; }
+.sold { background:green; }
+.share { background:#25D366; }
+.empty { text-align:center; color:#666; padding:20px; }
+small { color:#666; }
 </style>
 </head>
 
@@ -131,16 +87,25 @@ small { color: #666; }
 
 <script>
 
+// ✅ LOGIN CHECK
+function checkLogin(){
+  if(!localStorage.getItem("currentUser")){
+    alert("Please login first 🔐");
+    return false;
+  }
+  return true;
+}
+
 // ✅ REGISTER
-function registerUser() {
-  let email = prompt("Enter email:");
-  let password = prompt("Enter password:");
-  if (!email ||!password) return;
+function registerUser(){
+  let email = prompt("Email:");
+  let pass = prompt("Password:");
+  if(!email ||!pass) return;
 
   let users = JSON.parse(localStorage.getItem("users")) || {};
-  if (users[email]) return alert("User already exists");
+  if(users[email]) return alert("User already exists");
 
-  users[email] = password;
+  users[email] = pass;
   localStorage.setItem("users", JSON.stringify(users));
   localStorage.setItem("currentUser", email);
   alert("Registered & logged in ✅");
@@ -148,207 +113,178 @@ function registerUser() {
 }
 
 // ✅ LOGIN
-function loginUser() {
-  let email = prompt("Enter email:");
-  let password = prompt("Enter password:");
-  if (!email ||!password) return;
+function loginUser(){
+  let email = prompt("Email:");
+  let pass = prompt("Password:");
+  if(!email ||!pass) return;
 
   let users = JSON.parse(localStorage.getItem("users")) || {};
-  if (users[email] === password) {
+  if(users[email] === pass){
     localStorage.setItem("currentUser", email);
     updateUI();
   } else {
-    alert("Wrong login ❌");
+    alert("Wrong details ❌");
   }
 }
 
 // ✅ LOGOUT
-function logoutUser() {
+function logoutUser(){
   localStorage.removeItem("currentUser");
   updateUI();
 }
 
-// ✅ UI UPDATE
-function updateUI() {
+// ✅ UPDATE UI
+function updateUI(){
   let user = localStorage.getItem("currentUser");
-  if (user) {
-    document.getElementById("authArea").style.display = "none";
-    document.getElementById("userArea").style.display = "block";
-    document.getElementById("postForm").style.display = "block";
-    document.getElementById("currentUser").innerText = user;
+
+  if(user){
+    document.getElementById("authArea").style.display="none";
+    document.getElementById("userArea").style.display="block";
+    document.getElementById("postForm").style.display="block";
+    document.getElementById("currentUser").innerText=user;
   } else {
-    document.getElementById("authArea").style.display = "block";
-    document.getElementById("userArea").style.display = "none";
-    document.getElementById("postForm").style.display = "none";
+    document.getElementById("authArea").style.display="block";
+    document.getElementById("userArea").style.display="none";
+    document.getElementById("postForm").style.display="none";
   }
   displayPosts();
 }
 
-// ✅ ADD POST - LOGIN REQUIRED
-function addPost() {
-  let user = localStorage.getItem("currentUser");
-  if (!user) return alert("You must log in to post");
+// ✅ ADD POST
+function addPost(){
+  if(!checkLogin()) return;
 
-  let title = document.getElementById("title").value.trim();
-  let phone = document.getElementById("phone").value.trim();
-  let description = document.getElementById("description").value.trim();
-  if (!title ||!phone ||!description) return alert("Fill all fields");
+  let title=document.getElementById("title").value.trim();
+  let phone=document.getElementById("phone").value.trim();
+  let desc=document.getElementById("description").value.trim();
+  if(!title ||!phone ||!desc) return alert("Fill all fields");
 
   let posts = JSON.parse(localStorage.getItem("posts")) || [];
+
   posts.unshift({
     id: Date.now(),
-    title, phone, description,
-    sold: false,
-    owner: user
+    title, phone, description: desc,
+    sold:false,
+    owner: localStorage.getItem("currentUser")
   });
 
   localStorage.setItem("posts", JSON.stringify(posts));
-  document.getElementById("title").value = '';
-  document.getElementById("phone").value = '';
-  document.getElementById("description").value = '';
+  document.getElementById("title").value = "";
+  document.getElementById("phone").value = "";
+  document.getElementById("description").value = "";
   displayPosts();
 }
 
-// ✅ DISPLAY POSTS
-function displayPosts() {
+// ✅ DISPLAY
+function displayPosts(){
   let posts = JSON.parse(localStorage.getItem("posts")) || [];
-  let currentUser = localStorage.getItem("currentUser");
+  let user = localStorage.getItem("currentUser");
   let container = document.getElementById("posts");
 
-  if (posts.length === 0) {
-    container.innerHTML = "<p class='empty'>No posts yet</p>";
+  if(posts.length===0){
+    container.innerHTML="<p class='empty'>No posts yet</p>";
     return;
   }
 
-  container.innerHTML = posts.map(post => {
-    let isOwner = currentUser === post.owner;
+  container.innerHTML = posts.map(p => `
+    <div class="post">
+      <h3>${escapeHtml(p.title)}</h3>
+      <p>${escapeHtml(p.description)}</p>
+      <p><strong>📞 ${escapeHtml(p.phone)}</strong></p>
+      <small>Posted by: ${escapeHtml(p.owner)}</small>
+      ${p.sold? "<p style='color:red;font-weight:bold'>SOLD ✅</p>" : ""}
 
-    return `
-      <div class="post" id="post-${post.id}">
-        <h3>${escapeHtml(post.title)}</h3>
-        <p>${escapeHtml(post.description)}</p>
-        <p><strong>📞 ${escapeHtml(post.phone)}</strong></p>
-        <small>Posted by: ${escapeHtml(post.owner || "Anonymous")}</small>
-        ${post.sold? "<p class='sold-label'>SOLD ✅</p>" : ""}
+      ${p.owner===user? `
+        <button class="edit" onclick="editPost(${p.id})">Edit</button>
+        <button class="delete" onclick="deletePost(${p.id})">Delete</button>
+        <button class="sold" onclick="markSold(${p.id})">Sold</button>
+      `:""}
 
-        ${isOwner? `
-          <button class="edit" onclick="editPost(${post.id})">Edit</button>
-          <button class="delete" onclick="deletePost(${post.id})">Delete</button>
-          <button class="sold" onclick="markSold(${post.id})">Sold</button>
-        ` : ""}
-
-        <button class="share" onclick="sharePost(${post.id})">Share</button>
-        <button class="copy" onclick="copyLink(${post.id})">Copy Link</button>
-      </div>
-    `;
-  }).join("");
+      <button class="share" onclick="sharePost(${p.id})">Share</button>
+    </div>
+  `).join("");
 }
 
-// ✅ DELETE - LOGIN & OWNER REQUIRED
-function deletePost(id) {
-  let user = localStorage.getItem("currentUser");
-  if (!user) return alert("You must log in to delete posts");
+// ✅ DELETE
+function deletePost(id){
+  if(!checkLogin()) return;
 
   let posts = JSON.parse(localStorage.getItem("posts")) || [];
+  let user = localStorage.getItem("currentUser");
   let post = posts.find(p => p.id === id);
 
-  if (!post) return alert("Post not found");
-  if (post.owner!== user) return alert("You can only delete your own posts");
+  if(!post) return alert("Post not found");
+  if(post.owner!==user) return alert("Not your post ❌");
 
-  if (confirm("Delete post?")) {
-    posts = posts.filter(p => p.id!== id);
+  if(confirm("Delete this post?")){
+    posts = posts.filter(p => p.id!==id);
     localStorage.setItem("posts", JSON.stringify(posts));
     displayPosts();
   }
 }
 
-// ✅ EDIT - LOGIN & OWNER REQUIRED
-function editPost(id) {
-  let user = localStorage.getItem("currentUser");
-  if (!user) return alert("You must log in to edit posts");
+// ✅ EDIT
+function editPost(id){
+  if(!checkLogin()) return;
 
   let posts = JSON.parse(localStorage.getItem("posts")) || [];
+  let user = localStorage.getItem("currentUser");
   let post = posts.find(p => p.id === id);
 
-  if (!post) return alert("Post not found");
-  if (post.owner!== user) return alert("You can only edit your own posts");
+  if(!post) return alert("Post not found");
+  if(post.owner!==user) return alert("Not your post ❌");
 
-  let title = prompt("Edit title:", post.title);
-  let description = prompt("Edit description:", post.description);
-  let phone = prompt("Edit phone:", post.phone);
-  if (title && description && phone) {
-    post.title = title.trim();
-    post.description = description.trim();
-    post.phone = phone.trim();
+  let t = prompt("Title", post.title);
+  let d = prompt("Desc", post.description);
+  let p = prompt("Phone", post.phone);
+  if(t && d && p){
+    post.title = t.trim();
+    post.description = d.trim();
+    post.phone = p.trim();
     localStorage.setItem("posts", JSON.stringify(posts));
     displayPosts();
   }
 }
 
-// ✅ MARK SOLD - LOGIN & OWNER REQUIRED
-function markSold(id) {
-  let user = localStorage.getItem("currentUser");
-  if (!user) return alert("You must log in to mark posts as sold");
+// ✅ SOLD
+function markSold(id){
+  if(!checkLogin()) return;
 
   let posts = JSON.parse(localStorage.getItem("posts")) || [];
+  let user = localStorage.getItem("currentUser");
   let post = posts.find(p => p.id === id);
 
-  if (!post) return alert("Post not found");
-  if (post.owner!== user) return alert("You can only mark your own posts as sold");
+  if(!post) return alert("Post not found");
+  if(post.owner!==user) return alert("Not your post ❌");
 
-  post.sold = true;
+  post.sold=true;
   localStorage.setItem("posts", JSON.stringify(posts));
   displayPosts();
 }
 
-// ✅ SHARE WITH DIRECT LINK
-function sharePost(id) {
+// ✅ SHARE
+function sharePost(id){
   let posts = JSON.parse(localStorage.getItem("posts")) || [];
-  let post = posts.find(p => p.id === id);
-  if (!post) return alert("Post not found");
+  let p = posts.find(p => p.id === id);
+  if(!p) return;
 
-  let shareUrl = `${window.location.origin}${window.location.pathname}?post=${id}`;
-  let msg = `📢 ${post.title}\n${post.description}\n📞 ${post.phone}\n\n${shareUrl}`;
-
-  if (navigator.share) {
-    navigator.share({ text: msg });
+  let msg = `📢 ${p.title}\n${p.description}\n📞 ${p.phone}\n\n${location.href}`;
+  if(navigator.share){
+    navigator.share({text:msg});
   } else {
-    window.open("https://wa.me/?text=" + encodeURIComponent(msg));
+    window.open("https://wa.me/?text="+encodeURIComponent(msg));
   }
 }
 
-// ✅ COPY LINK
-function copyLink(id) {
-  let url = `${window.location.origin}${window.location.pathname}?post=${id}`;
-  navigator.clipboard.writeText(url)
-  .then(() => alert("Link copied!"))
-  .catch(() => prompt("Copy this link:", url));
-}
-
 // ✅ XSS PROTECTION
-function escapeHtml(text) {
+function escapeHtml(text){
   let div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
 }
 
-// ✅ INIT
-document.addEventListener("DOMContentLoaded", () => {
-  updateUI();
-
-  const params = new URLSearchParams(window.location.search);
-  const postId = params.get("post");
-  if (postId) {
-    setTimeout(() => {
-      const el = document.getElementById(`post-${postId}`);
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-        el.style.outline = "3px solid #0066ff";
-        setTimeout(() => el.style.outline = "", 2500);
-      }
-    }, 200);
-  }
-});
+updateUI();
+displayPosts();
 
 </script>
 </body>
