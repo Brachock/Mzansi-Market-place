@@ -9,7 +9,7 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: #f0f0f0;
+  background: #f4f4f4;
 }
 
 header {
@@ -39,19 +39,11 @@ nav a {
 }
 
 .card {
-  background: #fff;
+  background: white;
   padding: 20px;
   margin: 15px 0;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.card-img {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-  border-radius: 10px;
-  margin-bottom: 10px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
 }
 
 input, textarea, button {
@@ -71,15 +63,33 @@ button {
   font-weight: bold;
 }
 
+button:hover {
+  background: #0b5ed7;
+}
+
 .whatsapp {
   background: #25D366;
   color: white;
   padding: 10px 15px;
-  border-radius: 6px;
   margin-top: 10px;
+  border-radius: 6px;
   display: inline-block;
   text-decoration: none;
   font-weight: bold;
+}
+
+.whatsapp:hover {
+  background: #1ebe57;
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.auth-buttons button {
+  width: auto;
+  padding: 8px 15px;
 }
 </style>
 </head>
@@ -100,9 +110,11 @@ button {
 <div class="container">
 
 <h2>Account</h2>
-<button onclick="register()">Register</button>
-<button onclick="login()">Login</button>
-<button onclick="logout()">Logout</button>
+<div class="auth-buttons">
+  <button onclick="register()">Register</button>
+  <button onclick="login()">Login</button>
+  <button onclick="logout()">Logout</button>
+</div>
 <div id="userStatus"></div>
 
 <h2>Post a Service</h2>
@@ -110,7 +122,6 @@ button {
 <input id="title" placeholder="Service Title">
 <input id="phone" placeholder="Phone Number e.g. 0831234567">
 <textarea id="desc" placeholder="Description" rows="4"></textarea>
-<input type="file" id="image" accept="image/*">
 <button onclick="postService()">Post</button>
 
 <h2>Available Services</h2>
@@ -118,11 +129,10 @@ button {
 
 </div>
 
-<!-- Firebase Scripts -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
 <script>
 const firebaseConfig = {
@@ -137,8 +147,8 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
-const storage = firebase.storage();
 
+// Show login status
 auth.onAuthStateChanged(user => {
   document.getElementById("userStatus").textContent = user ? `Logged in as: ${user.email}` : "Not logged in";
 });
@@ -148,6 +158,7 @@ function register() {
   let email = prompt("Enter email:");
   let password = prompt("Enter password:");
   if (!email || !password) return;
+
   auth.createUserWithEmailAndPassword(email, password)
     .then(() => alert("Account created ✅"))
     .catch(error => alert(error.message));
@@ -158,6 +169,7 @@ function login() {
   let email = prompt("Enter email:");
   let password = prompt("Enter password:");
   if (!email || !password) return;
+
   auth.signInWithEmailAndPassword(email, password)
     .then(() => alert("Logged in ✅"))
     .catch(error => alert(error.message));
@@ -168,46 +180,39 @@ function logout() {
   auth.signOut().then(() => alert("Logged out ✅"));
 }
 
-// POST WITH IMAGE UPLOAD
-async function postService() {
+// POST SERVICE
+function postService() {
   let user = auth.currentUser;
-  if (!user) return alert("Please login first ❌");
+  if (!user) {
+    alert("Please login first ❌");
+    return;
+  }
 
   let title = document.getElementById("title").value.trim();
   let phone = document.getElementById("phone").value.trim();
   let desc = document.getElementById("desc").value.trim();
-  let file = document.getElementById("image").files[0];
 
-  if (!title || !phone || !desc || !file) {
-    return alert("Fill all fields + image");
+  if (!title || !phone || !desc) {
+    alert("Fill all fields");
+    return;
   }
 
-  try {
-    let storageRef = storage.ref("images/" + Date.now() + "_" + file.name);
-    let snapshot = await storageRef.put(file);
-    let url = await snapshot.ref.getDownloadURL();
-
-    await db.collection("services").add({
-      title,
-      phone,
-      desc,
-      image: url,
-      user: user.email,
-      userId: user.uid,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-
+  db.collection("services").add({
+    title: title,
+    phone: phone,
+    desc: desc,
+    user: user.email,
+    userId: user.uid,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
     alert("Service posted ✅");
     document.getElementById("title").value = "";
     document.getElementById("phone").value = "";
     document.getElementById("desc").value = "";
-    document.getElementById("image").value = "";
-  } catch (err) {
-    alert("Error: " + err.message);
-  }
+  }).catch(err => alert(err.message));
 }
 
-// LOAD SERVICES WITH IMAGE
+// LOAD SERVICES
 function loadServices() {
   db.collection("services")
     .orderBy("createdAt", "desc")
@@ -221,16 +226,16 @@ function loadServices() {
 
       snapshot.forEach(doc => {
         let s = doc.data();
+        // Clean phone for WhatsApp: remove spaces, dashes, replace 0 with 27
         let cleanPhone = s.phone.replace(/\D/g, '').replace(/^0/, '27');
 
         html += `
           <div class="card">
-            ${s.image ? `<img src="${s.image}" class="card-img">` : ''}
             <h3>${s.title}</h3>
             <p>${s.desc}</p>
             <p><strong>Phone:</strong> ${s.phone}</p>
-            <p><small>Posted by: ${s.user}</small></p>
-            <a href="https://wa.me/${cleanPhone}" target="_blank" class="whatsapp">Chat on WhatsApp</a>
+            <p><strong>Posted by:</strong> ${s.user}</p>
+            <a href="https://wa.me/${cleanPhone}" target="_blank" class="whatsapp">Message on WhatsApp</a>
           </div>
         `;
       });
