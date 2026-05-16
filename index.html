@@ -7,247 +7,215 @@
 
 <style>
 body {
+  font-family: Arial;
+  background: #f5f5f5;
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f4f4f4;
+  padding: 0;
 }
 
 header {
-  background: #0d6efd;
+  background: #0066ff;
   color: white;
   text-align: center;
-  padding: 30px;
-}
-
-nav {
-  background: #333;
-  text-align: center;
-  padding: 12px;
-}
-
-nav a {
-  color: white;
-  margin: 10px;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-.container {
-  max-width: 800px;
-  margin: 20px auto;
   padding: 20px;
 }
 
-.card {
+.post,.form-box {
   background: white;
-  padding: 20px;
-  margin: 15px 0;
-  border-radius: 12px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  padding: 15px;
+  margin: 15px auto;
+  max-width: 500px;
+  border-radius: 10px;
+  transition: outline 0.3s;
 }
 
-input, textarea, button {
+input, textarea {
   width: 100%;
+  margin: 5px 0;
   padding: 10px;
-  margin: 8px 0;
-  border: 1px solid #ddd;
-  border-radius: 6px;
   box-sizing: border-box;
 }
 
 button {
-  background: #0d6efd;
-  color: white;
+  margin: 5px;
+  padding: 8px 12px;
   border: none;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-button:hover {
-  background: #0b5ed7;
-}
-
-.whatsapp {
-  background: #25D366;
   color: white;
-  padding: 10px 15px;
-  margin-top: 10px;
-  border-radius: 6px;
-  display: inline-block;
-  text-decoration: none;
-  font-weight: bold;
+  cursor: pointer;
+  border-radius: 5px;
 }
 
-.whatsapp:hover {
-  background: #1ebe57;
-}
+.edit { background: orange; }
+.delete { background: red; }
+.sold { background: green; }
+.share { background: #25D366; }
+.copy { background: #6c757d; }
 
-.auth-buttons {
-  display: flex;
-  gap: 10px;
-}
-
-.auth-buttons button {
-  width: auto;
-  padding: 8px 15px;
-}
 </style>
 </head>
 
 <body>
 
 <header>
-  <h1>Mzansi Market Place</h1>
+  <h1>Mzansi Market Place 🇿🇦</h1>
   <p>Advertise Your Services Across South Africa</p>
 </header>
 
-<nav>
-  <a href="#">Home</a>
-  <a href="#">Services</a>
-  <a href="#">Contact</a>
-</nav>
-
-<div class="container">
-
-<h2>Account</h2>
-<div class="auth-buttons">
-  <button onclick="register()">Register</button>
-  <button onclick="login()">Login</button>
-  <button onclick="logout()">Logout</button>
-</div>
-<div id="userStatus"></div>
-
-<h2>Post a Service</h2>
-
-<input id="title" placeholder="Service Title">
-<input id="phone" placeholder="Phone Number e.g. 0831234567">
-<textarea id="desc" placeholder="Description" rows="4"></textarea>
-<button onclick="postService()">Post</button>
-
-<h2>Available Services</h2>
-<div id="services">Loading...</div>
-
+<div class="form-box">
+  <h2>Post a Service</h2>
+  <input id="title" placeholder="Service Title">
+  <input id="phone" placeholder="Phone Number">
+  <textarea id="description" placeholder="Description"></textarea>
+  <button onclick="addPost()">Post</button>
 </div>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<div id="posts"></div>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyBgJZL1w5KWMTiDqrRziBM64wA8donunIs",
-  authDomain: "mzansimarket-ac296.firebaseapp.com",
-  projectId: "mzansimarket-ac296",
-  storageBucket: "mzansimarket-ac296.appspot.com",
-  messagingSenderId: "613890587901",
-  appId: "1:613890587901:web:8b7e278cc00a3610d11294"
-};
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const auth = firebase.auth();
-
-// Show login status
-auth.onAuthStateChanged(user => {
-  document.getElementById("userStatus").textContent = user ? `Logged in as: ${user.email}` : "Not logged in";
-});
-
-// REGISTER
-function register() {
-  let email = prompt("Enter email:");
-  let password = prompt("Enter password:");
-  if (!email || !password) return;
-
-  auth.createUserWithEmailAndPassword(email, password)
-    .then(() => alert("Account created ✅"))
-    .catch(error => alert(error.message));
-}
-
-// LOGIN
-function login() {
-  let email = prompt("Enter email:");
-  let password = prompt("Enter password:");
-  if (!email || !password) return;
-
-  auth.signInWithEmailAndPassword(email, password)
-    .then(() => alert("Logged in ✅"))
-    .catch(error => alert(error.message));
-}
-
-// LOGOUT
-function logout() {
-  auth.signOut().then(() => alert("Logged out ✅"));
-}
-
-// POST SERVICE
-function postService() {
-  let user = auth.currentUser;
-  if (!user) {
-    alert("Please login first ❌");
-    return;
-  }
-
+// ✅ ADD POST
+function addPost() {
   let title = document.getElementById("title").value.trim();
   let phone = document.getElementById("phone").value.trim();
-  let desc = document.getElementById("desc").value.trim();
+  let description = document.getElementById("description").value.trim();
 
-  if (!title || !phone || !desc) {
+  if (!title ||!phone ||!description) {
     alert("Fill all fields");
     return;
   }
 
-  db.collection("services").add({
-    title: title,
-    phone: phone,
-    desc: desc,
-    user: user.email,
-    userId: user.uid,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  }).then(() => {
-    alert("Service posted ✅");
-    document.getElementById("title").value = "";
-    document.getElementById("phone").value = "";
-    document.getElementById("desc").value = "";
-  }).catch(err => alert(err.message));
+  let posts = JSON.parse(localStorage.getItem("posts")) || [];
+
+  posts.unshift({ title, phone, description, sold: false });
+
+  localStorage.setItem("posts", JSON.stringify(posts));
+
+  document.getElementById("title").value = '';
+  document.getElementById("phone").value = '';
+  document.getElementById("description").value = '';
+
+  displayPosts();
 }
 
-// LOAD SERVICES
-function loadServices() {
-  db.collection("services")
-    .orderBy("createdAt", "desc")
-    .onSnapshot(snapshot => {
-      let html = "";
+// ✅ DISPLAY POSTS
+function displayPosts() {
+  let posts = JSON.parse(localStorage.getItem("posts")) || [];
+  let container = document.getElementById("posts");
 
-      if (snapshot.empty) {
-        document.getElementById("services").innerHTML = "<p>No services yet.</p>";
-        return;
-      }
+  if (posts.length === 0) {
+    container.innerHTML = "<p style='text-align:center;'>No posts yet</p>";
+    return;
+  }
 
-      snapshot.forEach(doc => {
-        let s = doc.data();
-        // Clean phone for WhatsApp: remove spaces, dashes, replace 0 with 27
-        let cleanPhone = s.phone.replace(/\D/g, '').replace(/^0/, '27');
+  container.innerHTML = posts.map((post, index) => `
+    <div class="post" id="post-${index}">
+      <h3>${post.title}</h3>
+      <p>${post.description}</p>
+      <p><strong>📞 ${post.phone}</strong></p>
 
-        html += `
-          <div class="card">
-            <h3>${s.title}</h3>
-            <p>${s.desc}</p>
-            <p><strong>Phone:</strong> ${s.phone}</p>
-            <p><strong>Posted by:</strong> ${s.user}</p>
-            <a href="https://wa.me/${cleanPhone}" target="_blank" class="whatsapp">Message on WhatsApp</a>
-          </div>
-        `;
-      });
+      ${post.sold? "<p style='color:red;font-weight:bold;'>SOLD ✅</p>" : ""}
 
-      document.getElementById("services").innerHTML = html;
-    }, err => {
-      console.error(err);
-      document.getElementById("services").innerHTML = "<p>Error loading services.</p>";
-    });
+      <button class="edit" onclick="editPost(${index})">Edit</button>
+      <button class="delete" onclick="deletePost(${index})">Delete</button>
+      <button class="sold" onclick="markSold(${index})">Mark Sold</button>
+      <button class="share" onclick="sharePost(${index})">Share</button>
+      <button class="copy" onclick="copyLink(${index})">Copy Link</button>
+    </div>
+  `).join("");
 }
 
-loadServices();
+// ✅ DELETE
+function deletePost(index) {
+  let posts = JSON.parse(localStorage.getItem("posts")) || [];
+  if (confirm("Delete this post?")) {
+    posts.splice(index, 1);
+    localStorage.setItem("posts", JSON.stringify(posts));
+    displayPosts();
+  }
+}
+
+// ✅ EDIT
+function editPost(index) {
+  let posts = JSON.parse(localStorage.getItem("posts")) || [];
+  let post = posts[index];
+
+  let title = prompt("Edit title:", post.title);
+  let description = prompt("Edit description:", post.description);
+  let phone = prompt("Edit phone:", post.phone);
+
+  if (title && description && phone) {
+    posts[index] = {...post, title, description, phone };
+    localStorage.setItem("posts", JSON.stringify(posts));
+    displayPosts();
+  }
+}
+
+// ✅ MARK SOLD
+function markSold(index) {
+  let posts = JSON.parse(localStorage.getItem("posts")) || [];
+  posts[index].sold = true;
+  localStorage.setItem("posts", JSON.stringify(posts));
+  displayPosts();
+}
+
+// ✅ SHARE WITH DIRECT LINK
+function sharePost(index) {
+  let posts = JSON.parse(localStorage.getItem("posts")) || [];
+  let post = posts[index];
+  if (!post) return alert("Post not found");
+
+  let shareUrl = `${window.location.origin}${window.location.pathname}?post=${index}`;
+
+  let message = `🔥 Check this out on Mzansi Market Place 🇿🇦
+
+📌 ${post.title}
+📖 ${post.description}
+
+📞 ${post.phone}
+
+View post 👇
+${shareUrl}`;
+
+  if (navigator.share) {
+    navigator.share({ title: post.title, text: message, url: shareUrl })
+   .catch(() => {});
+  } else if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    let url = "https://wa.me/?text=" + encodeURIComponent(message);
+    window.open(url, "_blank");
+  } else {
+    navigator.clipboard.writeText(message)
+   .then(() => alert("Post copied ✅"))
+   .catch(() => prompt("Copy this text:", message));
+  }
+}
+
+// ✅ COPY LINK ONLY
+function copyLink(index) {
+  let shareUrl = `${window.location.origin}${window.location.pathname}?post=${index}`;
+  navigator.clipboard.writeText(shareUrl)
+ .then(() => alert("Link copied!"))
+ .catch(() => prompt("Copy this link:", shareUrl));
+}
+
+// ✅ HANDLE DIRECT LINK?post=2
+document.addEventListener("DOMContentLoaded", () => {
+  displayPosts();
+
+  const params = new URLSearchParams(window.location.search);
+  const postIndex = params.get("post");
+
+  if (postIndex!== null) {
+    const el = document.getElementById(`post-${postIndex}`);
+    if (el) {
+      setTimeout(() => {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.style.outline = "3px solid #0066ff";
+        setTimeout(() => el.style.outline = "", 2500);
+      }, 100);
+    }
+  }
+});
+
 </script>
 
 </body>
