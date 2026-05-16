@@ -1,43 +1,80 @@
-function sharePost(index) {
-  let posts = JSON.parse(localStorage.getItem("posts")) || [];
-  let post = posts[index];
-
-  if (!post) {
-    alert("Post not found");
-    return;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mzansi Market Place</title>
+<style>
+  body {
+    font-family: system-ui, Arial, sans-serif;
+    background: #f5f5f5;
+    margin: 0;
+    padding: 20px;
   }
-
-  let message = `🔥 Check this out on Mzansi Market Place 🇿🇦
-
-📌 ${post.title}
-📖 ${post.description}
-
-📞 Contact: ${post.phone}
-
-Visit here 👇
-https://brachock.github.io/Mzansi-Market-place`;
-
-  // Mobile share - best experience
-  if (navigator.share) {
-    navigator.share({
-      title: post.title,
-      text: message,
-      url: window.location.href
-    }).catch(err => console.log("Share cancelled:", err));
+  header {
+    text-align: center;
+    margin-bottom: 20px;
   }
-
-  // WhatsApp fallback for mobile browsers without Web Share
-  else if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    let url = "https://wa.me/?text=" + encodeURIComponent(message);
-    window.open(url, "_blank");
+  h1 {
+    color: #ff6b00;
+    margin: 0;
   }
-
-  // Desktop fallback - copy to clipboard
-  else {
-    navigator.clipboard.writeText(message).then(() => {
-      alert("Post copied! Paste it anywhere ✅");
-    }).catch(() => {
-      prompt("Copy this text to share:", message);
-    });
+  .post {
+    background: #fff;
+    padding: 15px;
+    margin: 15px auto;
+    max-width: 600px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    transition: outline 0.3s;
   }
-}
+  .post h3 {
+    margin: 0 0 10px;
+    color: #333;
+  }
+  .post p {
+    margin: 0 0 8px;
+    color: #555;
+  }
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  button {
+    background: #ff6b00;
+    color: #fff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  button.secondary {
+    background: #6c757d;
+  }
+  button:hover {
+    opacity: 0.9;
+  }
+  .add-post {
+    max-width: 600px;
+    margin: 0 auto 30px;
+    background: #fff;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+  input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-family: inherit;
+  }
+</style>
+</head>
+<body>
+
+<header
