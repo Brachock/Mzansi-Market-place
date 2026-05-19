@@ -8,9 +8,10 @@
   body { font-family: Arial, sans-serif; margin:0; background:#f5f5f5; }
   header { background:#2e7d32; color:white; padding:15px; text-align:center; }
 .container { display:flex; max-width:1200px; margin:20px auto; gap:20px; padding:0 10px; }
-.sidebar { width:220px; background:white; padding:15px; border-radius:8px; height:fit-content; }
+.sidebar { width:260px; background:white; padding:15px; border-radius:8px; height:fit-content; }
 .main { flex:1; }
 .card { background:white; padding:15px; margin-bottom:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+.card img { width:100%; max-height:250px; object-fit:cover; border-radius:5px; margin-bottom:10px; }
   button { padding:8px 12px; border:none; border-radius:5px; cursor:pointer; background:#2e7d32; color:white; }
   button:hover { background:#256428; }
 .btn-danger { background:#d32f2f; }
@@ -19,10 +20,10 @@
   input, select, textarea { width:100%; padding:8px; margin:5px 0 10px; border:1px solid #ccc; border-radius:5px; box-sizing:border-box; }
 .auth-bar { text-align:right; padding:10px 20px; background:white; }
 .sponsored { font-size:12px; color:#ff9800; font-weight:bold; }
+.small { font-size:12px; color:#666; }
   @media(max-width:768px){.container{flex-direction:column;}.sidebar{width:auto;} }
 </style>
 
-<!-- Google Analytics - Replace G-XXXXXXXXXX -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -33,10 +34,7 @@
 </head>
 <body>
 
-<header>
-  <h2>Mzansi Market</h2>
-</header>
-
+<header><h2>Mzansi Market</h2></header>
 <div class="auth-bar" id="authBar"></div>
 
 <div class="container">
@@ -49,57 +47,39 @@
     <textarea id="desc" placeholder="Description"></textarea>
     <input id="price" type="number" placeholder="Price R">
     <input id="phone" placeholder="WhatsApp number 27XXXXXXXXX">
+    <input id="image" type="file" accept="image/*">
     <select id="category">
-      <option>Cars</option>
-      <option>Phones</option>
-      <option>Fashion</option>
-      <option>Jobs</option>
-      <option>Other</option>
+      <option>Cars</option><option>Phones</option><option>Fashion</option><option>Jobs</option><option>Other</option>
     </select>
     <button onclick="addPost()">Post</button>
+    <p class="small">Tip: Keep images under 500KB or posting will be slow</p>
   </div>
 
-  <div class="main">
-    <div id="posts"></div>
-  </div>
+  <div class="main"><div id="posts"></div></div>
 </div>
 
 <script>
 const STORAGE_KEY = "mzansiPosts";
 const USER_KEY = "mzansiUser";
+const PASS_KEY = "mzansiPass";
 let currentFilter = "All";
 
 let posts = [];
-try {
-  posts = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-} catch(e) {
-  console.error("Storage read error", e);
-  posts = [];
-}
+try { posts = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e){ posts = []; }
 
 const categories = ["All", "Cars", "Phones", "Fashion", "Jobs", "Other"];
 
-function savePosts() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
-  } catch(e) {
-    alert("Storage full. Delete some posts.");
-    console.error("Storage write error", e);
-  }
-}
-
-function getCurrentUser() {
-  return localStorage.getItem(USER_KEY) || "Guest";
-}
+function savePosts(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(posts)); }catch(e){ alert("Storage full. Delete some posts."); } }
+function getCurrentUser(){ return localStorage.getItem(USER_KEY) || "Guest"; }
 
 function renderAuthBar() {
   const user = getCurrentUser();
   const bar = document.getElementById("authBar");
-
   if (user === "Guest") {
     bar.innerHTML = `
-      <input id="loginName" placeholder="Enter name" style="width:150px;display:inline-block;">
-      <button onclick="login()">Login</button>
+      <input id="loginName" placeholder="Username" style="width:120px;display:inline-block;">
+      <input id="loginPass" type="password" placeholder="Password" style="width:120px;display:inline-block;">
+      <button onclick="login()">Login/Register</button>
     `;
   } else {
     bar.innerHTML = `Logged in as <b>${user}</b> <button class="btn-secondary" onclick="logout()">Logout</button>`;
@@ -108,8 +88,20 @@ function renderAuthBar() {
 
 function login() {
   const name = document.getElementById("loginName").value.trim();
-  if (!name) return alert("Enter a name");
-  localStorage.setItem(USER_KEY, name);
+  const pass = document.getElementById("loginPass").value.trim();
+  if (!name ||!pass) return alert("Enter username and password");
+
+  const savedPass = localStorage.getItem(PASS_KEY + "_" + name);
+  if (!savedPass) {
+    // Register new user
+    localStorage.setItem(PASS_KEY + "_" + name, pass);
+    localStorage.setItem(USER_KEY, name);
+    alert("Account created!");
+  } else if (savedPass!== pass) {
+    return alert("Wrong password");
+  } else {
+    localStorage.setItem(USER_KEY, name);
+  }
   renderAuthBar();
   displayPosts();
 }
@@ -120,9 +112,25 @@ function logout() {
   displayPosts();
 }
 
-function addPost() {
+function toBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+  });
+}
+
+async function addPost() {
   const user = getCurrentUser();
-  if (user === "Guest") return alert("Login first to post");
+  if (user === "Guest") return alert("Login first");
+
+  const file = document.getElementById("image").files[0];
+  let imageData = "";
+  if (file) {
+    if (file.size > 600000) return alert("Image too large. Pick under 500KB.");
+    imageData = await toBase64(file);
+  }
 
   const post = {
     id: Date.now(),
@@ -132,6 +140,7 @@ function addPost() {
     phone: document.getElementById("phone").value.trim(),
     category: document.getElementById("category").value,
     user: user,
+    image: imageData,
     sold: false,
     sponsored: false,
     created: new Date().toISOString()
@@ -142,13 +151,13 @@ function addPost() {
 
   posts.unshift(post);
   savePosts();
-
   gtag('event', 'post_created', { 'category': post.category });
 
   document.getElementById("title").value = "";
   document.getElementById("desc").value = "";
   document.getElementById("price").value = "";
   document.getElementById("phone").value = "";
+  document.getElementById("image").value = "";
   displayPosts();
 }
 
@@ -164,17 +173,14 @@ function displayPosts(filter = currentFilter) {
     return;
   }
 
-  let html = "";
-  filtered.forEach((p, index) => {
+  postsContainer.innerHTML = filtered.map(p => {
     const globalIndex = posts.indexOf(p);
+    if (p.sponsored) gtag('event', 'ad_impression', { 'ad_id': p.id, 'ad_name': p.title });
 
-    if (p.sponsored) {
-      gtag('event', 'ad_impression', { 'ad_id': p.id, 'ad_name': p.title });
-    }
-
-    html += `
+    return `
       <div class="card">
         ${p.sponsored? '<span class="sponsored">Sponsored</span>' : ''}
+        ${p.image? `<img src="${p.image}" alt="">` : ''}
         <h3>${p.title}</h3>
         <p>${p.desc}</p>
         ${p.price? `<p style="font-weight:bold;color:#2e7d32;">R${p.price}</p>` : ''}
@@ -189,29 +195,19 @@ function displayPosts(filter = currentFilter) {
         </div>
       </div>
     `;
-  });
-
-  postsContainer.innerHTML = html;
+  }).join('');
 }
 
 function contactSeller(index) {
   const p = posts[index];
   if (!p.phone) return alert("No number provided");
-
   gtag('event', 'contact_click', { 'post_title': p.title, 'category': p.category });
-
-  // Open WhatsApp. Remove + if user added it
   const phone = p.phone.replace(/\D/g, '');
-  const msg = encodeURIComponent(`Hi, I'm interested in your post: ${p.title}`);
+  const msg = encodeURIComponent(`Hi, I'm interested in: ${p.title}`);
   window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
 }
 
-function markSold(index) {
-  posts[index].sold =!posts[index].sold;
-  savePosts();
-  displayPosts();
-}
-
+function markSold(index) { posts[index].sold =!posts[index].sold; savePosts(); displayPosts(); }
 function deletePost(index) {
   if (!confirm("Delete this post?")) return;
   posts.splice(index, 1);
@@ -220,13 +216,11 @@ function deletePost(index) {
 }
 
 function renderCategories() {
-  const div = document.getElementById("categories");
-  div.innerHTML = categories.map(c =>
+  document.getElementById("categories").innerHTML = categories.map(c =>
     `<div><button style="width:100%;margin:3px 0;background:#eee;color:#333;" onclick="displayPosts('${c}')">${c}</button></div>`
   ).join('');
 }
 
-// Init
 renderAuthBar();
 renderCategories();
 displayPosts();
