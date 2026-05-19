@@ -7,17 +7,18 @@
 <style>
   body { font-family: Arial, sans-serif; margin:0; background:#f5f5f5; }
   header { background:#2e7d32; color:white; padding:15px; text-align:center; }
- .container { display:flex; max-width:1200px; margin:20px auto; gap:20px; padding:0 10px; }
- .sidebar { width:220px; background:white; padding:15px; border-radius:8px; height:fit-content; }
- .main { flex:1; }
- .card { background:white; padding:15px; margin-bottom:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+.container { display:flex; max-width:1200px; margin:20px auto; gap:20px; padding:0 10px; }
+.sidebar { width:220px; background:white; padding:15px; border-radius:8px; height:fit-content; }
+.main { flex:1; }
+.card { background:white; padding:15px; margin-bottom:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
   button { padding:8px 12px; border:none; border-radius:5px; cursor:pointer; background:#2e7d32; color:white; }
   button:hover { background:#256428; }
- .btn-danger { background:#d32f2f; }
- .btn-secondary { background:#666; }
-  input, select, textarea { width:100%; padding:8px; margin:5px 0 10px; border:1px solid #ccc; border-radius:5px; }
- .auth-bar { text-align:right; padding:10px 20px; background:white; }
- .sponsored { font-size:12px; color:#ff9800; font-weight:bold; }
+.btn-danger { background:#d32f2f; }
+.btn-secondary { background:#666; }
+.btn-whatsapp { background:#25d366; }
+  input, select, textarea { width:100%; padding:8px; margin:5px 0 10px; border:1px solid #ccc; border-radius:5px; box-sizing:border-box; }
+.auth-bar { text-align:right; padding:10px 20px; background:white; }
+.sponsored { font-size:12px; color:#ff9800; font-weight:bold; }
   @media(max-width:768px){.container{flex-direction:column;}.sidebar{width:auto;} }
 </style>
 
@@ -47,6 +48,7 @@
     <input id="title" placeholder="Title">
     <textarea id="desc" placeholder="Description"></textarea>
     <input id="price" type="number" placeholder="Price R">
+    <input id="phone" placeholder="WhatsApp number 27XXXXXXXXX">
     <select id="category">
       <option>Cars</option>
       <option>Phones</option>
@@ -65,9 +67,26 @@
 <script>
 const STORAGE_KEY = "mzansiPosts";
 const USER_KEY = "mzansiUser";
+let currentFilter = "All";
 
-let posts = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+let posts = [];
+try {
+  posts = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+} catch(e) {
+  console.error("Storage read error", e);
+  posts = [];
+}
+
 const categories = ["All", "Cars", "Phones", "Fashion", "Jobs", "Other"];
+
+function savePosts() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+  } catch(e) {
+    alert("Storage full. Delete some posts.");
+    console.error("Storage write error", e);
+  }
+}
 
 function getCurrentUser() {
   return localStorage.getItem(USER_KEY) || "Guest";
@@ -107,9 +126,10 @@ function addPost() {
 
   const post = {
     id: Date.now(),
-    title: document.getElementById("title").value,
-    desc: document.getElementById("desc").value,
+    title: document.getElementById("title").value.trim(),
+    desc: document.getElementById("desc").value.trim(),
     price: document.getElementById("price").value,
+    phone: document.getElementById("phone").value.trim(),
     category: document.getElementById("category").value,
     user: user,
     sold: false,
@@ -118,19 +138,22 @@ function addPost() {
   };
 
   if (!post.title) return alert("Title required");
+  if (!post.phone) return alert("Add WhatsApp number");
 
   posts.unshift(post);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+  savePosts();
 
   gtag('event', 'post_created', { 'category': post.category });
 
   document.getElementById("title").value = "";
   document.getElementById("desc").value = "";
   document.getElementById("price").value = "";
+  document.getElementById("phone").value = "";
   displayPosts();
 }
 
-function displayPosts(filter = "All") {
+function displayPosts(filter = currentFilter) {
+  currentFilter = filter;
   const postsContainer = document.getElementById("posts");
   const currentUser = getCurrentUser();
 
@@ -143,7 +166,8 @@ function displayPosts(filter = "All") {
 
   let html = "";
   filtered.forEach((p, index) => {
-    // Track impression for sponsored posts
+    const globalIndex = posts.indexOf(p);
+
     if (p.sponsored) {
       gtag('event', 'ad_impression', { 'ad_id': p.id, 'ad_name': p.title });
     }
@@ -157,10 +181,10 @@ function displayPosts(filter = "All") {
         <p style="font-size:12px;color:#666;">By ${p.user} • ${p.category}</p>
 
         <div style="margin-top:10px;display:flex;gap:5px;flex-wrap:wrap;">
-          <button onclick="contactSeller(${index})">Contact</button>
+          <button class="btn-whatsapp" onclick="contactSeller(${globalIndex})">WhatsApp</button>
           ${p.user === currentUser? `
-            <button onclick="markSold(${index})">${p.sold? '✅ Sold' : 'Mark Sold'}</button>
-            <button class="btn-danger" onclick="deletePost(${index})">Delete</button>
+            <button onclick="markSold(${globalIndex})">${p.sold? '✅ Sold' : 'Mark Sold'}</button>
+            <button class="btn-danger" onclick="deletePost(${globalIndex})">Delete</button>
           ` : ''}
         </div>
       </div>
@@ -172,20 +196,26 @@ function displayPosts(filter = "All") {
 
 function contactSeller(index) {
   const p = posts[index];
+  if (!p.phone) return alert("No number provided");
+
   gtag('event', 'contact_click', { 'post_title': p.title, 'category': p.category });
-  alert(`Contact ${p.user}. In production this would open WhatsApp.`);
+
+  // Open WhatsApp. Remove + if user added it
+  const phone = p.phone.replace(/\D/g, '');
+  const msg = encodeURIComponent(`Hi, I'm interested in your post: ${p.title}`);
+  window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
 }
 
 function markSold(index) {
   posts[index].sold =!posts[index].sold;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+  savePosts();
   displayPosts();
 }
 
 function deletePost(index) {
   if (!confirm("Delete this post?")) return;
   posts.splice(index, 1);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+  savePosts();
   displayPosts();
 }
 
