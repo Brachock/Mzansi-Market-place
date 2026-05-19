@@ -1,367 +1,205 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Mzansi Market Place ZA</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mzansi Market</title>
+<style>
+  body { font-family: Arial, sans-serif; margin:0; background:#f5f5f5; }
+  header { background:#2e7d32; color:white; padding:15px; text-align:center; }
+ .container { display:flex; max-width:1200px; margin:20px auto; gap:20px; padding:0 10px; }
+ .sidebar { width:220px; background:white; padding:15px; border-radius:8px; height:fit-content; }
+ .main { flex:1; }
+ .card { background:white; padding:15px; margin-bottom:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+  button { padding:8px 12px; border:none; border-radius:5px; cursor:pointer; background:#2e7d32; color:white; }
+  button:hover { background:#256428; }
+ .btn-danger { background:#d32f2f; }
+ .btn-secondary { background:#666; }
+  input, select, textarea { width:100%; padding:8px; margin:5px 0 10px; border:1px solid #ccc; border-radius:5px; }
+ .auth-bar { text-align:right; padding:10px 20px; background:white; }
+ .sponsored { font-size:12px; color:#ff9800; font-weight:bold; }
+  @media(max-width:768px){.container{flex-direction:column;}.sidebar{width:auto;} }
+</style>
 
-  <!-- ✅ GOOGLE ADS SCRIPT -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5097459177144739"
-     crossorigin="anonymous"></script>
-
-  <style>
-    body {
-      font-family: Arial;
-      margin:0;
-      background:#f5f5f5;
-    }
-
-    header {
-      background:#1565c0;
-      color:white;
-      padding:20px;
-      text-align:center;
-      width:100%;
-    }
-
-    .nav {
-      background:#333;
-      text-align:center;
-      padding:10px;
-    }
-
-    .nav button {
-      background:none;
-      color:white;
-      border:none;
-      margin:10px;
-      cursor:pointer;
-      font-size:16px;
-    }
-
-    .container {
-      width:100%;
-      padding:10px;
-      box-sizing:border-box;
-    }
-
-    .layout {
-      display:flex;
-      width:100%;
-    }
-
-    /* ✅ FIXED SIDEBAR */
-    .sidebar {
-      width:25%;
-      min-height:100vh;
-      background:#eee;
-      padding:10px;
-    }
-
-    /* ✅ GREEN CATEGORY */
-    .sidebar div {
-      background:#2e7d32;
-      color:white;
-      padding:10px;
-      margin:6px 0;
-      cursor:pointer;
-      border-radius:6px;
-      font-weight:bold;
-    }
-
-    .sidebar div:hover {
-      background:#1b5e20;
-    }
-
-    .active-category {
-      background:#00c853 !important;
-    }
-
-    /* ✅ FIXED CONTENT */
-    .content {
-      width:75%;
-      padding:10px;
-    }
-
-    .card {
-      background:white;
-      padding:15px;
-      margin:10px;
-      border-radius:10px;
-    }
-
-    input, select, textarea {
-      width:95%;
-      padding:10px;
-      margin:5px;
-    }
-
-    button {
-      padding:10px;
-      margin:5px;
-      border:none;
-      background:#1565c0;
-      color:white;
-      cursor:pointer;
-      border-radius:5px;
-    }
-
-    .post img {
-      width:100%;
-      border-radius:10px;
-    }
-
-    .sold {
-      color:red;
-      font-weight:bold;
-    }
-  </style>
+<!-- Google Analytics - Replace G-XXXXXXXXXX -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX');
+</script>
 </head>
-
 <body>
 
 <header>
-  <h1>Mzansi Market Place ZA</h1>
-  <p>Advertise Your Services Across South Africa</p>
+  <h2>Mzansi Market</h2>
 </header>
 
-<!-- ✅ TOP AD -->
-<div class="card">
-  <ins class="adsbygoogle"
-       style="display:block"
-       data-ad-client="ca-pub-5097459177144739"
-       data-ad-slot="YOUR_SLOT_ID"
-       data-ad-format="auto"
-       data-full-width-responsive="true"></ins>
-  <script>
-      (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-</div>
-
-<div class="nav">
-  <button onclick="showHome()">Home</button>
-  <button onclick="showAdd()">Post</button>
-</div>
+<div class="auth-bar" id="authBar"></div>
 
 <div class="container">
-
-<!-- ADD POST -->
-<div id="addScreen" style="display:none;" class="card">
-
-  <h3>Post Your Service</h3>
-
-  <p style="color:red;font-size:12px;">
-  ⚠️ No illegal or adult services allowed
-  </p>
-
-  <input type="text" id="title" placeholder="Title">
-  <input type="text" id="price" placeholder="Price">
-  <input type="text" id="phone" placeholder="Phone number">
-
-  <select id="category">
-    <option>Services</option>
-    <option>Personal Services</option>
-    <option>Jobs</option>
-    <option>Rentals</option>
-    <option>Transport</option>
-    <option>Catering</option>
-    <option>Hairdresser</option>
-    <option>Car Wash</option>
-    <option>Clothing</option>
-    <option>Furniture</option>
-  </select>
-
-  <input type="file" id="image">
-  <textarea id="desc" placeholder="Description"></textarea>
-
-  <button onclick="postItem()">Post</button>
-
-</div>
-
-<!-- HOME -->
-<div id="homeScreen" class="layout">
-
-  <!-- ✅ SIDEBAR -->
   <div class="sidebar">
-    <div onclick="filterCategory(event,'All')">All</div>
-    <div onclick="filterCategory(event,'Services')">Services</div>
-    <div onclick="filterCategory(event,'Personal Services')">Personal</div>
-    <div onclick="filterCategory(event,'Jobs')">Jobs</div>
-    <div onclick="filterCategory(event,'Rentals')">Rentals</div>
-    <div onclick="filterCategory(event,'Transport')">Transport</div>
-    <div onclick="filterCategory(event,'Catering')">Catering</div>
-    <div onclick="filterCategory(event,'Hairdresser')">Hair</div>
-    <div onclick="filterCategory(event,'Car Wash')">Car Wash</div>
-    <div onclick="filterCategory(event,'Clothing')">Clothing</div>
-    <div onclick="filterCategory(event,'Furniture')">Furniture</div>
+    <h4>Categories</h4>
+    <div id="categories"></div>
+
+    <h4 style="margin-top:20px;">Post Something</h4>
+    <input id="title" placeholder="Title">
+    <textarea id="desc" placeholder="Description"></textarea>
+    <input id="price" type="number" placeholder="Price R">
+    <select id="category">
+      <option>Cars</option>
+      <option>Phones</option>
+      <option>Fashion</option>
+      <option>Jobs</option>
+      <option>Other</option>
+    </select>
+    <button onclick="addPost()">Post</button>
   </div>
 
-  <!-- ✅ POSTS -->
-  <div class="content" id="posts"></div>
-
-</div>
-
+  <div class="main">
+    <div id="posts"></div>
+  </div>
 </div>
 
 <script>
+const STORAGE_KEY = "mzansiPosts";
+const USER_KEY = "mzansiUser";
 
-let allPosts = [];
-let editIndex = null;
+let posts = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+const categories = ["All", "Cars", "Phones", "Fashion", "Jobs", "Other"];
 
-// NAVIGATION
-function showAdd(){
-  addScreen.style.display="block";
-  homeScreen.style.display="none";
+function getCurrentUser() {
+  return localStorage.getItem(USER_KEY) || "Guest";
 }
 
-function showHome(){
-  addScreen.style.display="none";
-  homeScreen.style.display="flex";
+function renderAuthBar() {
+  const user = getCurrentUser();
+  const bar = document.getElementById("authBar");
+
+  if (user === "Guest") {
+    bar.innerHTML = `
+      <input id="loginName" placeholder="Enter name" style="width:150px;display:inline-block;">
+      <button onclick="login()">Login</button>
+    `;
+  } else {
+    bar.innerHTML = `Logged in as <b>${user}</b> <button class="btn-secondary" onclick="logout()">Logout</button>`;
+  }
 }
 
-// ADD / EDIT POST
-function postItem(){
+function login() {
+  const name = document.getElementById("loginName").value.trim();
+  if (!name) return alert("Enter a name");
+  localStorage.setItem(USER_KEY, name);
+  renderAuthBar();
+  displayPosts();
+}
 
-  let title = document.getElementById("title").value;
-  let price = document.getElementById("price").value;
-  let phone = document.getElementById("phone").value;
-  let category = document.getElementById("category").value;
-  let desc = document.getElementById("desc").value;
-  let file = document.getElementById("image").files[0];
+function logout() {
+  localStorage.removeItem(USER_KEY);
+  renderAuthBar();
+  displayPosts();
+}
 
-  if(!title || !phone){
-    alert("Fill required fields!");
+function addPost() {
+  const user = getCurrentUser();
+  if (user === "Guest") return alert("Login first to post");
+
+  const post = {
+    id: Date.now(),
+    title: document.getElementById("title").value,
+    desc: document.getElementById("desc").value,
+    price: document.getElementById("price").value,
+    category: document.getElementById("category").value,
+    user: user,
+    sold: false,
+    sponsored: false,
+    created: new Date().toISOString()
+  };
+
+  if (!post.title) return alert("Title required");
+
+  posts.unshift(post);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+
+  gtag('event', 'post_created', { 'category': post.category });
+
+  document.getElementById("title").value = "";
+  document.getElementById("desc").value = "";
+  document.getElementById("price").value = "";
+  displayPosts();
+}
+
+function displayPosts(filter = "All") {
+  const postsContainer = document.getElementById("posts");
+  const currentUser = getCurrentUser();
+
+  let filtered = filter === "All"? posts : posts.filter(p => p.category === filter);
+
+  if (filtered.length === 0) {
+    postsContainer.innerHTML = `<div class="card">No posts yet in ${filter}</div>`;
     return;
   }
 
-  let reader = new FileReader();
-
-  reader.onload = function(e){
-
-    let post = {
-      title,
-      price,
-      phone,
-      category,
-      desc,
-      image: e.target.result,
-      sold:false
-    };
-
-    if(editIndex !== null){
-      allPosts[editIndex] = post;
-      editIndex = null;
-    } else {
-      allPosts.push(post);
-    }
-
-    displayPosts(allPosts);
-    showHome();
-  };
-
-  if(file){
-    reader.readAsDataURL(file);
-  } else {
-    reader.onload({target:{result:""}});
-  }
-}
-
-// DISPLAY POSTS
-function displayPosts(list){
-
   let html = "";
-
-  list.forEach((p,i)=>{
-
-    // ✅ AD EVERY 3 POSTS
-    if(i % 3 === 0){
-      html += `
-        <div class="card">
-          <ins class="adsbygoogle"
-               style="display:block"
-               data-ad-client="ca-pub-5097459177144739"
-               data-ad-slot="YOUR_SLOT_ID"
-               data-ad-format="auto"></ins>
-          <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-        </div>
-      `;
+  filtered.forEach((p, index) => {
+    // Track impression for sponsored posts
+    if (p.sponsored) {
+      gtag('event', 'ad_impression', { 'ad_id': p.id, 'ad_name': p.title });
     }
 
     html += `
-      <div class="card post">
-
-        ${p.image ? `<img src="${p.image}">` : ""}
-
+      <div class="card">
+        ${p.sponsored? '<span class="sponsored">Sponsored</span>' : ''}
         <h3>${p.title}</h3>
         <p>${p.desc}</p>
-        <p><b>${p.price ? "R"+p.price : ""}</b></p>
+        ${p.price? `<p style="font-weight:bold;color:#2e7d32;">R${p.price}</p>` : ''}
+        <p style="font-size:12px;color:#666;">By ${p.user} • ${p.category}</p>
 
-        <p>📂 ${p.category}</p>
-
-        ${p.sold ? "<p class='sold'>✅ SOLD</p>" : ""}
-
-        <a href="https://wa.me/27${p.phone.replace(/^0/, '')}" target="_blank">
-          <button>Contact</button>
-        </a>
-
-        <br>
-
-        <button onclick="markSold(${i})">Sold</button>
-        <button onclick="editPost(${i})">Edit</button>
-        <button onclick="deletePost(${i})">Delete</button>
-
+        <div style="margin-top:10px;display:flex;gap:5px;flex-wrap:wrap;">
+          <button onclick="contactSeller(${index})">Contact</button>
+          ${p.user === currentUser? `
+            <button onclick="markSold(${index})">${p.sold? '✅ Sold' : 'Mark Sold'}</button>
+            <button class="btn-danger" onclick="deletePost(${index})">Delete</button>
+          ` : ''}
+        </div>
       </div>
     `;
   });
 
-  posts.innerHTML = html;
+  postsContainer.innerHTML = html;
 }
 
-// FILTER CATEGORY
-function filterCategory(e,cat){
-
-  document.querySelectorAll('.sidebar div').forEach(el=>{
-    el.classList.remove('active-category');
-  });
-
-  e.target.classList.add('active-category');
-
-  if(cat==="All"){
-    displayPosts(allPosts);
-  } else {
-    displayPosts(allPosts.filter(p=>p.category===cat));
-  }
+function contactSeller(index) {
+  const p = posts[index];
+  gtag('event', 'contact_click', { 'post_title': p.title, 'category': p.category });
+  alert(`Contact ${p.user}. In production this would open WhatsApp.`);
 }
 
-// DELETE
-function deletePost(index){
-  if(confirm("Delete this post?")){
-    allPosts.splice(index,1);
-    displayPosts(allPosts);
-  }
+function markSold(index) {
+  posts[index].sold =!posts[index].sold;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+  displayPosts();
 }
 
-// MARK SOLD
-function markSold(index){
-  allPosts[index].sold = true;
-  displayPosts(allPosts);
+function deletePost(index) {
+  if (!confirm("Delete this post?")) return;
+  posts.splice(index, 1);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+  displayPosts();
 }
 
-// EDIT
-function editPost(index){
-
-  let p = allPosts[index];
-
-  title.value = p.title;
-  price.value = p.price;
-  phone.value = p.phone;
-  category.value = p.category;
-  desc.value = p.desc;
-
-  editIndex = index;
-
-  showAdd();
+function renderCategories() {
+  const div = document.getElementById("categories");
+  div.innerHTML = categories.map(c =>
+    `<div><button style="width:100%;margin:3px 0;background:#eee;color:#333;" onclick="displayPosts('${c}')">${c}</button></div>`
+  ).join('');
 }
 
+// Init
+renderAuthBar();
+renderCategories();
+displayPosts();
 </script>
-
 </body>
 </html>
