@@ -2,31 +2,93 @@
 <html>
 <head>
   <title>Mzansi Market Place ZA</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- GOOGLE ADS -->
+  <!-- ✅ GOOGLE ADS SCRIPT (FIXED) -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5097459177144739"
   crossorigin="anonymous"></script>
 
   <style>
     body { font-family: Arial; margin:0; background:#f5f5f5; }
-    header { background:#1565c0; color:white; padding:20px; text-align:center; }
-  .nav { background:#333; text-align:center; padding:10px; }
-  .nav button { background:none; color:white; border:none; margin:10px; cursor:pointer; font-size:16px; }
-  .layout { display:flex; flex-wrap:wrap; }
-  .sidebar { width:30%; background:#eee; padding:10px; box-sizing:border-box; }
-  .sidebar div { background:#2e7d32; color:white; padding:10px; margin:6px 0; cursor:pointer; border-radius:6px; font-weight:bold; }
-  .sidebar div:hover { background:#1b5e20; }
-  .active-category { background:#00c853!important; }
-  .content { width:70%; box-sizing:border-box; }
-  .card { background:white; padding:15px; margin:10px; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
-    input, select, textarea { width:90%; padding:10px; margin:5px; border:1px solid #ddd; border-radius:5px; }
-    button { padding:10px 15px; margin:5px; border:none; background:#1565c0; color:white; cursor:pointer; border-radius:5px; }
-    button:hover { opacity:0.9; }
-  .post img { width:100%; border-radius:10px; }
-  .sold { color:red; font-weight:bold; }
-  .whatsapp-btn { background:#25D366; }
-    @media(max-width:768px){.sidebar,.content{width:100%;} }
+
+    header {
+      background:#1565c0;
+      color:white;
+      padding:20px;
+      text-align:center;
+    }
+
+    .nav {
+      background:#333;
+      text-align:center;
+      padding:10px;
+    }
+
+    .nav button {
+      background:none;
+      color:white;
+      border:none;
+      margin:10px;
+      cursor:pointer;
+      font-size:16px;
+    }
+
+    .layout { display:flex; }
+
+    .sidebar {
+      width:30%;
+      background:#eee;
+      padding:10px;
+    }
+
+    /* ✅ GREEN CATEGORIES */
+    .sidebar div {
+      background:#2e7d32;
+      color:white;
+      padding:10px;
+      margin:6px 0;
+      cursor:pointer;
+      border-radius:6px;
+      font-weight:bold;
+    }
+
+    .sidebar div:hover {
+      background:#1b5e20;
+    }
+
+    .active-category {
+      background:#00c853 !important;
+    }
+
+    .content { width:70%; }
+
+    .card {
+      background:white;
+      padding:15px;
+      margin:10px;
+      border-radius:10px;
+    }
+
+    input, select, textarea {
+      width:90%;
+      padding:10px;
+      margin:5px;
+    }
+
+    button {
+      padding:10px;
+      margin:5px;
+      border:none;
+      background:#1565c0;
+      color:white;
+      cursor:pointer;
+    }
+
+    .post img {
+      width:100%;
+      border-radius:10px;
+    }
+
+    .sold { color:red; font-weight:bold; }
   </style>
 </head>
 
@@ -37,11 +99,17 @@
   <p>Advertise Your Services Across South Africa</p>
 </header>
 
-<!-- TOP AD -->
+<!-- ✅ TOP AD -->
 <div class="card">
-  <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-5097459177144739"
-       data-ad-slot="YOUR_SLOT_ID" data-ad-format="auto" data-full-width-responsive="true"></ins>
-  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-5097459177144739"
+       data-ad-slot="YOUR_SLOT_ID"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+  <script>
+       (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
 </div>
 
 <div class="nav">
@@ -53,30 +121,45 @@
 
 <!-- POST FORM -->
 <div id="addScreen" style="display:none;" class="card">
-  <h3>Post Service</h3>
-  <p style="color:red;font-size:12px;">⚠️ No illegal or adult services allowed</p>
 
-  <input type="text" id="title" placeholder="Title" required><br>
+  <h3>Post Service</h3>
+
+  <p style="color:red;font-size:12px;">
+  ⚠️ No illegal or adult services allowed
+  </p>
+
+  <input type="text" id="title" placeholder="Title"><br>
   <input type="text" id="price" placeholder="Price"><br>
-  <input type="tel" id="phone" placeholder="Phone e.g. 0821234567" required><br>
+  <input type="text" id="phone" placeholder="Phone number"><br>
 
   <select id="category">
-    <option>Services</option><option>Personal Services</option><option>Jobs</option>
-    <option>Rentals</option><option>Transport</option><option>Catering</option>
-    <option>Hairdresser</option><option>Car Wash</option><option>Clothing</option><option>Furniture</option>
+    <option>Services</option>
+    <option>Personal Services</option>
+    <option>Jobs</option>
+    <option>Rentals</option>
+    <option>Transport</option>
+    <option>Catering</option>
+    <option>Hairdresser</option>
+    <option>Car Wash</option>
+    <option>Clothing</option>
+    <option>Furniture</option>
   </select>
 
-  <input type="file" id="image" accept="image/*"><br>
+  <input type="file" id="image"><br>
+
   <textarea id="desc" placeholder="Description"></textarea><br>
 
   <button onclick="postItem()">Post</button>
-  <button onclick="cancelEdit()" style="background:#666;">Cancel</button>
+
 </div>
 
 <!-- HOME -->
 <div id="homeScreen" class="layout">
-  <div class="sidebar" id="sidebar">
-    <div class="active-category" onclick="filterCategory(event,'All')">All</div>
+
+  <!-- ✅ SIDEBAR -->
+  <div class="sidebar">
+
+    <div onclick="filterCategory(event,'All')">All</div>
     <div onclick="filterCategory(event,'Services')">Services</div>
     <div onclick="filterCategory(event,'Personal Services')">Personal</div>
     <div onclick="filterCategory(event,'Jobs')">Jobs</div>
@@ -87,15 +170,19 @@
     <div onclick="filterCategory(event,'Car Wash')">Car Wash</div>
     <div onclick="filterCategory(event,'Clothing')">Clothing</div>
     <div onclick="filterCategory(event,'Furniture')">Furniture</div>
+
   </div>
 
+  <!-- POSTS -->
   <div class="content" id="posts"></div>
+
 </div>
 
 </div>
 
 <script>
-let allPosts = JSON.parse(localStorage.getItem('mzansiPosts')) || [];
+
+let allPosts = [];
 let editIndex = null;
 
 // NAV
@@ -107,130 +194,112 @@ function showAdd(){
 function showHome(){
   addScreen.style.display="none";
   homeScreen.style.display="flex";
-  displayPosts(allPosts);
-}
-
-function cancelEdit(){
-  editIndex = null;
-  clearForm();
-  showHome();
-}
-
-function clearForm(){
-  title.value = price.value = phone.value = desc.value = image.value = "";
 }
 
 // POST / EDIT
 function postItem(){
-  let title = document.getElementById("title").value.trim();
-  let price = document.getElementById("price").value.trim();
-  let phone = document.getElementById("phone").value.trim();
+
+  let title = document.getElementById("title").value;
+  let price = document.getElementById("price").value;
+  let phone = document.getElementById("phone").value;
   let category = document.getElementById("category").value;
-  let desc = document.getElementById("desc").value.trim();
+  let desc = document.getElementById("desc").value;
   let file = document.getElementById("image").files[0];
 
-  if(!title ||!phone){
-    alert("Fill title and phone number!");
+  if(!title || !phone){
+    alert("Fill required fields!");
     return;
   }
 
-  let savePost = (imageData) => {
+  let reader = new FileReader();
+
+  reader.onload = function(e){
+
     let post = {
-      id: editIndex!== null? allPosts[editIndex].id : Date.now(),
-      title, price, phone, category, desc,
-      image: imageData || (editIndex!== null? allPosts[editIndex].image : ""),
-      sold: editIndex!== null? allPosts[editIndex].sold : false,
-      date: new Date().toLocaleDateString()
+      title,
+      price,
+      phone,
+      category,
+      desc,
+      image: e.target.result,
+      sold:false
     };
 
-    if(editIndex!== null){
+    if(editIndex !== null){
       allPosts[editIndex] = post;
       editIndex = null;
     } else {
-      allPosts.unshift(post);
+      allPosts.push(post);
     }
 
-    localStorage.setItem('mzansiPosts', JSON.stringify(allPosts));
     displayPosts(allPosts);
-    clearForm();
     showHome();
   };
 
   if(file){
-    let reader = new FileReader();
-    reader.onload = e => savePost(e.target.result);
     reader.readAsDataURL(file);
   } else {
-    savePost();
+    reader.onload({target:{result:""}});
   }
 }
 
-// DISPLAY POSTS + ADS
+// DISPLAY
 function displayPosts(list){
-  if(list.length === 0){
-    posts.innerHTML = "<div class='card'><p>No posts yet. Be the first!</p></div>";
-    return;
-  }
 
   let html = "";
-  list.forEach((p,i)=>{
-    // Insert ad every 3 posts
-    if(i > 0 && i % 3 === 0){
-      html += `<div class="card ad-container" data-ad-index="${i}"></div>`;
-    }
 
-    let phoneClean = p.phone.replace(/\s+/g, '').replace(/^0/, '27');
+  list.forEach((p,i)=>{
+
+    if(i % 3 === 0){
+      html += `
+        <div class="card">
+          <ins class="adsbygoogle"
+               style="display:block"
+               data-ad-client="ca-pub-5097459177144739"
+               data-ad-slot="YOUR_SLOT_ID"
+               data-ad-format="auto"></ins>
+          <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+      `;
+    }
 
     html += `
       <div class="card post">
-        ${p.image? `<img src="${p.image}" alt="${p.title}">` : ""}
+
+        ${p.image ? `<img src="${p.image}">` : ""}
+
         <h3>${p.title}</h3>
         <p>${p.desc}</p>
-        <p><b>${p.price? "R"+p.price : "Price on request"}</b></p>
-        <p>📂 ${p.category} | 📅 ${p.date}</p>
-        ${p.sold? "<p class='sold'>✅ SOLD</p>" : ""}
-        <a href="https://wa.me/${phoneClean}" target="_blank">
-          <button class="whatsapp-btn">💬 WhatsApp</button>
+        <p><b>${p.price ? "R"+p.price : ""}</b></p>
+
+        <p>📂 ${p.category}</p>
+
+        ${p.sold ? "<p class='sold'>✅ SOLD</p>" : ""}
+
+        <a href="https://wa.me/27${p.phone.replace(/^0/, '')}" target="_blank">
+          <button>Contact</button>
         </a>
+
         <br>
+
         <button onclick="markSold(${i})">Sold</button>
         <button onclick="editPost(${i})">Edit</button>
-        <button onclick="deletePost(${i})" style="background:#d32f2f;">Delete</button>
+        <button onclick="deletePost(${i})">Delete</button>
+
       </div>
     `;
   });
 
   posts.innerHTML = html;
-
-  // Load ads after DOM is updated
-  loadAds();
 }
 
-// Load ads in containers
-function loadAds(){
-  document.querySelectorAll('.ad-container').forEach(container => {
-    container.innerHTML = `
-      <ins class="adsbygoogle"
-           style="display:block"
-           data-ad-client="ca-pub-5097459177144739"
-           data-ad-slot="YOUR_SLOT_ID"
-           data-ad-format="auto"></ins>
-    `;
-  });
-
-  // Push ads after they're in DOM
-  try {
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  } catch(e) {
-    console.log("Ad error:", e);
-  }
-}
-
-// FILTER
+// CATEGORY FILTER
 function filterCategory(e,cat){
+
   document.querySelectorAll('.sidebar div').forEach(el=>{
     el.classList.remove('active-category');
   });
+
   e.target.classList.add('active-category');
 
   if(cat==="All"){
@@ -242,9 +311,8 @@ function filterCategory(e,cat){
 
 // DELETE
 function deletePost(index){
-  if(confirm("Delete this post?")){
+  if(confirm("Delete post?")){
     allPosts.splice(index,1);
-    localStorage.setItem('mzansiPosts', JSON.stringify(allPosts));
     displayPosts(allPosts);
   }
 }
@@ -252,24 +320,25 @@ function deletePost(index){
 // SOLD
 function markSold(index){
   allPosts[index].sold = true;
-  localStorage.setItem('mzansiPosts', JSON.stringify(allPosts));
   displayPosts(allPosts);
 }
 
 // EDIT
 function editPost(index){
+
   let p = allPosts[index];
+
   title.value = p.title;
   price.value = p.price;
   phone.value = p.phone;
   category.value = p.category;
   desc.value = p.desc;
+
   editIndex = index;
+
   showAdd();
 }
 
-// Load on start
-window.onload = () => displayPosts(allPosts);
 </script>
 
 </body>
