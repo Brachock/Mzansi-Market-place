@@ -16,14 +16,9 @@ body{font-family:Arial;margin:0;background:#f2f2f2;padding-bottom:80px}
 input,select,textarea{width:100%;padding:8px;margin:4px 0;border-radius:5px;border:1px solid #ccc;box-sizing:border-box;font-size:14px}
 button{width:100%;padding:10px;background:#1e5aa8;color:white;border:none;margin-top:5px;border-radius:5px;font-weight:bold;cursor:pointer}
 button:disabled{background:#999}
-.cat-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}
-.cat-btn{padding:8px 4px;background:white;border:2px solid #1e5aa8;color:#1e5aa8;border-radius:6px;font-size:12px;cursor:pointer;font-weight:bold}
-.cat-btn.active{background:#1e5aa8;color:white}
 .card{background:white;padding:12px;margin:10px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
 .card img{width:100%;height:200px;object-fit:cover;border-radius:6px;margin-bottom:8px}
 .wa-btn{display:inline-block;margin-top:6px;background:#25D366;color:white;padding:8px 12px;border-radius:5px;text-decoration:none;font-weight:bold;font-size:13px}
-.edit-btn{background:#ffc107;color:#000}
-.delete-btn{background:#dc3545}
 .section-title{font-size:16px;font-weight:bold;margin:8px 0;color:#1e5aa8}
 small{font-size:11px;color:#666;display:block;margin-bottom:4px}
 </style>
@@ -31,19 +26,6 @@ small{font-size:11px;color:#666;display:block;margin-bottom:4px}
 <body>
 
 <div class="navbar">🇿🇦 Mzansi Market</div>
-
-<!-- CATEGORIES -->
-<div class="form-box">
-  <div class="section-title">Browse Categories</div>
-  <input id="search" placeholder="Search product..." oninput="loadAds()">
-  <div class="cat-btns">
-    <button class="cat-btn active" onclick="filterCat('')">All</button>
-    <button class="cat-btn" onclick="filterCat('Dairy')">🥛 Dairy</button>
-    <button class="cat-btn" onclick="filterCat('Cars')">🚗 Cars</button>
-    <button class="cat-btn" onclick="filterCat('Electronics')">📱 Electronics</button>
-    <button class="cat-btn" onclick="filterCat('Other')">📦 Other</button>
-  </div>
-</div>
 
 <!-- ADS -->
 <div id="ads">Loading...</div>
@@ -55,18 +37,17 @@ small{font-size:11px;color:#666;display:block;margin-bottom:4px}
   <input id="price" placeholder="Price" type="number" required>
   <textarea id="description" placeholder="Description"></textarea>
   <input id="phone" placeholder="27826405603" required>
-  <small>Format: 27 + 9 digits. No 0. Ex: 27826405603</small>
+  <small>⚠️ IMPORTANT: Start with 27. Example: 27826405603. NOT 082...</small>
   <input id="pin" placeholder="4 digit PIN" type="password" maxlength="6" required>
   <select id="category">
     <option>Dairy</option><option>Cars</option><option>Electronics</option><option>Other</option>
   </select>
   <input type="file" id="image" accept="image/*">
-  <button id="postBtn" onclick="postAd()">Post Ad - TEST</button>
-  <p id="debug" style="color:red;font-size:12px"></p>
+  <button id="postBtn" onclick="postAd()">Post Ad</button>
 </div>
 
 <script>
-// ⚠️ REPLACE THESE 4 LINES WITH YOUR REAL FIREBASE CONFIG
+// ⚠️⚠️ REPLACE THESE 4 LINES WITH YOUR REAL FIREBASE CONFIG FROM CONSOLE ⚠️⚠️
 const firebaseConfig = {
   apiKey: "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
   authDomain: "your-project.firebaseapp.com",
@@ -78,56 +59,42 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const storage = firebase.storage();
 
-let activeCategory = "";
-
-function debug(msg){
-  document.getElementById("debug").innerText = msg;
-  console.log(msg);
-  alert(msg); // This will show you the exact error
-}
-
-function fixPhone(num){
-  let phone = num.replace(/\+|\s|0/g, '');
-  if(!phone.startsWith('27')) phone = '27' + phone;
-  return phone;
-}
-
-function filterCat(cat){
-  activeCategory = cat;
-  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
-  event.target.classList.add('active');
-  loadAds();
-}
-
 async function postAd(){
   const btn = document.getElementById("postBtn");
   btn.disabled = true;
-  btn.innerText = "Testing...";
-  debug("Starting post...");
+  btn.innerText = "Posting...";
 
   try{
-    let phone = fixPhone(document.getElementById("phone").value);
+    // Get phone and fix it properly
+    let rawPhone = document.getElementById("phone").value.trim();
+    let phone = rawPhone.replace(/\s|\+|\-/g, '');
+
+    // If starts with 0, remove it and add 27
+    if(phone.startsWith('0')){
+      phone = '27' + phone.substring(1);
+    }
+    // If doesn't start with 27, add it
+    if(!phone.startsWith('27')){
+      phone = '27' + phone;
+    }
+
     let pin = document.getElementById("pin").value.trim();
 
-    if(!phone.startsWith('27') || phone.length!== 11) throw "Phone must be 11 digits starting with 27";
-    if(pin.length < 4) throw "PIN must be 4+ digits";
-
-    debug("Phone OK: " + phone);
+    if(phone.length!== 11) throw new Error("Phone must be exactly 11 digits. You entered: " + phone + " which is " + phone.length + " digits");
+    if(!phone.startsWith('27')) throw new Error("Phone must start with 27. You entered: " + phone);
+    if(pin.length < 4) throw new Error("PIN must be 4+ digits");
 
     let imageUrl = "";
     const file = document.getElementById("image").files[0];
-
-    // Test without image first
     if(file){
-      debug("Uploading image...");
-      const ref = storage.ref('test/' + Date.now() + "_" + file.name);
+      btn.innerText = "Uploading image...";
+      const ref = storage.ref('ads/' + Date.now() + "_" + file.name);
       const snap = await ref.put(file);
       imageUrl = await snap.ref.getDownloadURL();
-      debug("Image uploaded: " + imageUrl.substring(0,30) + "...");
     }
 
-    debug("Saving to Firestore...");
-    const docRef = await db.collection("ads").add({
+    btn.innerText = "Saving...";
+    await db.collection("ads").add({
       title: document.getElementById("title").value.trim(),
       price: document.getElementById("price").value.trim(),
       description: document.getElementById("description").value.trim(),
@@ -138,44 +105,45 @@ async function postAd(){
       createdAt: new Date()
     });
 
-    debug("SUCCESS! Ad ID: " + docRef.id);
-    alert("✅ POSTED SUCCESSFULLY!\n\nAd ID: " + docRef.id);
-
+    alert("✅ POSTED SUCCESSFULLY!");
     document.querySelectorAll('#title,#price,#description,#phone,#pin').forEach(i=>i.value="");
     document.getElementById("image").value = "";
+    loadAds();
 
   }catch(e){
-    debug("ERROR: " + e.message || e);
-    alert("❌ FAILED:\n\n" + (e.message || e) + "\n\nCheck console F12 for details");
+    alert("❌ ERROR:\n\n" + e.message);
+    console.error(e);
   }
 
   btn.disabled = false;
-  btn.innerText = "Post Ad - TEST";
+  btn.innerText = "Post Ad";
 }
 
 function loadAds(){
-  db.collection("ads").get()
+  db.collection("ads").orderBy("createdAt","desc").get()
 .then(snapshot=>{
     const adsDiv = document.getElementById("ads");
     adsDiv.innerHTML = "";
     if(snapshot.empty){
-      adsDiv.innerHTML = "<p style='text-align:center;padding:20px'>No ads yet</p>";
+      adsDiv.innerHTML = "<p style='text-align:center;padding:20px'>No ads yet. Post below!</p>";
       return;
     }
     snapshot.forEach(doc=>{
       let ad = doc.data();
-      if(activeCategory && ad.category!== activeCategory) return;
       const imgTag = ad.imageUrl? `<img src="${ad.imageUrl}">` : "";
       adsDiv.innerHTML += `
         <div class="card">
           ${imgTag}
+          <p style="color:#1e5aa8;font-size:11px">${ad.category}</p>
           <h3>${ad.title}</h3>
           <p><b>R${ad.price}</b></p>
           <p>${ad.description || ''}</p>
           <a class="wa-btn" href="https://wa.me/${ad.phone}" target="_blank">📲 WhatsApp</a>
         </div>`;
     });
-  }).catch(e=> debug("Load error: " + e.message));
+  }).catch(e=> {
+    document.getElementById("ads").innerHTML = "<p style='color:red;text-align:center'>Error loading: " + e.message + "</p>";
+  });
 }
 
 loadAds();
