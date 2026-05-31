@@ -130,18 +130,19 @@ button {
 .section-title {
   font-size:16px;
   font-weight:bold;
-  margin:8px 10px;
+  margin:8px 0;
   color:#1e5aa8;
 }
+small { display:block; margin-bottom:4px; }
 </style>
 </head>
 
 <body>
 
 <div class="navbar">🇿🇦 Mzansi Market</div>
-<div id="userInfo">Browse ads below • Post at bottom</div>
+<div id="userInfo">Tap category to browse • Post at bottom</div>
 
-<!-- 1. CATEGORIES FIRST -->
+<!-- 1. CATEGORIES + SEARCH FIRST -->
 <div class="form-box">
   <div class="section-title">Browse Categories</div>
   <input id="search" placeholder="Search product..." oninput="loadAds()">
@@ -168,7 +169,8 @@ button {
   <input id="title" placeholder="Product name" required>
   <input id="price" placeholder="Price" type="number" required>
   <textarea id="description" placeholder="Description - what are you selling?"></textarea>
-  <input id="phone" placeholder="WhatsApp 2782XXXXXXX no + or 0" required>
+  <input id="phone" placeholder="WhatsApp: 27826405603" required>
+  <small style="font-size:11px;color:#666">Format: 27 + 9 digits. No 0 or +. Ex: 27826405603</small>
   <input id="location" placeholder="Location - e.g. Bloemfontein">
   <input id="pin" placeholder="4-6 digit Recovery PIN" type="password" maxlength="6" required>
 
@@ -190,7 +192,7 @@ button {
   <input id="deliveryPrice" placeholder="Delivery Fee" type="number">
   <input type="file" id="image" accept="image/*">
   <button id="postBtn" onclick="postAd()">Post Ad</button>
-  <p style="font-size:11px;color:#666;margin:4px 0">🔒 Save PIN! Use it to recover your ad.</p>
+  <p style="font-size:11px;color:#666;margin:4px 0">🔒 Save PIN + Ad ID! Use them to recover your ad.</p>
 </div>
 
 <!-- 4. RECOVERY PIN AT VERY BOTTOM -->
@@ -207,7 +209,8 @@ button {
   <input id="editTitle" placeholder="Product name">
   <input id="editPrice" placeholder="Price" type="number">
   <textarea id="editDescription" placeholder="Description"></textarea>
-  <input id="editPhone" placeholder="WhatsApp 2782XXXXXXX">
+  <input id="editPhone" placeholder="WhatsApp: 27826405603">
+  <small style="font-size:11px;color:#666">Format: 27 + 9 digits. No 0 or +</small>
   <input id="editLocation" placeholder="Location">
   <select id="editCategory">
     <option>Dairy</option>
@@ -274,6 +277,15 @@ function isOwner(adId, key){
   return getOwnerKeys() === key;
 }
 
+// Fix phone number: auto convert 0... to 27...
+function fixPhone(num){
+  let phone = num.replace(/\+|\s/g, '');
+  if(phone.startsWith('0')){
+    phone = '27' + phone.substring(1);
+  }
+  return phone;
+}
+
 function filterCat(cat){
   activeCategory = cat;
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
@@ -286,11 +298,11 @@ async function postAd(){
   btn.disabled = true;
   btn.innerText = "Posting...";
 
-  let phone = document.getElementById("phone").value.replace(/\+|\s|0/g, '');
+  let phone = fixPhone(document.getElementById("phone").value);
   let pin = document.getElementById("pin").value.trim();
 
   if(!phone.startsWith('27') || phone.length!== 11){
-    alert("Phone must be 11 digits starting with 27");
+    alert("Phone must be 11 digits starting with 27\nExample: 27826405603\nYou entered: " + phone);
     btn.disabled = false;
     btn.innerText = "Post Ad";
     return;
@@ -391,8 +403,8 @@ function cancelEdit(){
 async function saveEdit(){
   if(!editingAdId) return;
 
-  let phone = document.getElementById("editPhone").value.replace(/\+|\s|0/g, '');
-  if(!phone.startsWith('27') || phone.length!== 11) return alert("Phone must start with 27");
+  let phone = fixPhone(document.getElementById("editPhone").value);
+  if(!phone.startsWith('27') || phone.length!== 11) return alert("Phone must be 11 digits starting with 27");
 
   let updateData = {
     title: document.getElementById("editTitle").value.trim(),
