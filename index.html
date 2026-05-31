@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mzansi Market</title>
 
-<!-- ✅ Firebase Compat -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -16,6 +15,7 @@ body {
   font-family: Arial;
   margin:0;
   background:#f2f2f2;
+  padding-bottom:40px;
 }
 .navbar {
   background:#1e5aa8;
@@ -23,6 +23,7 @@ body {
   padding:15px;
   font-size:20px;
   font-weight:bold;
+  text-align:center;
 }
 .form-box {
   background:#eee;
@@ -75,9 +76,9 @@ button {
   text-decoration:none;
   font-weight:bold;
 }
+.edit-btn { background:#ffc107; color:#000; }
 .delete-btn { background:#dc3545; }
-.review-btn { background:#ffc107; color:#000; }
-#userInfo { text-align:center; padding:10px; }
+#userInfo { text-align:center; padding:10px; font-weight:bold; }
 </style>
 </head>
 
@@ -95,7 +96,7 @@ button {
   <button onclick="logout()">Logout</button>
 </div>
 
-<!-- SEARCH + FILTER -->
+<!-- SEARCH -->
 <div class="form-box">
   <input id="search" placeholder="Search product..." oninput="loadAds()">
   <select id="filterCategory" onchange="loadAds()">
@@ -109,13 +110,13 @@ button {
   <input id="locationFilter" placeholder="Location - e.g. Bloemfontein" oninput="loadAds()">
 </div>
 
-<!-- POST AD - Only shows when logged in -->
+<!-- POST -->
 <div class="form-box" id="postBox" style="display:none;">
   <h3>Post New Ad</h3>
   <input id="title" placeholder="Product name">
   <input id="price" placeholder="Price" type="number">
   <input id="phone" placeholder="WhatsApp 2782XXXXXXX no + or 0">
-  <input id="location" placeholder="Location - e.g. Bloemfontein">
+  <input id="location" placeholder="Location">
 
   <select id="category">
     <option>Dairy</option>
@@ -130,9 +131,33 @@ button {
     <option value="delivery">Delivery</option>
   </select>
 
-  <input id="deliveryPrice" placeholder="Delivery Fee - e.g. 50" type="number">
+  <input id="deliveryPrice" placeholder="Delivery Fee" type="number">
   <input type="file" id="image" accept="image/*">
   <button onclick="postAd()">Post Ad</button>
+</div>
+
+<!-- EDIT AD BOX - Hidden until Edit clicked -->
+<div class="form-box" id="editBox" style="display:none;">
+  <h3>Edit Ad</h3>
+  <input id="editTitle" placeholder="Product name">
+  <input id="editPrice" placeholder="Price" type="number">
+  <input id="editPhone" placeholder="WhatsApp 2782XXXXXXX">
+  <input id="editLocation" placeholder="Location">
+  <select id="editCategory">
+    <option>Dairy</option>
+    <option>Cars</option>
+    <option>Electronics</option>
+    <option>Furniture</option>
+    <option>Clothes</option>
+  </select>
+  <select id="editDelivery">
+    <option value="pickup">Pickup</option>
+    <option value="delivery">Delivery</option>
+  </select>
+  <input id="editDeliveryPrice" placeholder="Delivery Fee" type="number">
+  <input type="file" id="editImage" accept="image/*">
+  <button onclick="saveEdit()">Save Changes</button>
+  <button onclick="cancelEdit()" style="background:#666">Cancel</button>
 </div>
 
 <div id="ads">Loading...</div>
@@ -150,15 +175,15 @@ button {
   <input id="reviewText" placeholder="Write review">
   <button onclick="submitReview()">Submit</button>
   <div id="reviewList"></div>
-  <button onclick="closeReview()">Close</button>
+  <button onclick="reviewBox.style.display='none'">Close</button>
 </div>
 
 <script>
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com"
+  apiKey: "PASTE_YOUR_REAL_API_KEY",
+  authDomain: "PASTE_YOUR_AUTH_DOMAIN",
+  projectId: "PASTE_YOUR_PROJECT_ID",
+  storageBucket: "PASTE_YOUR_PROJECT_ID.appspot.com"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -167,17 +192,18 @@ const auth = firebase.auth();
 const storage = firebase.storage();
 
 let currentAd = "";
+let editingAdId = "";
 
 /* AUTH */
 function signup(){
   auth.createUserWithEmailAndPassword(email.value,password.value)
-  .then(()=>alert("Account created!"))
-  .catch(e=>alert(e.message));
+ .then(()=>alert("Account created!"))
+ .catch(e=>alert(e.message));
 }
 
 function login(){
   auth.signInWithEmailAndPassword(email.value,password.value)
-  .catch(e=>alert(e.message));
+ .catch(e=>alert(e.message));
 }
 
 function logout(){
@@ -185,35 +211,21 @@ function logout(){
 }
 
 auth.onAuthStateChanged(user=>{
-  document.getElementById("userInfo").innerHTML = user ? "Logged in: "+user.email : "Not logged in";
-  document.getElementById("postBox").style.display = user ? "block" : "none";
+  document.getElementById("userInfo").innerHTML = user? "Logged in: "+user.email : "Not logged in";
+  document.getElementById("postBox").style.display = user? "block" : "none";
 });
 
-/* POST AD with Firebase Storage */
+/* POST */
 async function postAd(){
-  if(!auth.currentUser){
-    alert("Login first");
-    return;
-  }
-
-  const btn = event.target;
-  btn.disabled = true;
-  btn.innerText = "Posting...";
+  if(!auth.currentUser) return alert("Login first");
 
   let phone = document.getElementById("phone").value.replace(/\+|\s|0/g, '');
-  if(!phone.startsWith('27') || phone.length !== 11){
-    alert("Phone must be 11 digits starting with 27");
-    btn.disabled = false;
-    btn.innerText = "Post Ad";
-    return;
-  }
+  if(!phone.startsWith('27') || phone.length!== 11) return alert("Phone must be 11 digits starting with 27");
 
   let imageUrl = "";
   const file = document.getElementById("image").files[0];
-
   if(file){
-    const fileName = Date.now() + "_" + file.name;
-    const ref = storage.ref('ads/' + fileName);
+    const ref = storage.ref('ads/' + Date.now() + "_" + file.name);
     const snap = await ref.put(file);
     imageUrl = await snap.ref.getDownloadURL();
   }
@@ -234,14 +246,64 @@ async function postAd(){
   }).then(()=>{
     alert("Ad posted!");
     document.getElementById("postBox").querySelectorAll("input").forEach(i=>i.value="");
-    btn.disabled = false;
-    btn.innerText = "Post Ad";
     loadAds();
-  }).catch(e=>{
-    alert(e.message);
-    btn.disabled = false;
-    btn.innerText = "Post Ad";
   });
+}
+
+/* EDIT AD - New function */
+function editAd(id, adData){
+  editingAdId = id;
+  document.getElementById("editBox").style.display = "block";
+  document.getElementById("postBox").style.display = "none";
+
+  // Fill form with current data
+  document.getElementById("editTitle").value = adData.title;
+  document.getElementById("editPrice").value = adData.price;
+  document.getElementById("editPhone").value = adData.phone;
+  document.getElementById("editLocation").value = adData.location || "";
+  document.getElementById("editCategory").value = adData.category;
+  document.getElementById("editDelivery").value = adData.delivery;
+  document.getElementById("editDeliveryPrice").value = adData.deliveryPrice || "";
+
+  window.scrollTo(0, 0); // Scroll to top
+}
+
+function cancelEdit(){
+  document.getElementById("editBox").style.display = "none";
+  document.getElementById("postBox").style.display = auth.currentUser? "block" : "none";
+  editingAdId = "";
+}
+
+async function saveEdit(){
+  if(!editingAdId) return;
+
+  let phone = document.getElementById("editPhone").value.replace(/\+|\s|0/g, '');
+  if(!phone.startsWith('27') || phone.length!== 11) return alert("Phone must be 11 digits starting with 27");
+
+  let updateData = {
+    title: document.getElementById("editTitle").value,
+    price: document.getElementById("editPrice").value,
+    phone: phone,
+    location: document.getElementById("editLocation").value,
+    category: document.getElementById("editCategory").value,
+    delivery: document.getElementById("editDelivery").value,
+    deliveryPrice: document.getElementById("editDeliveryPrice").value
+  };
+
+  // If new image uploaded, replace old one
+  const file = document.getElementById("editImage").files[0];
+  if(file){
+    const ref = storage.ref('ads/' + Date.now() + "_" + file.name);
+    const snap = await ref.put(file);
+    updateData.imageUrl = await snap.ref.getDownloadURL();
+  }
+
+  db.collection("ads").doc(editingAdId).update(updateData)
+ .then(()=>{
+    alert("Ad updated!");
+    cancelEdit();
+    loadAds();
+  }).catch(e=>alert(e.message));
 }
 
 /* DELETE */
@@ -258,10 +320,6 @@ function openReview(id){
   loadReviews();
 }
 
-function closeReview(){
-  document.getElementById("reviewBox").style.display = "none";
-}
-
 function submitReview(){
   db.collection("reviews").add({
     adId: currentAd,
@@ -276,7 +334,7 @@ function submitReview(){
 
 function loadReviews(){
   db.collection("reviews").where("adId","==",currentAd).orderBy("createdAt","desc").get()
-  .then(s=>{
+ .then(s=>{
     const reviewList = document.getElementById("reviewList");
     reviewList.innerHTML = "";
     let total = 0, count = 0;
@@ -288,50 +346,58 @@ function loadReviews(){
       reviewList.innerHTML += `<p>${'⭐'.repeat(r.rating)} - ${r.text}</p>`;
     });
 
-    let avg = count ? (total/count).toFixed(1) : "No rating";
+    let avg = count? (total/count).toFixed(1) : "No rating";
     db.collection("ads").doc(currentAd).update({rating: avg});
   });
 }
 
-/* LOAD ADS with Search + Filter */
+/* LOAD ADS */
 function loadAds(){
-  const sVal = document.getElementById("search").value.toLowerCase();
-  const cat = document.getElementById("filterCategory").value;
-  const loc = document.getElementById("locationFilter").value.toLowerCase();
+  let sVal = document.getElementById("search").value.toLowerCase();
+  let cat = document.getElementById("filterCategory").value;
+  let loc = document.getElementById("locationFilter").value.toLowerCase();
 
   db.collection("ads").orderBy("createdAt","desc").get()
-  .then(snapshot=>{
+ .then(snapshot=>{
     const adsDiv = document.getElementById("ads");
     adsDiv.innerHTML = "";
 
     if(snapshot.empty){
-      adsDiv.innerHTML = "<p style='text-align:center'>No ads yet</p>";
+      adsDiv.innerHTML = "<p style='text-align:center'>No ads yet. Be first to post!</p>";
       return;
     }
 
     snapshot.forEach(doc=>{
       let ad = doc.data();
 
-      if(sVal && !ad.title.toLowerCase().includes(sVal)) return;
-      if(cat && ad.category !== cat) return;
-      if(loc && !ad.location?.toLowerCase().includes(loc)) return;
+      if(sVal &&!ad.title.toLowerCase().includes(sVal)) return;
+      if(cat && ad.category!== cat) return;
+      if(loc &&!ad.location?.toLowerCase().includes(loc)) return;
 
-      const imgTag = ad.imageUrl ? `<img src="${ad.imageUrl}" alt="${ad.title}">` : "";
-      const delBtn = auth.currentUser?.uid === ad.user ? 
-        `<button class="delete-btn" onclick="deleteAd('${doc.id}')">Delete</button>` : "";
+      const imgTag = ad.imageUrl? `<img src="${ad.imageUrl}" alt="${ad.title}">` : "";
+
+      // Only show Edit/Delete buttons to the owner
+      let ownerBtns = "";
+      if(auth.currentUser?.uid === ad.user){
+        ownerBtns = `
+          <button class="edit-btn" onclick='editAd("${doc.id}", ${JSON.stringify(ad).replace(/'/g, "&apos;")})'>✏️ Edit</button>
+          <button class="delete-btn" onclick="deleteAd('${doc.id}')">🗑️ Delete</button>
+        `;
+      }
 
       adsDiv.innerHTML += `
         <div class="card">
           ${imgTag}
-          <p style="color:#1e5aa8;font-size:12px;margin:0">${ad.category} • ${ad.location || ''}</p>
+          <p style="color:#1e5aa8;font-size:12px;margin:0">${ad.category} • 📍 ${ad.location || ''}</p>
           <h3 style="margin:5px 0">${ad.title}</h3>
           <p><b>R${ad.price}</b></p>
           <p>⭐ ${ad.rating || "No rating"}</p>
-          <p>${ad.delivery==="delivery" ? "🚚 Delivery R"+(ad.deliveryPrice||0) : "📦 Pickup"}</p>
+          <p>${ad.delivery==="delivery"? "🚚 Delivery R"+(ad.deliveryPrice||0) : "📦 Pickup"}</p>
+          <p style="font-size:12px;color:#666">Posted by: ${ad.email}</p>
 
-          <button class="review-btn" onclick="openReview('${doc.id}')">⭐ Reviews</button>
+          <button onclick="openReview('${doc.id}')">⭐ Reviews</button>
           <a class="wa-btn" href="https://wa.me/${ad.phone}" target="_blank">📲 WhatsApp</a>
-          ${delBtn}
+          ${ownerBtns}
         </div>
       `;
     });
