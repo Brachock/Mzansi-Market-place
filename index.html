@@ -7,7 +7,6 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 
 <style>
 body{font-family:Arial;margin:0;background:#f2f2f2;padding-bottom:80px}
@@ -23,7 +22,6 @@ button:disabled{background:#999}
 .search-row input{flex:1}
 .search-row button{width:80px;margin:0}
 .card{background:white;padding:12px;margin:10px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
-.card img{width:100%;height:200px;object-fit:cover;border-radius:6px;margin-bottom:8px}
 .wa-btn{display:inline-block;margin-top:6px;background:#25D366;color:white;padding:8px 12px;border-radius:5px;text-decoration:none;font-weight:bold;font-size:13px}
 .section-title{font-size:16px;font-weight:bold;margin:8px 0;color:#1e5aa8}
 small{font-size:11px;color:#666;display:block;margin-bottom:4px}
@@ -33,7 +31,7 @@ small{font-size:11px;color:#666;display:block;margin-bottom:4px}
 
 <div class="navbar">🇿🇦 Mzansi Market</div>
 
-<!-- 1. CATEGORIES + SEARCH WITH BUTTON -->
+<!-- CATEGORIES + SEARCH -->
 <div class="form-box">
   <div class="section-title">Browse Categories</div>
 
@@ -57,10 +55,10 @@ small{font-size:11px;color:#666;display:block;margin-bottom:4px}
   </div>
 </div>
 
-<!-- 2. ADS -->
+<!-- ADS -->
 <div id="ads">Loading...</div>
 
-<!-- 3. POST AD -->
+<!-- POST AD - NO IMAGE FIELD AT ALL -->
 <div class="form-box">
   <div class="section-title">Post New Ad</div>
   <input id="title" placeholder="Product name / Service" required>
@@ -82,7 +80,6 @@ small{font-size:11px;color:#666;display:block;margin-bottom:4px}
     <option>Other</option>
   </select>
 
-  <input type="file" id="image" accept="image/*">
   <button id="postBtn" onclick="postAd()">Post Ad</button>
 </div>
 
@@ -91,13 +88,11 @@ small{font-size:11px;color:#666;display:block;margin-bottom:4px}
 const firebaseConfig = {
   apiKey: "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
   authDomain: "your-project.firebaseapp.com",
-  projectId: "your-project",
-  storageBucket: "your-project.appspot.com"
+  projectId: "your-project"
 };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-const storage = firebase.storage();
 
 let activeCategory = "";
 
@@ -118,7 +113,7 @@ function filterCat(cat){
 async function postAd(){
   const btn = document.getElementById("postBtn");
   btn.disabled = true;
-  btn.innerText = "Posting...";
+  btn.innerText = "Saving...";
 
   try{
     let phone = fixPhone(document.getElementById("phone").value);
@@ -129,16 +124,6 @@ async function postAd(){
     if(!location) throw new Error("Location is required");
     if(pin.length < 4) throw new Error("PIN must be 4+ digits");
 
-    let imageUrl = "";
-    const file = document.getElementById("image").files[0];
-    if(file){
-      btn.innerText = "Uploading image...";
-      const ref = storage.ref('ads/' + Date.now() + "_" + file.name);
-      const snap = await ref.put(file);
-      imageUrl = await snap.ref.getDownloadURL();
-    }
-
-    btn.innerText = "Saving...";
     await db.collection("ads").add({
       title: document.getElementById("title").value.trim(),
       price: document.getElementById("price").value.trim(),
@@ -146,14 +131,12 @@ async function postAd(){
       phone: phone,
       category: document.getElementById("category").value,
       location: location,
-      imageUrl: imageUrl,
       pin: pin,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
     alert("✅ Posted successfully!");
     document.querySelectorAll('#title,#price,#description,#phone,#location,#pin').forEach(i=>i.value="");
-    document.getElementById("image").value = "";
     loadAds();
 
   }catch(e){
@@ -164,7 +147,6 @@ async function postAd(){
   btn.innerText = "Post Ad";
 }
 
-// No orderBy so ads don't disappear on refresh
 function loadAds(){
   let sVal = document.getElementById("search").value.toLowerCase();
   let loc = document.getElementById("locationFilter").value.toLowerCase();
@@ -188,10 +170,8 @@ function loadAds(){
       if(activeCategory && ad.category!== activeCategory) return;
       if(loc &&!ad.location?.toLowerCase().includes(loc)) return;
 
-      const imgTag = ad.imageUrl? `<img src="${ad.imageUrl}">` : "";
       adsDiv.innerHTML += `
         <div class="card">
-          ${imgTag}
           <p style="color:#1e5aa8;font-size:11px">${ad.category} • 📍 ${ad.location || 'SA'}</p>
           <h3>${ad.title}</h3>
           <p><b>R${ad.price}</b></p>
