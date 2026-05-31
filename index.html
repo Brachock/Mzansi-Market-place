@@ -10,153 +10,37 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 
 <style>
-body {
-  font-family: Arial, sans-serif;
-  margin:0;
-  background:#f2f2f2;
-  padding-bottom:80px;
-}
-.navbar {
-  background:#1e5aa8;
-  color:white;
-  padding:12px;
-  font-size:20px;
-  font-weight:bold;
-  text-align:center;
-  position:sticky;
-  top:0;
-  z-index:999;
-}
-.form-box {
-  background:#eee;
-  padding:12px;
-  margin:10px;
-  border-radius:8px;
-}
-input, select, textarea {
-  width:100%;
-  padding:8px;
-  margin:4px 0;
-  border-radius:5px;
-  border:1px solid #ccc;
-  box-sizing:border-box;
-  font-size:14px;
-}
-textarea { resize:vertical; min-height:60px; }
-button {
-  width:100%;
-  padding:10px;
-  background:#1e5aa8;
-  color:white;
-  border:none;
-  margin-top:5px;
-  border-radius:5px;
-  font-weight:bold;
-  cursor:pointer;
-  font-size:14px;
-}
-button:disabled { background:#999; }
-.cat-btns {
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:6px;
-  margin:8px 0;
-}
-.cat-btn {
-  padding:8px 4px;
-  background:white;
-  border:2px solid #1e5aa8;
-  color:#1e5aa8;
-  border-radius:6px;
-  font-size:12px;
-  cursor:pointer;
-  font-weight:bold;
-}
-.cat-btn.active { background:#1e5aa8; color:white; }
-.card {
-  background:white;
-  padding:12px;
-  margin:10px;
-  border-radius:8px;
-  box-shadow:0 2px 4px rgba(0,0,0,0.1);
-}
-.card img { width:100%; height:200px; object-fit:cover; border-radius:6px; margin-bottom:8px; }
-.card h3 { margin:4px 0; font-size:16px; }
-.card p { margin:3px 0; font-size:13px; }
-.wa-btn {
-  display:inline-block;
-  margin-top:6px;
-  background:#25D366;
-  color:white;
-  padding:8px 12px;
-  border-radius:5px;
-  text-decoration:none;
-  font-weight:bold;
-  font-size:13px;
-}
-.edit-btn { background:#ffc107; color:#000; }
-.delete-btn { background:#dc3545; }
-.review-btn { background:#6c757d; }
-.recover-btn { background:#17a2b8; }
-.whatsapp-float {
-  position: fixed;
-  width: 55px;
-  height: 55px;
-  bottom: 15px;
-  right: 15px;
-  background-color: #25D366;
-  color: white;
-  border-radius: 50%;
-  font-size: 26px;
-  box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-}
-#userInfo { text-align:center; padding:8px; font-size:12px; color:#1e5aa8; }
-.section-title { font-size:16px; font-weight:bold; margin:8px 0; color:#1e5aa8; }
-small { display:block; margin-bottom:4px; }
-.progress-bar {
-  width:100%;
-  height:20px;
-  background:#ddd;
-  border-radius:5px;
-  margin:5px 0;
-  display:none;
-}
-.progress-fill {
-  height:100%;
-  background:#25D366;
-  width:0%;
-  border-radius:5px;
-  text-align:center;
-  color:white;
-  font-size:12px;
-  line-height:20px;
-}
+body{font-family:Arial;margin:0;background:#f2f2f2;padding-bottom:80px}
+.navbar{background:#1e5aa8;color:white;padding:12px;font-size:20px;font-weight:bold;text-align:center;position:sticky;top:0}
+.form-box{background:#eee;padding:12px;margin:10px;border-radius:8px}
+input,select,textarea{width:100%;padding:8px;margin:4px 0;border-radius:5px;border:1px solid #ccc;box-sizing:border-box;font-size:14px}
+button{width:100%;padding:10px;background:#1e5aa8;color:white;border:none;margin-top:5px;border-radius:5px;font-weight:bold;cursor:pointer}
+button:disabled{background:#999}
+.cat-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}
+.cat-btn{padding:8px 4px;background:white;border:2px solid #1e5aa8;color:#1e5aa8;border-radius:6px;font-size:12px;cursor:pointer;font-weight:bold}
+.cat-btn.active{background:#1e5aa8;color:white}
+.card{background:white;padding:12px;margin:10px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
+.card img{width:100%;height:200px;object-fit:cover;border-radius:6px;margin-bottom:8px}
+.wa-btn{display:inline-block;margin-top:6px;background:#25D366;color:white;padding:8px 12px;border-radius:5px;text-decoration:none;font-weight:bold;font-size:13px}
+.edit-btn{background:#ffc107;color:#000}
+.delete-btn{background:#dc3545}
+.section-title{font-size:16px;font-weight:bold;margin:8px 0;color:#1e5aa8}
+small{font-size:11px;color:#666;display:block;margin-bottom:4px}
 </style>
 </head>
-
 <body>
 
 <div class="navbar">🇿🇦 Mzansi Market</div>
-<div id="userInfo">Tap category to browse • Post at bottom</div>
 
 <!-- CATEGORIES -->
 <div class="form-box">
   <div class="section-title">Browse Categories</div>
   <input id="search" placeholder="Search product..." oninput="loadAds()">
-  <input id="locationFilter" placeholder="Location - e.g. Bloemfontein" oninput="loadAds()">
   <div class="cat-btns">
     <button class="cat-btn active" onclick="filterCat('')">All</button>
     <button class="cat-btn" onclick="filterCat('Dairy')">🥛 Dairy</button>
     <button class="cat-btn" onclick="filterCat('Cars')">🚗 Cars</button>
     <button class="cat-btn" onclick="filterCat('Electronics')">📱 Electronics</button>
-    <button class="cat-btn" onclick="filterCat('Furniture')">🪑 Furniture</button>
-    <button class="cat-btn" onclick="filterCat('Clothes')">👕 Clothes</button>
-    <button class="cat-btn" onclick="filterCat('Personal')">💄 Personal</button>
     <button class="cat-btn" onclick="filterCat('Other')">📦 Other</button>
   </div>
 </div>
@@ -170,126 +54,42 @@ small { display:block; margin-bottom:4px; }
   <input id="title" placeholder="Product name" required>
   <input id="price" placeholder="Price" type="number" required>
   <textarea id="description" placeholder="Description"></textarea>
-  <input id="phone" placeholder="WhatsApp: 27826405603" required>
-  <small>Format: 27 + 9 digits. Ex: 27826405603</small>
-  <input id="location" placeholder="Location">
-  <input id="pin" placeholder="4-6 digit Recovery PIN" type="password" maxlength="6" required>
+  <input id="phone" placeholder="27826405603" required>
+  <small>Format: 27 + 9 digits. No 0. Ex: 27826405603</small>
+  <input id="pin" placeholder="4 digit PIN" type="password" maxlength="6" required>
   <select id="category">
-    <option>Dairy</option><option>Cars</option><option>Electronics</option>
-    <option>Furniture</option><option>Clothes</option><option>Personal</option><option>Other</option>
+    <option>Dairy</option><option>Cars</option><option>Electronics</option><option>Other</option>
   </select>
-  <select id="delivery">
-    <option value="pickup">Pickup</option>
-    <option value="delivery">Delivery</option>
-  </select>
-  <input id="deliveryPrice" placeholder="Delivery Fee" type="number">
   <input type="file" id="image" accept="image/*">
-
-  <div class="progress-bar" id="uploadProgress">
-    <div class="progress-fill" id="progressFill">0%</div>
-  </div>
-
-  <button id="postBtn" onclick="postAd()">Post Ad</button>
-  <p style="font-size:11px;color:#666">🔒 Save PIN + Ad ID to recover later</p>
+  <button id="postBtn" onclick="postAd()">Post Ad - TEST</button>
+  <p id="debug" style="color:red;font-size:12px"></p>
 </div>
-
-<!-- RECOVERY -->
-<div class="form-box">
-  <div class="section-title">🔑 Lost Edit Access?</div>
-  <input id="recoverAdId" placeholder="Ad ID">
-  <input id="recoverPin" placeholder="Recovery PIN" type="password" maxlength="6">
-  <button class="recover-btn" onclick="recoverAccess()">Recover My Ad</button>
-</div>
-
-<!-- EDIT AD -->
-<div class="form-box" id="editBox" style="display:none;">
-  <div class="section-title">Edit Ad</div>
-  <input id="editTitle" placeholder="Product name">
-  <input id="editPrice" placeholder="Price" type="number">
-  <textarea id="editDescription" placeholder="Description"></textarea>
-  <input id="editPhone" placeholder="WhatsApp: 27826405603">
-  <small>Format: 27 + 9 digits</small>
-  <input id="editLocation" placeholder="Location">
-  <select id="editCategory">
-    <option>Dairy</option><option>Cars</option><option>Electronics</option>
-    <option>Furniture</option><option>Clothes</option><option>Personal</option><option>Other</option>
-  </select>
-  <select id="editDelivery">
-    <option value="pickup">Pickup</option>
-    <option value="delivery">Delivery</option>
-  </select>
-  <input id="editDeliveryPrice" placeholder="Delivery Fee" type="number">
-  <input type="file" id="editImage" accept="image/*">
-  <button onclick="saveEdit()">Save Changes</button>
-  <button onclick="cancelEdit()" style="background:#666">Cancel</button>
-</div>
-
-<!-- REVIEWS -->
-<div id="reviewBox" class="form-box" style="display:none;">
-  <div class="section-title">⭐ Reviews</div>
-  <select id="rating">
-    <option value="5">⭐ 5 Stars</option><option value="4">⭐ 4 Stars</option>
-    <option value="3">⭐ 3 Stars</option><option value="2">⭐ 2 Stars</option><option value="1">⭐ 1 Star</option>
-  </select>
-  <input id="reviewText" placeholder="Write review">
-  <button onclick="submitReview()">Submit Review</button>
-  <div id="reviewList" style="margin-top:8px;font-size:12px"></div>
-  <button onclick="reviewBox.style.display='none'" style="background:#666">Close</button>
-</div>
-
-<a href="https://wa.me/278XXXXXXXXX" target="_blank" class="whatsapp-float">📲</a>
 
 <script>
+// ⚠️ REPLACE THESE 4 LINES WITH YOUR REAL FIREBASE CONFIG
 const firebaseConfig = {
-  apiKey: "PASTE_YOUR_REAL_API_KEY",
-  authDomain: "PASTE_YOUR_AUTH_DOMAIN",
-  projectId: "PASTE_YOUR_PROJECT_ID",
-  storageBucket: "PASTE_YOUR_PROJECT_ID.appspot.com"
+  apiKey: "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  authDomain: "your-project.firebaseapp.com",
+  projectId: "your-project",
+  storageBucket: "your-project.appspot.com"
 };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const storage = firebase.storage();
 
-let currentAd = "";
-let editingAdId = "";
 let activeCategory = "";
 
-function getOwnerKeys(){ return JSON.parse(localStorage.getItem('mzansi_keys') || '{}'); }
-function saveOwnerKey(adId, key){ localStorage.setItem('mzansi_keys', JSON.stringify(key)); }
-function isOwner(adId, key){ return getOwnerKeys() === key; }
-
-function fixPhone(num){
-  let phone = num.replace(/\+|\s/g, '');
-  if(phone.startsWith('0')) phone = '27' + phone.substring(1);
-  return phone;
+function debug(msg){
+  document.getElementById("debug").innerText = msg;
+  console.log(msg);
+  alert(msg); // This will show you the exact error
 }
 
-// Compress image before upload - makes it 10x faster
-function compressImage(file, maxWidth=1200, quality=0.7){
-  return new Promise((resolve)=>{
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = (e)=>{
-      const img = new Image();
-      img.src = e.target.result;
-      img.onload = ()=>{
-        let width = img.width;
-        let height = img.height;
-        if(width > maxWidth){
-          height = (maxWidth/width) * height;
-          width = maxWidth;
-        }
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-        canvas.toBlob((blob)=>{
-          resolve(new File([blob], file.name, {type:'image/jpeg'}));
-        }, 'image/jpeg', quality);
-      };
-    };
-  });
+function fixPhone(num){
+  let phone = num.replace(/\+|\s|0/g, '');
+  if(!phone.startsWith('27')) phone = '27' + phone;
+  return phone;
 }
 
 function filterCat(cat){
@@ -301,233 +101,81 @@ function filterCat(cat){
 
 async function postAd(){
   const btn = document.getElementById("postBtn");
-  const progressBar = document.getElementById("uploadProgress");
-  const progressFill = document.getElementById("progressFill");
-
   btn.disabled = true;
-  btn.innerText = "Uploading...";
-  progressBar.style.display = "block";
-  progressFill.style.width = "0%";
-  progressFill.innerText = "0%";
+  btn.innerText = "Testing...";
+  debug("Starting post...");
 
-  let phone = fixPhone(document.getElementById("phone").value);
-  let pin = document.getElementById("pin").value.trim();
+  try{
+    let phone = fixPhone(document.getElementById("phone").value);
+    let pin = document.getElementById("pin").value.trim();
 
-  if(!phone.startsWith('27') || phone.length!== 11){
-    alert("Phone must be 11 digits starting with 27\nEx: 27826405603");
-    btn.disabled = false;
-    btn.innerText = "Post Ad";
-    progressBar.style.display = "none";
-    return;
-  }
-  if(pin.length < 4){
-    alert("PIN must be 4-6 digits");
-    btn.disabled = false;
-    btn.innerText = "Post Ad";
-    progressBar.style.display = "none";
-    return;
-  }
+    if(!phone.startsWith('27') || phone.length!== 11) throw "Phone must be 11 digits starting with 27";
+    if(pin.length < 4) throw "PIN must be 4+ digits";
 
-  let imageUrl = "";
-  const file = document.getElementById("image").files[0];
-  if(file){
-    btn.innerText = "Compressing image...";
-    const compressedFile = await compressImage(file);
+    debug("Phone OK: " + phone);
 
-    btn.innerText = "Uploading image...";
-    const ref = storage.ref('ads/' + Date.now() + "_" + compressedFile.name);
-    const uploadTask = ref.put(compressedFile);
+    let imageUrl = "";
+    const file = document.getElementById("image").files[0];
 
-    // Show upload progress
-    uploadTask.on('state_changed',
-      (snapshot)=>{
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        progressFill.style.width = progress + '%';
-        progressFill.innerText = Math.round(progress) + '%';
-      }
-    );
+    // Test without image first
+    if(file){
+      debug("Uploading image...");
+      const ref = storage.ref('test/' + Date.now() + "_" + file.name);
+      const snap = await ref.put(file);
+      imageUrl = await snap.ref.getDownloadURL();
+      debug("Image uploaded: " + imageUrl.substring(0,30) + "...");
+    }
 
-    const snap = await uploadTask;
-    imageUrl = await snap.ref.getDownloadURL();
-  }
+    debug("Saving to Firestore...");
+    const docRef = await db.collection("ads").add({
+      title: document.getElementById("title").value.trim(),
+      price: document.getElementById("price").value.trim(),
+      description: document.getElementById("description").value.trim(),
+      phone: phone,
+      category: document.getElementById("category").value,
+      imageUrl: imageUrl,
+      pin: pin,
+      createdAt: new Date()
+    });
 
-  progressFill.innerText = "Saving...";
-  const ownerKey = Math.random().toString(36).substring(2, 15);
+    debug("SUCCESS! Ad ID: " + docRef.id);
+    alert("✅ POSTED SUCCESSFULLY!\n\nAd ID: " + docRef.id);
 
-  db.collection("ads").add({
-    title: document.getElementById("title").value.trim(),
-    price: document.getElementById("price").value.trim(),
-    description: document.getElementById("description").value.trim(),
-    phone: phone,
-    category: document.getElementById("category").value,
-    location: document.getElementById("location").value.trim(),
-    delivery: document.getElementById("delivery").value,
-    deliveryPrice: document.getElementById("deliveryPrice").value.trim(),
-    imageUrl: imageUrl,
-    ownerKey: ownerKey,
-    pin: pin,
-    rating: "No rating",
-    createdAt: new Date()
-  }).then((docRef)=>{
-    saveOwnerKey(docRef.id, ownerKey);
-    alert(`Ad posted!\n\nAd ID: ${docRef.id}\nSave this ID + PIN.`);
-    document.querySelectorAll('#title,#price,#description,#phone,#location,#deliveryPrice,#pin').forEach(i=>i.value="");
+    document.querySelectorAll('#title,#price,#description,#phone,#pin').forEach(i=>i.value="");
     document.getElementById("image").value = "";
-    btn.disabled = false;
-    btn.innerText = "Post Ad";
-    progressBar.style.display = "none";
-    loadAds();
-  }).catch(e=>{
-    alert("Error: " + e.message);
-    btn.disabled = false;
-    btn.innerText = "Post Ad";
-    progressBar.style.display = "none";
-  });
-}
 
-async function recoverAccess(){
-  let adId = document.getElementById("recoverAdId").value.trim();
-  let pin = document.getElementById("recoverPin").value.trim();
-  if(!adId ||!pin) return alert("Enter Ad ID and PIN");
-  try {
-    let doc = await db.collection("ads").doc(adId).get();
-    if(!doc.exists) return alert("Ad not found");
-    let ad = doc.data();
-    if(ad.pin === pin){
-      saveOwnerKey(adId, ad.ownerKey);
-      alert("Access recovered!");
-      document.getElementById("recoverAdId").value = "";
-      document.getElementById("recoverPin").value = "";
-      loadAds();
-    } else alert("Wrong PIN");
-  } catch(e){ alert("Error: " + e.message); }
-}
-
-function editAd(id, ad){
-  if(!isOwner(id, ad.ownerKey)) return alert("No access");
-  editingAdId = id;
-  document.getElementById("editBox").style.display = "block";
-  window.scrollTo(0,0);
-  document.getElementById("editTitle").value = ad.title;
-  document.getElementById("editPrice").value = ad.price;
-  document.getElementById("editDescription").value = ad.description || "";
-  document.getElementById("editPhone").value = ad.phone;
-  document.getElementById("editLocation").value = ad.location || "";
-  document.getElementById("editCategory").value = ad.category;
-  document.getElementById("editDelivery").value = ad.delivery;
-  document.getElementById("editDeliveryPrice").value = ad.deliveryPrice || "";
-}
-
-function cancelEdit(){
-  document.getElementById("editBox").style.display = "none";
-  editingAdId = "";
-}
-
-async function saveEdit(){
-  if(!editingAdId) return;
-  let phone = fixPhone(document.getElementById("editPhone").value);
-  if(!phone.startsWith('27') || phone.length!== 11) return alert("Phone must start with 27");
-  let updateData = {
-    title: document.getElementById("editTitle").value.trim(),
-    price: document.getElementById("editPrice").value.trim(),
-    description: document.getElementById("editDescription").value.trim(),
-    phone: phone,
-    location: document.getElementById("editLocation").value.trim(),
-    category: document.getElementById("editCategory").value,
-    delivery: document.getElementById("editDelivery").value,
-    deliveryPrice: document.getElementById("editDeliveryPrice").value.trim()
-  };
-  const file = document.getElementById("editImage").files[0];
-  if(file){
-    const compressedFile = await compressImage(file);
-    const ref = storage.ref('ads/' + Date.now() + "_" + compressedFile.name);
-    const snap = await ref.put(compressedFile);
-    updateData.imageUrl = await snap.ref.getDownloadURL();
+  }catch(e){
+    debug("ERROR: " + e.message || e);
+    alert("❌ FAILED:\n\n" + (e.message || e) + "\n\nCheck console F12 for details");
   }
-  db.collection("ads").doc(editingAdId).update(updateData)
-.then(()=>{ alert("Ad updated!"); cancelEdit(); loadAds(); })
-.catch(e=>alert(e.message));
-}
 
-function deleteAd(id, key){
-  if(!isOwner(id, key)) return alert("No access");
-  if(confirm("Delete this ad?")) db.collection("ads").doc(id).delete().then(loadAds);
-}
-
-function openReview(id){
-  currentAd = id;
-  document.getElementById("reviewBox").style.display = "block";
-  loadReviews();
-}
-
-function submitReview(){
-  db.collection("reviews").add({
-    adId: currentAd,
-    rating: Number(document.getElementById("rating").value),
-    text: document.getElementById("reviewText").value.trim(),
-    createdAt: new Date()
-  }).then(()=>{ document.getElementById("reviewText").value = ""; loadReviews(); });
-}
-
-function loadReviews(){
-  db.collection("reviews").where("adId","==",currentAd).get()
-.then(s=>{
-    const reviewList = document.getElementById("reviewList");
-    reviewList.innerHTML = "";
-    let total = 0, count = 0;
-    let reviews = [];
-    s.forEach(d=> reviews.push(d.data()));
-    reviews.sort((a,b)=> (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
-    reviews.forEach(r=>{ total += r.rating; count++; reviewList.innerHTML += `<p>${'⭐'.repeat(r.rating)} ${r.text}</p>`; });
-    let avg = count? (total/count).toFixed(1) : "No rating";
-    db.collection("ads").doc(currentAd).update({rating: avg});
-  });
+  btn.disabled = false;
+  btn.innerText = "Post Ad - TEST";
 }
 
 function loadAds(){
-  let sVal = document.getElementById("search").value.toLowerCase();
-  let loc = document.getElementById("locationFilter").value.toLowerCase();
   db.collection("ads").get()
 .then(snapshot=>{
     const adsDiv = document.getElementById("ads");
     adsDiv.innerHTML = "";
     if(snapshot.empty){
-      adsDiv.innerHTML = "<p style='text-align:center;padding:20px'>No ads yet. Post below!</p>";
+      adsDiv.innerHTML = "<p style='text-align:center;padding:20px'>No ads yet</p>";
       return;
     }
-    let ads = [];
-    snapshot.forEach(doc=> ads.push({id: doc.id, data: doc.data()}));
-    ads.sort((a,b)=> (b.data.createdAt?.seconds||0) - (a.data.createdAt?.seconds||0));
-    ads.forEach(item=>{
-      let ad = item.data;
-      let docId = item.id;
-      if(sVal &&!ad.title.toLowerCase().includes(sVal)) return;
+    snapshot.forEach(doc=>{
+      let ad = doc.data();
       if(activeCategory && ad.category!== activeCategory) return;
-      if(loc &&!ad.location?.toLowerCase().includes(loc)) return;
-      const imgTag = ad.imageUrl? `<img src="${ad.imageUrl}" alt="${ad.title}">` : "";
-      let ownerBtns = "";
-      if(isOwner(docId, ad.ownerKey)){
-        ownerBtns = `<button class="edit-btn" onclick='editAd("${docId}", ${JSON.stringify(ad).replace(/"/g, "&quot;")})'>✏️ Edit</button>
-        <button class="delete-btn" onclick="deleteAd('${docId}', '${ad.ownerKey}')">🗑️ Delete</button>
-        <p style="font-size:10px;color:#999">ID: ${docId}</p>`;
-      }
+      const imgTag = ad.imageUrl? `<img src="${ad.imageUrl}">` : "";
       adsDiv.innerHTML += `
         <div class="card">
           ${imgTag}
-          <p style="color:#1e5aa8;font-size:11px">${ad.category} • 📍 ${ad.location || 'SA'}</p>
           <h3>${ad.title}</h3>
           <p><b>R${ad.price}</b></p>
-          ${ad.description? `<p style="font-size:12px;color:#555">${ad.description}</p>` : ""}
-          <p>⭐ ${ad.rating || "No rating"}</p>
-          <p style="font-size:12px">${ad.delivery==="delivery"? "🚚 Delivery R"+(ad.deliveryPrice||0) : "📦 Pickup"}</p>
-          <button class="review-btn" onclick="openReview('${docId}')">⭐ Reviews</button>
+          <p>${ad.description || ''}</p>
           <a class="wa-btn" href="https://wa.me/${ad.phone}" target="_blank">📲 WhatsApp</a>
-          ${ownerBtns}
         </div>`;
     });
-  }).catch(e=>{
-    document.getElementById("ads").innerHTML = "<p style='color:red;text-align:center'>Error: "+e.message+"</p>";
-  });
+  }).catch(e=> debug("Load error: " + e.message));
 }
 
 loadAds();
