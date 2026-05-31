@@ -5,9 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mzansi Market</title>
 
-  <!-- ✅ Firebase Compat - works with your current code -->
+  <!-- ✅ Firebase Compat -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 
   <style>
     body {
@@ -24,14 +25,14 @@
       font-size: 24px;
       font-weight: bold;
     }
-    .form-box {
+   .form-box {
       background: #eee;
       padding: 20px;
       margin: 20px auto;
       max-width: 400px;
       border-radius: 10px;
     }
-    input {
+    input, select {
       width: 100%;
       padding: 12px;
       margin: 8px 0;
@@ -50,18 +51,26 @@
       font-weight: bold;
       cursor: pointer;
     }
+    button:disabled { background: #aaa; }
     #ads {
       max-width: 500px;
       margin: auto;
     }
-    .card {
+   .card {
       background: white;
       padding: 15px;
       margin: 15px;
       border-radius: 10px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    .card a {
+   .card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+   .card a {
       display: inline-block;
       margin-top: 10px;
       background: #25D366;
@@ -71,92 +80,145 @@
       text-decoration: none;
       font-weight: bold;
     }
+    #progress { display: none; color: #1e5aa8; margin-top: 5px; }
   </style>
 </head>
 
 <body>
 
-<header>🥛 Mzansi Market</header>
+<header>🛒 Mzansi Market</header>
 
 <div class="form-box">
-  <input id="title" placeholder="Product name - e.g. Clover Milk 1L">
-  <input id="price" placeholder="Price - e.g. 25" type="number">
+  <select id="category">
+    <option value="">Select Category</option>
+    <option>Dairy</option>
+    <option>Fresh Produce</option>
+    <option>Bakery</option>
+    <option>Meat</option>
+    <option>Groceries</option>
+    <option>Electronics</option>
+    <option>Furniture</option>
+    <option>Clothes</option>
+    <option>Other</option>
+  </select>
+
+  <input id="title" placeholder="Product name - e.g. iPhone 11">
+  <input id="price" placeholder="Price - e.g. 4500" type="number">
   <input id="phone" placeholder="WhatsApp number - 2782XXXXXXX no + or 0">
-  <button onclick="postAd()">Post Ad</button>
+
+  <input type="file" id="image" accept="image/*">
+  <div id="progress">Uploading image...</div>
+
+  <button id="postBtn" onclick="postAd()">Post Ad</button>
 </div>
 
 <div id="ads">Loading...</div>
 
 <script>
-  // ✅ PUT YOUR REAL FIREBASE CONFIG HERE
   const firebaseConfig = {
     apiKey: "YOUR_API_KEY",
     authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID"
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com"
   };
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
+  const storage = firebase.storage();
 
-  function postAd() {
+  async function postAd() {
+    const category = document.getElementById("category").value;
     const title = document.getElementById("title").value.trim();
     const price = document.getElementById("price").value.trim();
     let phone = document.getElementById("phone").value.trim();
+    const file = document.getElementById("image").files[0];
+    const btn = document.getElementById("postBtn");
+    const progress = document.getElementById("progress");
 
-    if (!title || !price || !phone) {
-      alert("Fill all fields");
+    if (!category ||!title ||!price ||!phone) {
+      alert("Fill all fields + select category");
       return;
     }
 
-    // Force correct WhatsApp format: 27XXXXXXXXX
     phone = phone.replace(/\+|\s|0/g, '');
-    if (!phone.startsWith('27') || phone.length !== 11) {
+    if (!phone.startsWith('27') || phone.length!== 11) {
       alert("Phone must be 11 digits starting with 27. Example: 27825551234");
       return;
     }
 
-    db.collection("ads").add({
-      title: title,
-      price: price,
-      phone: phone,
-      createdAt: new Date()
-    }).then(() => {
+    btn.disabled = true;
+    let imageUrl = "";
+
+    // 1. Upload image to Firebase Storage if selected
+    if (file) {
+      progress.style.display = "block";
+      const fileName = Date.now() + "_" + file.name;
+      const storageRef = storage.ref('ads/' + fileName);
+
+      try {
+        const snapshot = await storageRef.put(file);
+        imageUrl = await snapshot.ref.getDownloadURL();
+        progress.style.display = "none";
+      } catch(e) {
+        alert("Image upload failed: " + e.message);
+        btn.disabled = false;
+        return;
+      }
+    }
+
+    // 2. Save ad to Firestore
+    try {
+      await db.collection("ads").add({
+        category: category,
+        title: title,
+        price: price,
+        phone: phone,
+        imageUrl: imageUrl,
+        createdAt: new Date()
+      });
+
       alert("Ad posted!");
+      document.getElementById("category").value = "";
       document.getElementById("title").value = "";
       document.getElementById("price").value = "";
       document.getElementById("phone").value = "";
+      document.getElementById("image").value = "";
+      btn.disabled = false;
       loadAds();
-    }).catch(err => alert("Error: " + err.message));
+    } catch(e) {
+      alert("Error: " + e.message);
+      btn.disabled = false;
+    }
   }
 
   function loadAds() {
     const adsDiv = document.getElementById("ads");
     adsDiv.innerHTML = "Loading...";
 
-    db.collection("ads")
-      .orderBy("createdAt", "desc")
-      .get()
-      .then(snapshot => {
-        adsDiv.innerHTML = "";
+    db.collection("ads").orderBy("createdAt", "desc").get()
+   .then(snapshot => {
+      adsDiv.innerHTML = "";
 
-        if (snapshot.empty) {
-          adsDiv.innerHTML = "<p style='text-align:center'>No ads yet. Be the first to post!</p>";
-          return;
-        }
+      if (snapshot.empty) {
+        adsDiv.innerHTML = "<p style='text-align:center'>No ads yet. Be the first to post!</p>";
+        return;
+      }
 
-        snapshot.forEach(doc => {
-          const ad = doc.data();
-          // FIXED: Closed the <a> tag properly + added WhatsApp text
-          adsDiv.innerHTML += `
-            <div class="card">
-              <h3>${ad.title}</h3>
-              <p><b>R${ad.price}</b></p>
-              <a href="https://wa.me/${ad.phone}" target="_blank">📲 WhatsApp Seller</a>
-            </div>
-          `;
-        });
-      })
-      .catch(err => adsDiv.innerHTML = "Error loading ads: " + err.message);
+      snapshot.forEach(doc => {
+        const ad = doc.data();
+        const imgTag = ad.imageUrl? `<img src="${ad.imageUrl}" alt="${ad.title}">` : "";
+
+        adsDiv.innerHTML += `
+          <div class="card">
+            ${imgTag}
+            <p style="color:#1e5aa8;font-size:12px;margin:0">${ad.category}</p>
+            <h3 style="margin:5px 0">${ad.title}</h3>
+            <p><b>R${ad.price}</b></p>
+            <a href="https://wa.me/${ad.phone}" target="_blank">📲 WhatsApp Seller</a>
+          </div>
+        `;
+      });
+    });
   }
 
   loadAds();
