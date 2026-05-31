@@ -1,229 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mzansi Market</title>
-<style>
-  body { font-family: Arial, sans-serif; margin:0; background:#f5f5f5; }
-  header { background:#2e7d32; color:white; padding:15px; text-align:center; }
-.container { display:flex; max-width:1200px; margin:20px auto; gap:20px; padding:0 10px; }
-.sidebar { width:260px; background:white; padding:15px; border-radius:8px; height:fit-content; }
-.main { flex:1; }
-.card { background:white; padding:15px; margin-bottom:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
-.card img { width:100%; max-height:250px; object-fit:cover; border-radius:5px; margin-bottom:10px; }
-  button { padding:8px 12px; border:none; border-radius:5px; cursor:pointer; background:#2e7d32; color:white; }
-  button:hover { background:#256428; }
-.btn-danger { background:#d32f2f; }
-.btn-secondary { background:#666; }
-.btn-whatsapp { background:#25d366; }
-  input, select, textarea { width:100%; padding:8px; margin:5px 0 10px; border:1px solid #ccc; border-radius:5px; box-sizing:border-box; }
-.auth-bar { text-align:right; padding:10px 20px; background:white; }
-.sponsored { font-size:12px; color:#ff9800; font-weight:bold; }
-.small { font-size:12px; color:#666; }
-  @media(max-width:768px){.container{flex-direction:column;}.sidebar{width:auto;} }
-</style>
-
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-XXXXXXXXXX');
-</script>
+  <meta charset="UTF-8">
+  <title>Mzansi Market</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <style>
+    body {
+      font-family: Arial;
+      background: #f2f2f2;
+      margin: 0;
+      padding: 10px;
+    }
+    header {
+      background: #0a4fa3;
+      color: white;
+      text-align: center;
+      padding: 15px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .form, .card {
+      background: white;
+      padding: 15px;
+      margin: 15px auto;
+      border-radius: 10px;
+      max-width: 400px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+    button {
+      background: #0a4fa3;
+      color: white;
+      padding: 12px;
+      width: 100%;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .wa-btn {
+      display: inline-block;
+      margin-top: 10px;
+      background: #25D366;
+      color: white;
+      padding: 8px 12px;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+  </style>
 </head>
+
 <body>
 
-<header><h2>Mzansi Market</h2></header>
-<div class="auth-bar" id="authBar"></div>
+<header>🥛 Mzansi Market</header>
 
-<div class="container">
-  <div class="sidebar">
-    <h4>Categories</h4>
-    <div id="categories"></div>
-
-    <h4 style="margin-top:20px;">Post Something</h4>
-    <input id="title" placeholder="Title">
-    <textarea id="desc" placeholder="Description"></textarea>
-    <input id="price" type="number" placeholder="Price R">
-    <input id="phone" placeholder="WhatsApp number 27XXXXXXXXX">
-    <input id="image" type="file" accept="image/*">
-    <select id="category">
-      <option>Cars</option><option>Phones</option><option>Fashion</option><option>Jobs</option><option>Other</option>
-    </select>
-    <button onclick="addPost()">Post</button>
-    <p class="small">Tip: Keep images under 500KB or posting will be slow</p>
-  </div>
-
-  <div class="main"><div id="posts"></div></div>
+<div class="form">
+  <input id="title" placeholder="Product name - e.g. Clover Milk 1L">
+  <input id="price" placeholder="Price - e.g. 25" type="number">
+  <input id="phone" placeholder="WhatsApp number - 2782XXXXXXX no + or spaces">
+  <button onclick="postAd()">Post Ad</button>
 </div>
 
-<script>
-const STORAGE_KEY = "mzansiPosts";
-const USER_KEY = "mzansiUser";
-const PASS_KEY = "mzansiPass";
-let currentFilter = "All";
+<div id="ads"></div>
 
-let posts = [];
-try { posts = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e){ posts = []; }
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const categories = ["All", "Cars", "Phones", "Fashion", "Jobs", "Other"];
-
-function savePosts(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(posts)); }catch(e){ alert("Storage full. Delete some posts."); } }
-function getCurrentUser(){ return localStorage.getItem(USER_KEY) || "Guest"; }
-
-function renderAuthBar() {
-  const user = getCurrentUser();
-  const bar = document.getElementById("authBar");
-  if (user === "Guest") {
-    bar.innerHTML = `
-      <input id="loginName" placeholder="Username" style="width:120px;display:inline-block;">
-      <input id="loginPass" type="password" placeholder="Password" style="width:120px;display:inline-block;">
-      <button onclick="login()">Login/Register</button>
-    `;
-  } else {
-    bar.innerHTML = `Logged in as <b>${user}</b> <button class="btn-secondary" onclick="logout()">Logout</button>`;
-  }
-}
-
-function login() {
-  const name = document.getElementById("loginName").value.trim();
-  const pass = document.getElementById("loginPass").value.trim();
-  if (!name ||!pass) return alert("Enter username and password");
-
-  const savedPass = localStorage.getItem(PASS_KEY + "_" + name);
-  if (!savedPass) {
-    // Register new user
-    localStorage.setItem(PASS_KEY + "_" + name, pass);
-    localStorage.setItem(USER_KEY, name);
-    alert("Account created!");
-  } else if (savedPass!== pass) {
-    return alert("Wrong password");
-  } else {
-    localStorage.setItem(USER_KEY, name);
-  }
-  renderAuthBar();
-  displayPosts();
-}
-
-function logout() {
-  localStorage.removeItem(USER_KEY);
-  renderAuthBar();
-  displayPosts();
-}
-
-function toBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
-  });
-}
-
-async function addPost() {
-  const user = getCurrentUser();
-  if (user === "Guest") return alert("Login first");
-
-  const file = document.getElementById("image").files[0];
-  let imageData = "";
-  if (file) {
-    if (file.size > 600000) return alert("Image too large. Pick under 500KB.");
-    imageData = await toBase64(file);
-  }
-
-  const post = {
-    id: Date.now(),
-    title: document.getElementById("title").value.trim(),
-    desc: document.getElementById("desc").value.trim(),
-    price: document.getElementById("price").value,
-    phone: document.getElementById("phone").value.trim(),
-    category: document.getElementById("category").value,
-    user: user,
-    image: imageData,
-    sold: false,
-    sponsored: false,
-    created: new Date().toISOString()
+  // ✅ PASTE YOUR FIREBASE CONFIG HERE
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_BUCKET",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
   };
 
-  if (!post.title) return alert("Title required");
-  if (!post.phone) return alert("Add WhatsApp number");
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-  posts.unshift(post);
-  savePosts();
-  gtag('event', 'post_created', { 'category': post.category });
+  window.postAd = async function() {
+    let title = document.getElementById("title").value.trim();
+    let price = document.getElementById("price").value.trim();
+    let phone = document.getElementById("phone").value.trim();
 
-  document.getElementById("title").value = "";
-  document.getElementById("desc").value = "";
-  document.getElementById("price").value = "";
-  document.getElementById("phone").value = "";
-  document.getElementById("image").value = "";
-  displayPosts();
-}
+    // Validation
+    if(!title || !price || !phone) return alert("Fill all fields");
+    if(!phone.startsWith("27")) return alert("Phone must start with 27, no + or 0");
+    if(phone.length < 11) return alert("Phone number too short");
 
-function displayPosts(filter = currentFilter) {
-  currentFilter = filter;
-  const postsContainer = document.getElementById("posts");
-  const currentUser = getCurrentUser();
-
-  let filtered = filter === "All"? posts : posts.filter(p => p.category === filter);
-
-  if (filtered.length === 0) {
-    postsContainer.innerHTML = `<div class="card">No posts yet in ${filter}</div>`;
-    return;
+    try {
+      await addDoc(collection(db, "ads"), {
+        title: title,
+        price: price,
+        phone: phone,
+        createdAt: new Date()
+      });
+      alert("Ad posted!");
+      document.getElementById("title").value = "";
+      document.getElementById("price").value = "";
+      document.getElementById("phone").value = "";
+      loadAds();
+    } catch(e) {
+      alert("Error: " + e.message);
+    }
   }
 
-  postsContainer.innerHTML = filtered.map(p => {
-    const globalIndex = posts.indexOf(p);
-    if (p.sponsored) gtag('event', 'ad_impression', { 'ad_id': p.id, 'ad_name': p.title });
+  async function loadAds() {
+    const adsDiv = document.getElementById("ads");
+    adsDiv.innerHTML = "Loading...";
 
-    return `
-      <div class="card">
-        ${p.sponsored? '<span class="sponsored">Sponsored</span>' : ''}
-        ${p.image? `<img src="${p.image}" alt="">` : ''}
-        <h3>${p.title}</h3>
-        <p>${p.desc}</p>
-        ${p.price? `<p style="font-weight:bold;color:#2e7d32;">R${p.price}</p>` : ''}
-        <p style="font-size:12px;color:#666;">By ${p.user} • ${p.category}</p>
-
-        <div style="margin-top:10px;display:flex;gap:5px;flex-wrap:wrap;">
-          <button class="btn-whatsapp" onclick="contactSeller(${globalIndex})">WhatsApp</button>
-          ${p.user === currentUser? `
-            <button onclick="markSold(${globalIndex})">${p.sold? '✅ Sold' : 'Mark Sold'}</button>
-            <button class="btn-danger" onclick="deletePost(${globalIndex})">Delete</button>
-          ` : ''}
+    const q = query(collection(db, "ads"), orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+    
+    adsDiv.innerHTML = "";
+    snapshot.forEach(doc => {
+      let ad = doc.data();
+      adsDiv.innerHTML += `
+        <div class="card">
+          <h3>${ad.title}</h3>
+          <p><b>R${ad.price}</b></p>
+          <a class="wa-btn" href="https://wa.me/${ad.phone}" target="_blank">📲 WhatsApp Buyer</a>
         </div>
-      </div>
-    `;
-  }).join('');
-}
+      `;
+    });
+  }
 
-function contactSeller(index) {
-  const p = posts[index];
-  if (!p.phone) return alert("No number provided");
-  gtag('event', 'contact_click', { 'post_title': p.title, 'category': p.category });
-  const phone = p.phone.replace(/\D/g, '');
-  const msg = encodeURIComponent(`Hi, I'm interested in: ${p.title}`);
-  window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
-}
-
-function markSold(index) { posts[index].sold =!posts[index].sold; savePosts(); displayPosts(); }
-function deletePost(index) {
-  if (!confirm("Delete this post?")) return;
-  posts.splice(index, 1);
-  savePosts();
-  displayPosts();
-}
-
-function renderCategories() {
-  document.getElementById("categories").innerHTML = categories.map(c =>
-    `<div><button style="width:100%;margin:3px 0;background:#eee;color:#333;" onclick="displayPosts('${c}')">${c}</button></div>`
-  ).join('');
-}
-
-renderAuthBar();
-renderCategories();
-displayPosts();
+  loadAds();
 </script>
+
 </body>
 </html>
