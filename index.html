@@ -1,61 +1,122 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Mzansi Market</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mzansi Market 🇿🇦</title>
 
-<!-- ✅ FIXED FIREBASE LINKS -->
+<!-- Firebase Compat -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 
 <style>
 body {
-  font-family: Arial;
+  font-family: Arial, sans-serif;
   margin:0;
   background:#f2f2f2;
+  padding-bottom:80px;
 }
-
 .navbar {
   background:#1e5aa8;
   color:white;
   padding:15px;
-  font-size:20px;
+  font-size:22px;
+  font-weight:bold;
+  text-align:center;
+  position:sticky;
+  top:0;
+  z-index:999;
 }
-
 .form-box {
   background:#eee;
   padding:15px;
-  margin:15px;
+  margin:15px auto;
   border-radius:10px;
-  max-width:400px;
+  max-width:420px;
 }
-
 input, select {
   width:100%;
   padding:10px;
-  margin:5px 0;
+  margin:6px 0;
+  border-radius:5px;
+  border:1px solid #ccc;
+  box-sizing:border-box;
+  font-size:15px;
 }
-
 button {
   width:100%;
-  padding:10px;
+  padding:12px;
   background:#1e5aa8;
   color:white;
   border:none;
-  margin-top:5px;
+  margin-top:6px;
+  border-radius:5px;
+  font-weight:bold;
+  cursor:pointer;
+  font-size:15px;
 }
-
+button:disabled { background:#aaa; }
 .card {
   background:white;
   padding:15px;
-  margin:15px;
+  margin:15px auto;
   border-radius:10px;
+  max-width:520px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1);
 }
-
-img {
+.card img {
   width:100%;
-  border-radius:10px;
+  height:230px;
+  object-fit:cover;
+  border-radius:8px;
+  margin-bottom:10px;
+}
+.wa-btn {
+  display:inline-block;
+  margin-top:8px;
+  background:#25D366;
+  color:white;
+  padding:10px 14px;
+  border-radius:5px;
+  text-decoration:none;
+  font-weight:bold;
+}
+.edit-btn { background:#ffc107; color:#000; }
+.delete-btn { background:#dc3545; }
+.review-btn { background:#6c757d; }
+#userInfo { text-align:center; padding:10px; font-weight:bold; color:#1e5aa8; }
+
+/* Floating WhatsApp Admin Button */
+.whatsapp-float {
+  position: fixed;
+  width: 170px;
+  height: 50px;
+  bottom: 20px;
+  right: 20px;
+  background-color: #25D366;
+  color: white;
+  border-radius: 25px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: bold;
+  box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+.whatsapp-float:hover { background-color: #20ba5a; }
+@media screen and (max-width: 600px) {
+  .whatsapp-float {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    font-size: 26px;
+  }
+  .whatsapp-float span { display: none; }
 }
 </style>
 </head>
@@ -63,230 +124,29 @@ img {
 <body>
 
 <div class="navbar">🇿🇦 Mzansi Market</div>
+<div id="userInfo">Not logged in</div>
 
-<div id="userInfo"></div>
-
-<!-- LOGIN -->
+<!-- LOGIN / SIGNUP -->
 <div class="form-box">
-  <input id="email" placeholder="Email">
+  <h3>Login / Sign Up</h3>
+  <input id="email" placeholder="Email" type="email">
   <input id="password" type="password" placeholder="Password">
   <button onclick="login()">Login</button>
   <button onclick="signup()">Sign Up</button>
   <button onclick="logout()">Logout</button>
 </div>
 
-<!-- SEARCH -->
+<!-- SEARCH + FILTER -->
 <div class="form-box">
-  <input id="search" placeholder="Search..." oninput="loadAds()">
-
+  <h3>Search Ads</h3>
+  <input id="search" placeholder="Search product..." oninput="loadAds()">
   <select id="filterCategory" onchange="loadAds()">
     <option value="">All Categories</option>
     <option>Dairy</option>
     <option>Cars</option>
     <option>Electronics</option>
+    <option>Furniture</option>
+    <option>Clothes</option>
+    <option>Personal</option>
+    <option>Other</option>
   </select>
-
-  <input id="locationFilter" placeholder="Location" oninput="loadAds()">
-</div>
-
-<!-- POST -->
-<div class="form-box" id="postBox" style="display:none;">
-  <input id="title" placeholder="Product">
-  <input id="price" placeholder="Price">
-  <input id="phone" placeholder="WhatsApp 27XXXXXXXXX">
-  <input id="location" placeholder="Location">
-
-  <select id="category">
-    <option>Dairy</option>
-    <option>Cars</option>
-    <option>Electronics</option>
-  </select>
-
-  <select id="delivery">
-    <option value="pickup">Pickup</option>
-    <option value="delivery">Delivery</option>
-  </select>
-
-  <input id="deliveryPrice" placeholder="Delivery Fee">
-
-  <input type="file" id="image">
-
-  <button onclick="postAd()">Post Ad</button>
-</div>
-
-<div id="ads">Loading...</div>
-
-<!-- REVIEWS -->
-<div id="reviewBox" class="form-box" style="display:none;">
-  <h3>⭐ Reviews</h3>
-
-  <select id="rating">
-    <option value="5">⭐⭐⭐⭐⭐</option>
-    <option value="4">⭐⭐⭐⭐</option>
-    <option value="3">⭐⭐⭐</option>
-    <option value="2">⭐⭐</option>
-    <option value="1">⭐</option>
-  </select>
-
-  <input id="reviewText" placeholder="Write review">
-  <button onclick="submitReview()">Submit</button>
-
-  <div id="reviewList"></div>
-</div>
-
-<script>
-
-// ✅ REPLACE WITH YOUR REAL FIREBASE KEYS
-const firebaseConfig = {
-  apiKey: "PASTE_YOUR_REAL_API_KEY",
-  authDomain: "PASTE_YOUR_AUTH_DOMAIN",
-  projectId: "PASTE_YOUR_PROJECT_ID"
-};
-
-firebase.initializeApp(firebaseConfig);
-
-const db = firebase.firestore();
-const auth = firebase.auth();
-
-/* AUTH */
-function signup(){
-  auth.createUserWithEmailAndPassword(email.value,password.value)
-  .catch(e=>alert(e.message));
-}
-
-function login(){
-  auth.signInWithEmailAndPassword(email.value,password.value)
-  .catch(e=>alert(e.message));
-}
-
-function logout(){
-  auth.signOut();
-}
-
-auth.onAuthStateChanged(user=>{
-  userInfo.innerHTML = user ? "Logged in: "+user.email : "Not logged in";
-  postBox.style.display = user ? "block" : "none";
-});
-
-/* IMAGE */
-function getBase64(file){
-  return new Promise(res=>{
-    let r=new FileReader();
-    r.readAsDataURL(file);
-    r.onload=()=>res(r.result);
-  });
-}
-
-/* POST */
-async function postAd(){
-  if(!auth.currentUser){
-    alert("Login first");
-    return;
-  }
-
-  let img="";
-  if(image.files[0]){
-    img = await getBase64(image.files[0]);
-  }
-
-  db.collection("ads").add({
-    title:title.value,
-    price:price.value,
-    phone:phone.value,
-    category:category.value,
-    location:location.value,
-    delivery:delivery.value,
-    deliveryPrice:deliveryPrice.value,
-    image:img,
-    user:auth.currentUser.uid,
-    email:auth.currentUser.email,
-    createdAt:new Date()
-  }).then(()=>{
-    alert("Ad posted!");
-    loadAds();
-  });
-}
-
-/* DELETE */
-function deleteAd(id){
-  db.collection("ads").doc(id).delete().then(loadAds);
-}
-
-/* REVIEWS */
-let currentAd="";
-
-function openReview(id){
-  currentAd=id;
-  reviewBox.style.display="block";
-  loadReviews();
-}
-
-function submitReview(){
-  db.collection("reviews").add({
-    adId:currentAd,
-    rating:Number(rating.value),
-    text:reviewText.value
-  }).then(loadReviews);
-}
-
-function loadReviews(){
-  db.collection("reviews").where("adId","==",currentAd).get()
-  .then(s=>{
-    reviewList.innerHTML="";
-    let total=0,count=0;
-
-    s.forEach(d=>{
-      let r=d.data();
-      total+=r.rating;
-      count++;
-      reviewList.innerHTML+=`<p>${r.rating}⭐ - ${r.text}</p>`;
-    });
-
-    let avg=count?(total/count).toFixed(1):"No rating";
-
-    db.collection("ads").doc(currentAd).update({rating:avg});
-  });
-}
-
-/* LOAD ADS */
-function loadAds(){
-  let sVal = search.value.toLowerCase();
-  let cat = filterCategory.value;
-  let loc = locationFilter.value.toLowerCase();
-
-  db.collection("ads").orderBy("createdAt","desc").get()
-  .then(snapshot=>{
-    ads.innerHTML="";
-
-    snapshot.forEach(doc=>{
-      let ad = doc.data();
-
-      if(sVal && !ad.title.toLowerCase().includes(sVal)) return;
-      if(cat && ad.category !== cat) return;
-      if(loc && !ad.location?.toLowerCase().includes(loc)) return;
-
-      ads.innerHTML += `
-        <div class="card">
-          ${ad.image ? `<img src="${ad.image}mail}</p>
-          <p>📍 ${ad.location}</p>
-          <p>R${ad.price}</p>
-          <p>⭐ ${ad.rating || "No rating"}</p>
-          <p>${ad.delivery==="delivery" ? "🚚 Delivery" : "📦 Pickup"}</p>
-
-          <button onclick="openReview('${doc.id}')">⭐ Reviews</button>
-
-          <a href="https://wa.me/${ad.phone}" target="_    ${auth.currentUser?.uid === ad.user ? `
-            <button onclick="deleteAd('${doc.id}')">Delete</button>
-          ` : ""}
-        </div>
-      `;
-    });
-  });
-}
-
-loadAds();
-
-</script>
-
-</body>
-</html>
