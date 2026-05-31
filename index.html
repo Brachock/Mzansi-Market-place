@@ -1,227 +1,344 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mzansi Market</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mzansi Market</title>
 
-  <!-- ✅ Firebase Compat -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+<!-- ✅ Firebase Compat -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 
-  <style>
-    body {
-      font-family: Arial;
-      background: #f2f2f2;
-      margin: 0;
-      padding-bottom: 40px;
-    }
-    header {
-      background: #1e5aa8;
-      color: white;
-      text-align: center;
-      padding: 15px;
-      font-size: 24px;
-      font-weight: bold;
-    }
-   .form-box {
-      background: #eee;
-      padding: 20px;
-      margin: 20px auto;
-      max-width: 400px;
-      border-radius: 10px;
-    }
-    input, select {
-      width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
-    }
-    button {
-      width: 100%;
-      padding: 12px;
-      background: #1e5aa8;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    button:disabled { background: #aaa; }
-    #ads {
-      max-width: 500px;
-      margin: auto;
-    }
-   .card {
-      background: white;
-      padding: 15px;
-      margin: 15px;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-   .card img {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-      border-radius: 8px;
-      margin-bottom: 10px;
-    }
-   .card a {
-      display: inline-block;
-      margin-top: 10px;
-      background: #25D366;
-      color: white;
-      padding: 10px 14px;
-      border-radius: 5px;
-      text-decoration: none;
-      font-weight: bold;
-    }
-    #progress { display: none; color: #1e5aa8; margin-top: 5px; }
-  </style>
+<style>
+body {
+  font-family: Arial;
+  margin:0;
+  background:#f2f2f2;
+}
+.navbar {
+  background:#1e5aa8;
+  color:white;
+  padding:15px;
+  font-size:20px;
+  font-weight:bold;
+}
+.form-box {
+  background:#eee;
+  padding:15px;
+  margin:15px auto;
+  border-radius:10px;
+  max-width:400px;
+}
+input, select {
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+  border-radius:5px;
+  border:1px solid #ccc;
+  box-sizing:border-box;
+}
+button {
+  width:100%;
+  padding:10px;
+  background:#1e5aa8;
+  color:white;
+  border:none;
+  margin-top:5px;
+  border-radius:5px;
+  font-weight:bold;
+  cursor:pointer;
+}
+.card {
+  background:white;
+  padding:15px;
+  margin:15px auto;
+  border-radius:10px;
+  max-width:500px;
+  box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+.card img {
+  width:100%;
+  height:220px;
+  object-fit:cover;
+  border-radius:10px;
+  margin-bottom:10px;
+}
+.wa-btn {
+  display:inline-block;
+  margin-top:10px;
+  background:#25D366;
+  color:white;
+  padding:10px 14px;
+  border-radius:5px;
+  text-decoration:none;
+  font-weight:bold;
+}
+.delete-btn { background:#dc3545; }
+.review-btn { background:#ffc107; color:#000; }
+#userInfo { text-align:center; padding:10px; }
+</style>
 </head>
 
 <body>
 
-<header>🛒 Mzansi Market</header>
+<div class="navbar">🇿🇦 Mzansi Market</div>
+<div id="userInfo">Not logged in</div>
 
+<!-- LOGIN -->
 <div class="form-box">
-  <select id="category">
-    <option value="">Select Category</option>
+  <input id="email" placeholder="Email" type="email">
+  <input id="password" type="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+  <button onclick="signup()">Sign Up</button>
+  <button onclick="logout()">Logout</button>
+</div>
+
+<!-- SEARCH + FILTER -->
+<div class="form-box">
+  <input id="search" placeholder="Search product..." oninput="loadAds()">
+  <select id="filterCategory" onchange="loadAds()">
+    <option value="">All Categories</option>
     <option>Dairy</option>
-    <option>Fresh Produce</option>
-    <option>Bakery</option>
-    <option>Meat</option>
-    <option>Groceries</option>
+    <option>Cars</option>
     <option>Electronics</option>
     <option>Furniture</option>
     <option>Clothes</option>
-    <option>Other</option>
+  </select>
+  <input id="locationFilter" placeholder="Location - e.g. Bloemfontein" oninput="loadAds()">
+</div>
+
+<!-- POST AD - Only shows when logged in -->
+<div class="form-box" id="postBox" style="display:none;">
+  <h3>Post New Ad</h3>
+  <input id="title" placeholder="Product name">
+  <input id="price" placeholder="Price" type="number">
+  <input id="phone" placeholder="WhatsApp 2782XXXXXXX no + or 0">
+  <input id="location" placeholder="Location - e.g. Bloemfontein">
+
+  <select id="category">
+    <option>Dairy</option>
+    <option>Cars</option>
+    <option>Electronics</option>
+    <option>Furniture</option>
+    <option>Clothes</option>
   </select>
 
-  <input id="title" placeholder="Product name - e.g. iPhone 11">
-  <input id="price" placeholder="Price - e.g. 4500" type="number">
-  <input id="phone" placeholder="WhatsApp number - 2782XXXXXXX no + or 0">
+  <select id="delivery">
+    <option value="pickup">Pickup</option>
+    <option value="delivery">Delivery</option>
+  </select>
 
+  <input id="deliveryPrice" placeholder="Delivery Fee - e.g. 50" type="number">
   <input type="file" id="image" accept="image/*">
-  <div id="progress">Uploading image...</div>
-
-  <button id="postBtn" onclick="postAd()">Post Ad</button>
+  <button onclick="postAd()">Post Ad</button>
 </div>
 
 <div id="ads">Loading...</div>
 
+<!-- REVIEWS -->
+<div id="reviewBox" class="form-box" style="display:none;">
+  <h3>⭐ Reviews</h3>
+  <select id="rating">
+    <option value="5">⭐</option>
+    <option value="4">⭐</option>
+    <option value="3">⭐</option>
+    <option value="2">⭐</option>
+    <option value="1">⭐</option>
+  </select>
+  <input id="reviewText" placeholder="Write review">
+  <button onclick="submitReview()">Submit</button>
+  <div id="reviewList"></div>
+  <button onclick="closeReview()">Close</button>
+</div>
+
 <script>
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com"
-  };
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com"
+};
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-  const storage = firebase.storage();
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+const storage = firebase.storage();
 
-  async function postAd() {
-    const category = document.getElementById("category").value;
-    const title = document.getElementById("title").value.trim();
-    const price = document.getElementById("price").value.trim();
-    let phone = document.getElementById("phone").value.trim();
-    const file = document.getElementById("image").files[0];
-    const btn = document.getElementById("postBtn");
-    const progress = document.getElementById("progress");
+let currentAd = "";
 
-    if (!category ||!title ||!price ||!phone) {
-      alert("Fill all fields + select category");
-      return;
-    }
+/* AUTH */
+function signup(){
+  auth.createUserWithEmailAndPassword(email.value,password.value)
+  .then(()=>alert("Account created!"))
+  .catch(e=>alert(e.message));
+}
 
-    phone = phone.replace(/\+|\s|0/g, '');
-    if (!phone.startsWith('27') || phone.length!== 11) {
-      alert("Phone must be 11 digits starting with 27. Example: 27825551234");
-      return;
-    }
+function login(){
+  auth.signInWithEmailAndPassword(email.value,password.value)
+  .catch(e=>alert(e.message));
+}
 
-    btn.disabled = true;
-    let imageUrl = "";
+function logout(){
+  auth.signOut();
+}
 
-    // 1. Upload image to Firebase Storage if selected
-    if (file) {
-      progress.style.display = "block";
-      const fileName = Date.now() + "_" + file.name;
-      const storageRef = storage.ref('ads/' + fileName);
+auth.onAuthStateChanged(user=>{
+  document.getElementById("userInfo").innerHTML = user ? "Logged in: "+user.email : "Not logged in";
+  document.getElementById("postBox").style.display = user ? "block" : "none";
+});
 
-      try {
-        const snapshot = await storageRef.put(file);
-        imageUrl = await snapshot.ref.getDownloadURL();
-        progress.style.display = "none";
-      } catch(e) {
-        alert("Image upload failed: " + e.message);
-        btn.disabled = false;
-        return;
-      }
-    }
-
-    // 2. Save ad to Firestore
-    try {
-      await db.collection("ads").add({
-        category: category,
-        title: title,
-        price: price,
-        phone: phone,
-        imageUrl: imageUrl,
-        createdAt: new Date()
-      });
-
-      alert("Ad posted!");
-      document.getElementById("category").value = "";
-      document.getElementById("title").value = "";
-      document.getElementById("price").value = "";
-      document.getElementById("phone").value = "";
-      document.getElementById("image").value = "";
-      btn.disabled = false;
-      loadAds();
-    } catch(e) {
-      alert("Error: " + e.message);
-      btn.disabled = false;
-    }
+/* POST AD with Firebase Storage */
+async function postAd(){
+  if(!auth.currentUser){
+    alert("Login first");
+    return;
   }
 
-  function loadAds() {
-    const adsDiv = document.getElementById("ads");
-    adsDiv.innerHTML = "Loading...";
+  const btn = event.target;
+  btn.disabled = true;
+  btn.innerText = "Posting...";
 
-    db.collection("ads").orderBy("createdAt", "desc").get()
-   .then(snapshot => {
-      adsDiv.innerHTML = "";
+  let phone = document.getElementById("phone").value.replace(/\+|\s|0/g, '');
+  if(!phone.startsWith('27') || phone.length !== 11){
+    alert("Phone must be 11 digits starting with 27");
+    btn.disabled = false;
+    btn.innerText = "Post Ad";
+    return;
+  }
 
-      if (snapshot.empty) {
-        adsDiv.innerHTML = "<p style='text-align:center'>No ads yet. Be the first to post!</p>";
-        return;
-      }
+  let imageUrl = "";
+  const file = document.getElementById("image").files[0];
 
-      snapshot.forEach(doc => {
-        const ad = doc.data();
-        const imgTag = ad.imageUrl? `<img src="${ad.imageUrl}" alt="${ad.title}">` : "";
+  if(file){
+    const fileName = Date.now() + "_" + file.name;
+    const ref = storage.ref('ads/' + fileName);
+    const snap = await ref.put(file);
+    imageUrl = await snap.ref.getDownloadURL();
+  }
 
-        adsDiv.innerHTML += `
-          <div class="card">
-            ${imgTag}
-            <p style="color:#1e5aa8;font-size:12px;margin:0">${ad.category}</p>
-            <h3 style="margin:5px 0">${ad.title}</h3>
-            <p><b>R${ad.price}</b></p>
-            <a href="https://wa.me/${ad.phone}" target="_blank">📲 WhatsApp Seller</a>
-          </div>
-        `;
-      });
+  db.collection("ads").add({
+    title: document.getElementById("title").value,
+    price: document.getElementById("price").value,
+    phone: phone,
+    category: document.getElementById("category").value,
+    location: document.getElementById("location").value,
+    delivery: document.getElementById("delivery").value,
+    deliveryPrice: document.getElementById("deliveryPrice").value,
+    imageUrl: imageUrl,
+    user: auth.currentUser.uid,
+    email: auth.currentUser.email,
+    rating: "No rating",
+    createdAt: new Date()
+  }).then(()=>{
+    alert("Ad posted!");
+    document.getElementById("postBox").querySelectorAll("input").forEach(i=>i.value="");
+    btn.disabled = false;
+    btn.innerText = "Post Ad";
+    loadAds();
+  }).catch(e=>{
+    alert(e.message);
+    btn.disabled = false;
+    btn.innerText = "Post Ad";
+  });
+}
+
+/* DELETE */
+function deleteAd(id){
+  if(confirm("Delete this ad?")){
+    db.collection("ads").doc(id).delete().then(loadAds);
+  }
+}
+
+/* REVIEWS */
+function openReview(id){
+  currentAd = id;
+  document.getElementById("reviewBox").style.display = "block";
+  loadReviews();
+}
+
+function closeReview(){
+  document.getElementById("reviewBox").style.display = "none";
+}
+
+function submitReview(){
+  db.collection("reviews").add({
+    adId: currentAd,
+    rating: Number(document.getElementById("rating").value),
+    text: document.getElementById("reviewText").value,
+    createdAt: new Date()
+  }).then(()=>{
+    document.getElementById("reviewText").value = "";
+    loadReviews();
+  });
+}
+
+function loadReviews(){
+  db.collection("reviews").where("adId","==",currentAd).orderBy("createdAt","desc").get()
+  .then(s=>{
+    const reviewList = document.getElementById("reviewList");
+    reviewList.innerHTML = "";
+    let total = 0, count = 0;
+
+    s.forEach(d=>{
+      let r = d.data();
+      total += r.rating;
+      count++;
+      reviewList.innerHTML += `<p>${'⭐'.repeat(r.rating)} - ${r.text}</p>`;
     });
-  }
 
-  loadAds();
+    let avg = count ? (total/count).toFixed(1) : "No rating";
+    db.collection("ads").doc(currentAd).update({rating: avg});
+  });
+}
+
+/* LOAD ADS with Search + Filter */
+function loadAds(){
+  const sVal = document.getElementById("search").value.toLowerCase();
+  const cat = document.getElementById("filterCategory").value;
+  const loc = document.getElementById("locationFilter").value.toLowerCase();
+
+  db.collection("ads").orderBy("createdAt","desc").get()
+  .then(snapshot=>{
+    const adsDiv = document.getElementById("ads");
+    adsDiv.innerHTML = "";
+
+    if(snapshot.empty){
+      adsDiv.innerHTML = "<p style='text-align:center'>No ads yet</p>";
+      return;
+    }
+
+    snapshot.forEach(doc=>{
+      let ad = doc.data();
+
+      if(sVal && !ad.title.toLowerCase().includes(sVal)) return;
+      if(cat && ad.category !== cat) return;
+      if(loc && !ad.location?.toLowerCase().includes(loc)) return;
+
+      const imgTag = ad.imageUrl ? `<img src="${ad.imageUrl}" alt="${ad.title}">` : "";
+      const delBtn = auth.currentUser?.uid === ad.user ? 
+        `<button class="delete-btn" onclick="deleteAd('${doc.id}')">Delete</button>` : "";
+
+      adsDiv.innerHTML += `
+        <div class="card">
+          ${imgTag}
+          <p style="color:#1e5aa8;font-size:12px;margin:0">${ad.category} • ${ad.location || ''}</p>
+          <h3 style="margin:5px 0">${ad.title}</h3>
+          <p><b>R${ad.price}</b></p>
+          <p>⭐ ${ad.rating || "No rating"}</p>
+          <p>${ad.delivery==="delivery" ? "🚚 Delivery R"+(ad.deliveryPrice||0) : "📦 Pickup"}</p>
+
+          <button class="review-btn" onclick="openReview('${doc.id}')">⭐ Reviews</button>
+          <a class="wa-btn" href="https://wa.me/${ad.phone}" target="_blank">📲 WhatsApp</a>
+          ${delBtn}
+        </div>
+      `;
+    });
+  });
+}
+
+loadAds();
 </script>
 
 </body>
