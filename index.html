@@ -16,6 +16,9 @@ body{font-family:Arial;margin:0;background:#f2f2f2;padding-bottom:80px}
 input,select,textarea{width:100%;padding:8px;margin:4px 0;border-radius:5px;border:1px solid #ccc;box-sizing:border-box;font-size:14px}
 button{width:100%;padding:10px;background:#1e5aa8;color:white;border:none;margin-top:5px;border-radius:5px;font-weight:bold;cursor:pointer}
 button:disabled{background:#999}
+.cat-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}
+.cat-btn{padding:8px 4px;background:white;border:2px solid #1e5aa8;color:#1e5aa8;border-radius:6px;font-size:12px;cursor:pointer;font-weight:bold}
+.cat-btn.active{background:#1e5aa8;color:white}
 .card{background:white;padding:12px;margin:10px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
 .card img{width:100%;height:200px;object-fit:cover;border-radius:6px;margin-bottom:8px}
 .wa-btn{display:inline-block;margin-top:6px;background:#25D366;color:white;padding:8px 12px;border-radius:5px;text-decoration:none;font-weight:bold;font-size:13px}
@@ -27,27 +30,44 @@ small{font-size:11px;color:#666;display:block;margin-bottom:4px}
 
 <div class="navbar">🇿🇦 Mzansi Market</div>
 
-<!-- ADS -->
+<!-- 1. CATEGORIES + SEARCH FIRST -->
+<div class="form-box">
+  <div class="section-title">Browse Categories</div>
+  <input id="search" placeholder="Search product..." oninput="loadAds()">
+  <input id="locationFilter" placeholder="Location - e.g. Bloemfontein" oninput="loadAds()">
+  <div class="cat-btns">
+    <button class="cat-btn active" onclick="filterCat('')">All</button>
+    <button class="cat-btn" onclick="filterCat('Dairy')">🥛 Dairy</button>
+    <button class="cat-btn" onclick="filterCat('Cars')">🚗 Cars</button>
+    <button class="cat-btn" onclick="filterCat('Electronics')">📱 Electronics</button>
+    <button class="cat-btn" onclick="filterCat('Furniture')">🪑 Furniture</button>
+    <button class="cat-btn" onclick="filterCat('Clothes')">👕 Clothes</button>
+    <button class="cat-btn" onclick="filterCat('Other')">📦 Other</button>
+  </div>
+</div>
+
+<!-- 2. ADS SHOW HERE -->
 <div id="ads">Loading...</div>
 
-<!-- POST AD -->
+<!-- 3. POST AD AT BOTTOM -->
 <div class="form-box">
   <div class="section-title">Post New Ad</div>
   <input id="title" placeholder="Product name" required>
   <input id="price" placeholder="Price" type="number" required>
   <textarea id="description" placeholder="Description"></textarea>
   <input id="phone" placeholder="27826405603" required>
-  <small>⚠️ IMPORTANT: Start with 27. Example: 27826405603. NOT 082...</small>
+  <small>Type 082... or 27... it will auto-fix</small>
   <input id="pin" placeholder="4 digit PIN" type="password" maxlength="6" required>
   <select id="category">
-    <option>Dairy</option><option>Cars</option><option>Electronics</option><option>Other</option>
+    <option>Dairy</option><option>Cars</option><option>Electronics</option>
+    <option>Furniture</option><option>Clothes</option><option>Other</option>
   </select>
   <input type="file" id="image" accept="image/*">
   <button id="postBtn" onclick="postAd()">Post Ad</button>
 </div>
 
 <script>
-// ⚠️⚠️ REPLACE THESE 4 LINES WITH YOUR REAL FIREBASE CONFIG FROM CONSOLE ⚠️⚠️
+// ⚠️ REPLACE WITH YOUR REAL FIREBASE CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
   authDomain: "your-project.firebaseapp.com",
@@ -59,29 +79,32 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const storage = firebase.storage();
 
+let activeCategory = "";
+
+function fixPhone(num){
+  let phone = num.replace(/\s|\+|\-/g, '');
+  if(phone.startsWith('0')) phone = '27' + phone.substring(1);
+  if(!phone.startsWith('27')) phone = '27' + phone;
+  return phone;
+}
+
+function filterCat(cat){
+  activeCategory = cat;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  loadAds();
+}
+
 async function postAd(){
   const btn = document.getElementById("postBtn");
   btn.disabled = true;
   btn.innerText = "Posting...";
 
   try{
-    // Get phone and fix it properly
-    let rawPhone = document.getElementById("phone").value.trim();
-    let phone = rawPhone.replace(/\s|\+|\-/g, '');
-
-    // If starts with 0, remove it and add 27
-    if(phone.startsWith('0')){
-      phone = '27' + phone.substring(1);
-    }
-    // If doesn't start with 27, add it
-    if(!phone.startsWith('27')){
-      phone = '27' + phone;
-    }
-
+    let phone = fixPhone(document.getElementById("phone").value);
     let pin = document.getElementById("pin").value.trim();
 
-    if(phone.length!== 11) throw new Error("Phone must be exactly 11 digits. You entered: " + phone + " which is " + phone.length + " digits");
-    if(!phone.startsWith('27')) throw new Error("Phone must start with 27. You entered: " + phone);
+    if(phone.length!== 11) throw new Error("Phone must be 11 digits. You typed: " + phone);
     if(pin.length < 4) throw new Error("PIN must be 4+ digits");
 
     let imageUrl = "";
@@ -100,18 +123,19 @@ async function postAd(){
       description: document.getElementById("description").value.trim(),
       phone: phone,
       category: document.getElementById("category").value,
+      location: document.getElementById("locationFilter").value.trim(),
       imageUrl: imageUrl,
       pin: pin,
-      createdAt: new Date()
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    alert("✅ POSTED SUCCESSFULLY!");
+    alert("✅ Posted successfully!");
     document.querySelectorAll('#title,#price,#description,#phone,#pin').forEach(i=>i.value="");
     document.getElementById("image").value = "";
     loadAds();
 
   }catch(e){
-    alert("❌ ERROR:\n\n" + e.message);
+    alert("❌ ERROR: " + e.message);
     console.error(e);
   }
 
@@ -119,8 +143,12 @@ async function postAd(){
   btn.innerText = "Post Ad";
 }
 
+// FIXED: No orderBy so ads don't disappear. Sort in JS
 function loadAds(){
-  db.collection("ads").orderBy("createdAt","desc").get()
+  let sVal = document.getElementById("search").value.toLowerCase();
+  let loc = document.getElementById("locationFilter").value.toLowerCase();
+
+  db.collection("ads").get()
 .then(snapshot=>{
     const adsDiv = document.getElementById("ads");
     adsDiv.innerHTML = "";
@@ -128,13 +156,24 @@ function loadAds(){
       adsDiv.innerHTML = "<p style='text-align:center;padding:20px'>No ads yet. Post below!</p>";
       return;
     }
-    snapshot.forEach(doc=>{
-      let ad = doc.data();
+
+    let ads = [];
+    snapshot.forEach(doc=> ads.push({id: doc.id, data: doc.data()}));
+
+    // Sort newest first, handle missing createdAt
+    ads.sort((a,b)=> (b.data.createdAt?.seconds||0) - (a.data.createdAt?.seconds||0));
+
+    ads.forEach(item=>{
+      let ad = item.data;
+      if(sVal &&!ad.title.toLowerCase().includes(sVal)) return;
+      if(activeCategory && ad.category!== activeCategory) return;
+      if(loc &&!ad.location?.toLowerCase().includes(loc)) return;
+
       const imgTag = ad.imageUrl? `<img src="${ad.imageUrl}">` : "";
       adsDiv.innerHTML += `
         <div class="card">
           ${imgTag}
-          <p style="color:#1e5aa8;font-size:11px">${ad.category}</p>
+          <p style="color:#1e5aa8;font-size:11px">${ad.category} • 📍 ${ad.location || 'SA'}</p>
           <h3>${ad.title}</h3>
           <p><b>R${ad.price}</b></p>
           <p>${ad.description || ''}</p>
@@ -142,7 +181,7 @@ function loadAds(){
         </div>`;
     });
   }).catch(e=> {
-    document.getElementById("ads").innerHTML = "<p style='color:red;text-align:center'>Error loading: " + e.message + "</p>";
+    document.getElementById("ads").innerHTML = "<p style='color:red;text-align:center'>Error: " + e.message + "</p>";
   });
 }
 
