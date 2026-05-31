@@ -1,45 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mzansi Market</title>
 
+<!-- ✅ FIXED FIREBASE LINKS -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 
 <style>
 body {
   font-family: Arial;
   margin:0;
   background:#f2f2f2;
-  padding-bottom:40px;
 }
+
 .navbar {
   background:#1e5aa8;
   color:white;
   padding:15px;
   font-size:20px;
-  font-weight:bold;
-  text-align:center;
 }
+
 .form-box {
   background:#eee;
   padding:15px;
-  margin:15px auto;
+  margin:15px;
   border-radius:10px;
   max-width:400px;
 }
+
 input, select {
   width:100%;
   padding:10px;
   margin:5px 0;
-  border-radius:5px;
-  border:1px solid #ccc;
-  box-sizing:border-box;
 }
+
 button {
   width:100%;
   padding:10px;
@@ -47,49 +44,31 @@ button {
   color:white;
   border:none;
   margin-top:5px;
-  border-radius:5px;
-  font-weight:bold;
-  cursor:pointer;
 }
+
 .card {
   background:white;
   padding:15px;
-  margin:15px auto;
+  margin:15px;
   border-radius:10px;
-  max-width:500px;
-  box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
-.card img {
+
+img {
   width:100%;
-  height:220px;
-  object-fit:cover;
   border-radius:10px;
-  margin-bottom:10px;
 }
-.wa-btn {
-  display:inline-block;
-  margin-top:10px;
-  background:#25D366;
-  color:white;
-  padding:10px 14px;
-  border-radius:5px;
-  text-decoration:none;
-  font-weight:bold;
-}
-.edit-btn { background:#ffc107; color:#000; }
-.delete-btn { background:#dc3545; }
-#userInfo { text-align:center; padding:10px; font-weight:bold; }
 </style>
 </head>
 
 <body>
 
 <div class="navbar">🇿🇦 Mzansi Market</div>
-<div id="userInfo">Not logged in</div>
+
+<div id="userInfo"></div>
 
 <!-- LOGIN -->
 <div class="form-box">
-  <input id="email" placeholder="Email" type="email">
+  <input id="email" placeholder="Email">
   <input id="password" type="password" placeholder="Password">
   <button onclick="login()">Login</button>
   <button onclick="signup()">Sign Up</button>
@@ -98,32 +77,29 @@ button {
 
 <!-- SEARCH -->
 <div class="form-box">
-  <input id="search" placeholder="Search product..." oninput="loadAds()">
+  <input id="search" placeholder="Search..." oninput="loadAds()">
+
   <select id="filterCategory" onchange="loadAds()">
     <option value="">All Categories</option>
     <option>Dairy</option>
     <option>Cars</option>
     <option>Electronics</option>
-    <option>Furniture</option>
-    <option>Clothes</option>
   </select>
-  <input id="locationFilter" placeholder="Location - e.g. Bloemfontein" oninput="loadAds()">
+
+  <input id="locationFilter" placeholder="Location" oninput="loadAds()">
 </div>
 
 <!-- POST -->
 <div class="form-box" id="postBox" style="display:none;">
-  <h3>Post New Ad</h3>
-  <input id="title" placeholder="Product name">
-  <input id="price" placeholder="Price" type="number">
-  <input id="phone" placeholder="WhatsApp 2782XXXXXXX no + or 0">
+  <input id="title" placeholder="Product">
+  <input id="price" placeholder="Price">
+  <input id="phone" placeholder="WhatsApp 27XXXXXXXXX">
   <input id="location" placeholder="Location">
 
   <select id="category">
     <option>Dairy</option>
     <option>Cars</option>
     <option>Electronics</option>
-    <option>Furniture</option>
-    <option>Clothes</option>
   </select>
 
   <select id="delivery">
@@ -131,33 +107,11 @@ button {
     <option value="delivery">Delivery</option>
   </select>
 
-  <input id="deliveryPrice" placeholder="Delivery Fee" type="number">
-  <input type="file" id="image" accept="image/*">
-  <button onclick="postAd()">Post Ad</button>
-</div>
+  <input id="deliveryPrice" placeholder="Delivery Fee">
 
-<!-- EDIT AD BOX - Hidden until Edit clicked -->
-<div class="form-box" id="editBox" style="display:none;">
-  <h3>Edit Ad</h3>
-  <input id="editTitle" placeholder="Product name">
-  <input id="editPrice" placeholder="Price" type="number">
-  <input id="editPhone" placeholder="WhatsApp 2782XXXXXXX">
-  <input id="editLocation" placeholder="Location">
-  <select id="editCategory">
-    <option>Dairy</option>
-    <option>Cars</option>
-    <option>Electronics</option>
-    <option>Furniture</option>
-    <option>Clothes</option>
-  </select>
-  <select id="editDelivery">
-    <option value="pickup">Pickup</option>
-    <option value="delivery">Delivery</option>
-  </select>
-  <input id="editDeliveryPrice" placeholder="Delivery Fee" type="number">
-  <input type="file" id="editImage" accept="image/*">
-  <button onclick="saveEdit()">Save Changes</button>
-  <button onclick="cancelEdit()" style="background:#666">Cancel</button>
+  <input type="file" id="image">
+
+  <button onclick="postAd()">Post Ad</button>
 </div>
 
 <div id="ads">Loading...</div>
@@ -165,45 +119,44 @@ button {
 <!-- REVIEWS -->
 <div id="reviewBox" class="form-box" style="display:none;">
   <h3>⭐ Reviews</h3>
+
   <select id="rating">
-    <option value="5">⭐</option>
-    <option value="4">⭐</option>
-    <option value="3">⭐</option>
-    <option value="2">⭐</option>
+    <option value="5">⭐⭐⭐⭐⭐</option>
+    <option value="4">⭐⭐⭐⭐</option>
+    <option value="3">⭐⭐⭐</option>
+    <option value="2">⭐⭐</option>
     <option value="1">⭐</option>
   </select>
+
   <input id="reviewText" placeholder="Write review">
   <button onclick="submitReview()">Submit</button>
+
   <div id="reviewList"></div>
-  <button onclick="reviewBox.style.display='none'">Close</button>
 </div>
 
 <script>
+
+// ✅ REPLACE WITH YOUR REAL FIREBASE KEYS
 const firebaseConfig = {
   apiKey: "PASTE_YOUR_REAL_API_KEY",
   authDomain: "PASTE_YOUR_AUTH_DOMAIN",
-  projectId: "PASTE_YOUR_PROJECT_ID",
-  storageBucket: "PASTE_YOUR_PROJECT_ID.appspot.com"
+  projectId: "PASTE_YOUR_PROJECT_ID"
 };
 
 firebase.initializeApp(firebaseConfig);
+
 const db = firebase.firestore();
 const auth = firebase.auth();
-const storage = firebase.storage();
-
-let currentAd = "";
-let editingAdId = "";
 
 /* AUTH */
 function signup(){
   auth.createUserWithEmailAndPassword(email.value,password.value)
- .then(()=>alert("Account created!"))
- .catch(e=>alert(e.message));
+  .catch(e=>alert(e.message));
 }
 
 function login(){
   auth.signInWithEmailAndPassword(email.value,password.value)
- .catch(e=>alert(e.message));
+  .catch(e=>alert(e.message));
 }
 
 function logout(){
@@ -211,193 +164,120 @@ function logout(){
 }
 
 auth.onAuthStateChanged(user=>{
-  document.getElementById("userInfo").innerHTML = user? "Logged in: "+user.email : "Not logged in";
-  document.getElementById("postBox").style.display = user? "block" : "none";
+  userInfo.innerHTML = user ? "Logged in: "+user.email : "Not logged in";
+  postBox.style.display = user ? "block" : "none";
 });
+
+/* IMAGE */
+function getBase64(file){
+  return new Promise(res=>{
+    let r=new FileReader();
+    r.readAsDataURL(file);
+    r.onload=()=>res(r.result);
+  });
+}
 
 /* POST */
 async function postAd(){
-  if(!auth.currentUser) return alert("Login first");
+  if(!auth.currentUser){
+    alert("Login first");
+    return;
+  }
 
-  let phone = document.getElementById("phone").value.replace(/\+|\s|0/g, '');
-  if(!phone.startsWith('27') || phone.length!== 11) return alert("Phone must be 11 digits starting with 27");
-
-  let imageUrl = "";
-  const file = document.getElementById("image").files[0];
-  if(file){
-    const ref = storage.ref('ads/' + Date.now() + "_" + file.name);
-    const snap = await ref.put(file);
-    imageUrl = await snap.ref.getDownloadURL();
+  let img="";
+  if(image.files[0]){
+    img = await getBase64(image.files[0]);
   }
 
   db.collection("ads").add({
-    title: document.getElementById("title").value,
-    price: document.getElementById("price").value,
-    phone: phone,
-    category: document.getElementById("category").value,
-    location: document.getElementById("location").value,
-    delivery: document.getElementById("delivery").value,
-    deliveryPrice: document.getElementById("deliveryPrice").value,
-    imageUrl: imageUrl,
-    user: auth.currentUser.uid,
-    email: auth.currentUser.email,
-    rating: "No rating",
-    createdAt: new Date()
+    title:title.value,
+    price:price.value,
+    phone:phone.value,
+    category:category.value,
+    location:location.value,
+    delivery:delivery.value,
+    deliveryPrice:deliveryPrice.value,
+    image:img,
+    user:auth.currentUser.uid,
+    email:auth.currentUser.email,
+    createdAt:new Date()
   }).then(()=>{
     alert("Ad posted!");
-    document.getElementById("postBox").querySelectorAll("input").forEach(i=>i.value="");
     loadAds();
   });
 }
 
-/* EDIT AD - New function */
-function editAd(id, adData){
-  editingAdId = id;
-  document.getElementById("editBox").style.display = "block";
-  document.getElementById("postBox").style.display = "none";
-
-  // Fill form with current data
-  document.getElementById("editTitle").value = adData.title;
-  document.getElementById("editPrice").value = adData.price;
-  document.getElementById("editPhone").value = adData.phone;
-  document.getElementById("editLocation").value = adData.location || "";
-  document.getElementById("editCategory").value = adData.category;
-  document.getElementById("editDelivery").value = adData.delivery;
-  document.getElementById("editDeliveryPrice").value = adData.deliveryPrice || "";
-
-  window.scrollTo(0, 0); // Scroll to top
-}
-
-function cancelEdit(){
-  document.getElementById("editBox").style.display = "none";
-  document.getElementById("postBox").style.display = auth.currentUser? "block" : "none";
-  editingAdId = "";
-}
-
-async function saveEdit(){
-  if(!editingAdId) return;
-
-  let phone = document.getElementById("editPhone").value.replace(/\+|\s|0/g, '');
-  if(!phone.startsWith('27') || phone.length!== 11) return alert("Phone must be 11 digits starting with 27");
-
-  let updateData = {
-    title: document.getElementById("editTitle").value,
-    price: document.getElementById("editPrice").value,
-    phone: phone,
-    location: document.getElementById("editLocation").value,
-    category: document.getElementById("editCategory").value,
-    delivery: document.getElementById("editDelivery").value,
-    deliveryPrice: document.getElementById("editDeliveryPrice").value
-  };
-
-  // If new image uploaded, replace old one
-  const file = document.getElementById("editImage").files[0];
-  if(file){
-    const ref = storage.ref('ads/' + Date.now() + "_" + file.name);
-    const snap = await ref.put(file);
-    updateData.imageUrl = await snap.ref.getDownloadURL();
-  }
-
-  db.collection("ads").doc(editingAdId).update(updateData)
- .then(()=>{
-    alert("Ad updated!");
-    cancelEdit();
-    loadAds();
-  }).catch(e=>alert(e.message));
-}
-
 /* DELETE */
 function deleteAd(id){
-  if(confirm("Delete this ad?")){
-    db.collection("ads").doc(id).delete().then(loadAds);
-  }
+  db.collection("ads").doc(id).delete().then(loadAds);
 }
 
 /* REVIEWS */
+let currentAd="";
+
 function openReview(id){
-  currentAd = id;
-  document.getElementById("reviewBox").style.display = "block";
+  currentAd=id;
+  reviewBox.style.display="block";
   loadReviews();
 }
 
 function submitReview(){
   db.collection("reviews").add({
-    adId: currentAd,
-    rating: Number(document.getElementById("rating").value),
-    text: document.getElementById("reviewText").value,
-    createdAt: new Date()
-  }).then(()=>{
-    document.getElementById("reviewText").value = "";
-    loadReviews();
-  });
+    adId:currentAd,
+    rating:Number(rating.value),
+    text:reviewText.value
+  }).then(loadReviews);
 }
 
 function loadReviews(){
-  db.collection("reviews").where("adId","==",currentAd).orderBy("createdAt","desc").get()
- .then(s=>{
-    const reviewList = document.getElementById("reviewList");
-    reviewList.innerHTML = "";
-    let total = 0, count = 0;
+  db.collection("reviews").where("adId","==",currentAd).get()
+  .then(s=>{
+    reviewList.innerHTML="";
+    let total=0,count=0;
 
     s.forEach(d=>{
-      let r = d.data();
-      total += r.rating;
+      let r=d.data();
+      total+=r.rating;
       count++;
-      reviewList.innerHTML += `<p>${'⭐'.repeat(r.rating)} - ${r.text}</p>`;
+      reviewList.innerHTML+=`<p>${r.rating}⭐ - ${r.text}</p>`;
     });
 
-    let avg = count? (total/count).toFixed(1) : "No rating";
-    db.collection("ads").doc(currentAd).update({rating: avg});
+    let avg=count?(total/count).toFixed(1):"No rating";
+
+    db.collection("ads").doc(currentAd).update({rating:avg});
   });
 }
 
 /* LOAD ADS */
 function loadAds(){
-  let sVal = document.getElementById("search").value.toLowerCase();
-  let cat = document.getElementById("filterCategory").value;
-  let loc = document.getElementById("locationFilter").value.toLowerCase();
+  let sVal = search.value.toLowerCase();
+  let cat = filterCategory.value;
+  let loc = locationFilter.value.toLowerCase();
 
   db.collection("ads").orderBy("createdAt","desc").get()
- .then(snapshot=>{
-    const adsDiv = document.getElementById("ads");
-    adsDiv.innerHTML = "";
-
-    if(snapshot.empty){
-      adsDiv.innerHTML = "<p style='text-align:center'>No ads yet. Be first to post!</p>";
-      return;
-    }
+  .then(snapshot=>{
+    ads.innerHTML="";
 
     snapshot.forEach(doc=>{
       let ad = doc.data();
 
-      if(sVal &&!ad.title.toLowerCase().includes(sVal)) return;
-      if(cat && ad.category!== cat) return;
-      if(loc &&!ad.location?.toLowerCase().includes(loc)) return;
+      if(sVal && !ad.title.toLowerCase().includes(sVal)) return;
+      if(cat && ad.category !== cat) return;
+      if(loc && !ad.location?.toLowerCase().includes(loc)) return;
 
-      const imgTag = ad.imageUrl? `<img src="${ad.imageUrl}" alt="${ad.title}">` : "";
-
-      // Only show Edit/Delete buttons to the owner
-      let ownerBtns = "";
-      if(auth.currentUser?.uid === ad.user){
-        ownerBtns = `
-          <button class="edit-btn" onclick='editAd("${doc.id}", ${JSON.stringify(ad).replace(/'/g, "&apos;")})'>✏️ Edit</button>
-          <button class="delete-btn" onclick="deleteAd('${doc.id}')">🗑️ Delete</button>
-        `;
-      }
-
-      adsDiv.innerHTML += `
+      ads.innerHTML += `
         <div class="card">
-          ${imgTag}
-          <p style="color:#1e5aa8;font-size:12px;margin:0">${ad.category} • 📍 ${ad.location || ''}</p>
-          <h3 style="margin:5px 0">${ad.title}</h3>
-          <p><b>R${ad.price}</b></p>
+          ${ad.image ? `<img src="${ad.image}mail}</p>
+          <p>📍 ${ad.location}</p>
+          <p>R${ad.price}</p>
           <p>⭐ ${ad.rating || "No rating"}</p>
-          <p>${ad.delivery==="delivery"? "🚚 Delivery R"+(ad.deliveryPrice||0) : "📦 Pickup"}</p>
-          <p style="font-size:12px;color:#666">Posted by: ${ad.email}</p>
+          <p>${ad.delivery==="delivery" ? "🚚 Delivery" : "📦 Pickup"}</p>
 
           <button onclick="openReview('${doc.id}')">⭐ Reviews</button>
-          <a class="wa-btn" href="https://wa.me/${ad.phone}" target="_blank">📲 WhatsApp</a>
-          ${ownerBtns}
+
+          <a href="https://wa.me/${ad.phone}" target="_    ${auth.currentUser?.uid === ad.user ? `
+            <button onclick="deleteAd('${doc.id}')">Delete</button>
+          ` : ""}
         </div>
       `;
     });
@@ -405,6 +285,7 @@ function loadAds(){
 }
 
 loadAds();
+
 </script>
 
 </body>
