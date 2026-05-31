@@ -19,8 +19,8 @@ body {
 .navbar {
   background:#1e5aa8;
   color:white;
-  padding:15px;
-  font-size:22px;
+  padding:12px;
+  font-size:20px;
   font-weight:bold;
   text-align:center;
   position:sticky;
@@ -29,45 +29,48 @@ body {
 }
 .form-box {
   background:#eee;
-  padding:15px;
-  margin:15px auto;
-  border-radius:10px;
-  max-width:420px;
+  padding:12px;
+  margin:10px;
+  border-radius:8px;
 }
-input, select {
+input, select, textarea {
   width:100%;
-  padding:10px;
-  margin:6px 0;
+  padding:8px;
+  margin:4px 0;
   border-radius:5px;
   border:1px solid #ccc;
   box-sizing:border-box;
-  font-size:15px;
+  font-size:14px;
+}
+textarea {
+  resize:vertical;
+  min-height:60px;
 }
 button {
   width:100%;
-  padding:12px;
+  padding:10px;
   background:#1e5aa8;
   color:white;
   border:none;
-  margin-top:6px;
+  margin-top:5px;
   border-radius:5px;
   font-weight:bold;
   cursor:pointer;
-  font-size:15px;
+  font-size:14px;
 }
 .cat-btns {
   display:grid;
   grid-template-columns:repeat(4,1fr);
-  gap:8px;
-  margin:10px 0;
+  gap:6px;
+  margin:8px 0;
 }
 .cat-btn {
-  padding:10px 5px;
+  padding:8px 4px;
   background:white;
   border:2px solid #1e5aa8;
   color:#1e5aa8;
-  border-radius:8px;
-  font-size:13px;
+  border-radius:6px;
+  font-size:12px;
   cursor:pointer;
   font-weight:bold;
 }
@@ -77,61 +80,58 @@ button {
 }
 .card {
   background:white;
-  padding:15px;
-  margin:15px auto;
-  border-radius:10px;
-  max-width:520px;
-  box-shadow:0 2px 6px rgba(0,0,0,0.1);
+  padding:12px;
+  margin:10px;
+  border-radius:8px;
+  box-shadow:0 2px 4px rgba(0,0,0,0.1);
 }
 .card img {
   width:100%;
-  height:230px;
+  height:200px;
   object-fit:cover;
-  border-radius:8px;
-  margin-bottom:10px;
+  border-radius:6px;
+  margin-bottom:8px;
 }
+.card h3 { margin:4px 0; font-size:16px; }
+.card p { margin:3px 0; font-size:13px; }
 .wa-btn {
   display:inline-block;
-  margin-top:8px;
+  margin-top:6px;
   background:#25D366;
   color:white;
-  padding:10px 14px;
+  padding:8px 12px;
   border-radius:5px;
   text-decoration:none;
   font-weight:bold;
+  font-size:13px;
 }
 .edit-btn { background:#ffc107; color:#000; }
 .delete-btn { background:#dc3545; }
 .review-btn { background:#6c757d; }
 .recover-btn { background:#17a2b8; }
-#userInfo { text-align:center; padding:10px; font-weight:bold; color:#1e5aa8; }
 .whatsapp-float {
   position: fixed;
-  width: 170px;
-  height: 50px;
-  bottom: 20px;
-  right: 20px;
+  width: 55px;
+  height: 55px;
+  bottom: 15px;
+  right: 15px;
   background-color: #25D366;
   color: white;
-  border-radius: 25px;
-  text-align: center;
-  font-size: 15px;
-  font-weight: bold;
-  box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+  border-radius: 50%;
+  font-size: 26px;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
   z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
   text-decoration: none;
 }
-@media screen and (max-width: 600px) {
-.whatsapp-float {
-    width: 55px;
-    height: 55px;
-    border-radius: 50%;
-    font-size: 26px;
-  }
-.whatsapp-float span { display: none; }
+#userInfo { text-align:center; padding:8px; font-size:12px; color:#1e5aa8; }
+.section-title {
+  font-size:16px;
+  font-weight:bold;
+  margin:8px 10px;
+  color:#1e5aa8;
 }
 </style>
 </head>
@@ -139,13 +139,35 @@ button {
 <body>
 
 <div class="navbar">🇿🇦 Mzansi Market</div>
-<div id="userInfo">Browse & Post freely • Use PIN to recover your ads</div>
+<div id="userInfo">Browse ads below • Post at bottom</div>
 
-<!-- POST AD -->
+<!-- 1. CATEGORIES FIRST -->
 <div class="form-box">
-  <h3>Post New Ad</h3>
+  <div class="section-title">Browse Categories</div>
+  <input id="search" placeholder="Search product..." oninput="loadAds()">
+  <input id="locationFilter" placeholder="Location - e.g. Bloemfontein" oninput="loadAds()">
+
+  <div class="cat-btns">
+    <button class="cat-btn active" onclick="filterCat('')">All</button>
+    <button class="cat-btn" onclick="filterCat('Dairy')">🥛 Dairy</button>
+    <button class="cat-btn" onclick="filterCat('Cars')">🚗 Cars</button>
+    <button class="cat-btn" onclick="filterCat('Electronics')">📱 Electronics</button>
+    <button class="cat-btn" onclick="filterCat('Furniture')">🪑 Furniture</button>
+    <button class="cat-btn" onclick="filterCat('Clothes')">👕 Clothes</button>
+    <button class="cat-btn" onclick="filterCat('Personal')">💄 Personal</button>
+    <button class="cat-btn" onclick="filterCat('Other')">📦 Other</button>
+  </div>
+</div>
+
+<!-- 2. ADS SHOW HERE -->
+<div id="ads">Loading...</div>
+
+<!-- 3. POST AD AT BOTTOM -->
+<div class="form-box">
+  <div class="section-title">Post New Ad</div>
   <input id="title" placeholder="Product name" required>
   <input id="price" placeholder="Price" type="number" required>
+  <textarea id="description" placeholder="Description - what are you selling?"></textarea>
   <input id="phone" placeholder="WhatsApp 2782XXXXXXX no + or 0" required>
   <input id="location" placeholder="Location - e.g. Bloemfontein">
   <input id="pin" placeholder="4-6 digit Recovery PIN" type="password" maxlength="6" required>
@@ -168,23 +190,23 @@ button {
   <input id="deliveryPrice" placeholder="Delivery Fee" type="number">
   <input type="file" id="image" accept="image/*">
   <button id="postBtn" onclick="postAd()">Post Ad</button>
-  <p style="font-size:12px;color:#666">🔒 Save this PIN! Use it to recover your ad if you lose browser data.</p>
+  <p style="font-size:11px;color:#666;margin:4px 0">🔒 Save PIN! Use it to recover your ad.</p>
 </div>
 
-<!-- RECOVER ACCESS -->
+<!-- 4. RECOVERY PIN AT VERY BOTTOM -->
 <div class="form-box">
-  <h3>🔑 Lost Edit Access?</h3>
-  <input id="recoverAdId" placeholder="Ad ID - ask admin if you lost it">
-  <input id="recoverPin" placeholder="Enter your Recovery PIN" type="password" maxlength="6">
+  <div class="section-title">🔑 Lost Edit Access?</div>
+  <input id="recoverAdId" placeholder="Ad ID">
+  <input id="recoverPin" placeholder="Enter Recovery PIN" type="password" maxlength="6">
   <button class="recover-btn" onclick="recoverAccess()">Recover My Ad</button>
-  <p style="font-size:12px">After recovery, you can edit/delete from this browser again.</p>
 </div>
 
-<!-- EDIT AD -->
+<!-- EDIT AD - Hidden -->
 <div class="form-box" id="editBox" style="display:none;">
-  <h3>Edit Ad</h3>
+  <div class="section-title">Edit Ad</div>
   <input id="editTitle" placeholder="Product name">
   <input id="editPrice" placeholder="Price" type="number">
+  <textarea id="editDescription" placeholder="Description"></textarea>
   <input id="editPhone" placeholder="WhatsApp 2782XXXXXXX">
   <input id="editLocation" placeholder="Location">
   <select id="editCategory">
@@ -206,30 +228,9 @@ button {
   <button onclick="cancelEdit()" style="background:#666">Cancel</button>
 </div>
 
-<!-- SEARCH + CATEGORIES -->
-<div class="form-box">
-  <h3>Find Ads</h3>
-  <input id="search" placeholder="Search product..." oninput="loadAds()">
-  <input id="locationFilter" placeholder="Location - e.g. Bloemfontein" oninput="loadAds()">
-
-  <p style="margin:10px 0 5px;font-weight:bold">Browse by Category:</p>
-  <div class="cat-btns">
-    <button class="cat-btn active" onclick="filterCat('')">All</button>
-    <button class="cat-btn" onclick="filterCat('Dairy')">🥛 Dairy</button>
-    <button class="cat-btn" onclick="filterCat('Cars')">🚗 Cars</button>
-    <button class="cat-btn" onclick="filterCat('Electronics')">📱 Electronics</button>
-    <button class="cat-btn" onclick="filterCat('Furniture')">🪑 Furniture</button>
-    <button class="cat-btn" onclick="filterCat('Clothes')">👕 Clothes</button>
-    <button class="cat-btn" onclick="filterCat('Personal')">💄 Personal</button>
-    <button class="cat-btn" onclick="filterCat('Other')">📦 Other</button>
-  </div>
-</div>
-
-<div id="ads">Loading...</div>
-
 <!-- REVIEWS -->
 <div id="reviewBox" class="form-box" style="display:none;">
-  <h3>⭐ Reviews</h3>
+  <div class="section-title">⭐ Reviews</div>
   <select id="rating">
     <option value="5">⭐ 5 Stars</option>
     <option value="4">⭐ 4 Stars</option>
@@ -239,13 +240,11 @@ button {
   </select>
   <input id="reviewText" placeholder="Write review">
   <button onclick="submitReview()">Submit Review</button>
-  <div id="reviewList" style="margin-top:10px"></div>
+  <div id="reviewList" style="margin-top:8px;font-size:12px"></div>
   <button onclick="reviewBox.style.display='none'" style="background:#666">Close</button>
 </div>
 
-<a href="https://wa.me/278XXXXXXXXX" target="_blank" class="whatsapp-float">
-  <span>📲 Chat Admin</span>
-</a>
+<a href="https://wa.me/278XXXXXXXXX" target="_blank" class="whatsapp-float">📲</a>
 
 <script>
 const firebaseConfig = {
@@ -275,7 +274,6 @@ function isOwner(adId, key){
   return getOwnerKeys() === key;
 }
 
-/* CATEGORY FILTER */
 function filterCat(cat){
   activeCategory = cat;
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
@@ -283,7 +281,6 @@ function filterCat(cat){
   loadAds();
 }
 
-/* POST AD with PIN */
 async function postAd(){
   const btn = document.getElementById("postBtn");
   btn.disabled = true;
@@ -318,6 +315,7 @@ async function postAd(){
   db.collection("ads").add({
     title: document.getElementById("title").value.trim(),
     price: document.getElementById("price").value.trim(),
+    description: document.getElementById("description").value.trim(),
     phone: phone,
     category: document.getElementById("category").value,
     location: document.getElementById("location").value.trim(),
@@ -325,13 +323,13 @@ async function postAd(){
     deliveryPrice: document.getElementById("deliveryPrice").value.trim(),
     imageUrl: imageUrl,
     ownerKey: ownerKey,
-    pin: pin, // Recovery PIN stored
+    pin: pin,
     rating: "No rating",
     createdAt: new Date()
   }).then((docRef)=>{
     saveOwnerKey(docRef.id, ownerKey);
-    alert(`Ad posted!\n\nAd ID: ${docRef.id}\nSave this ID + your PIN to recover later.\n\nYou can edit/delete this ad from this browser now.`);
-    document.querySelectorAll('#title,#price,#phone,#location,#deliveryPrice,#pin').forEach(i=>i.value="");
+    alert(`Ad posted!\n\nAd ID: ${docRef.id}\nSave this ID + PIN to recover later.`);
+    document.querySelectorAll('#title,#price,#description,#phone,#location,#deliveryPrice,#pin').forEach(i=>i.value="");
     document.getElementById("image").value = "";
     btn.disabled = false;
     btn.innerText = "Post Ad";
@@ -343,7 +341,6 @@ async function postAd(){
   });
 }
 
-/* RECOVER ACCESS with PIN */
 async function recoverAccess(){
   let adId = document.getElementById("recoverAdId").value.trim();
   let pin = document.getElementById("recoverPin").value.trim();
@@ -357,21 +354,20 @@ async function recoverAccess(){
     let ad = doc.data();
     if(ad.pin === pin){
       saveOwnerKey(adId, ad.ownerKey);
-      alert("Access recovered! You can now edit/delete this ad from this browser.");
+      alert("Access recovered! You can now edit/delete this ad.");
       document.getElementById("recoverAdId").value = "";
       document.getElementById("recoverPin").value = "";
       loadAds();
     } else {
-      alert("Wrong PIN. Try again.");
+      alert("Wrong PIN");
     }
   } catch(e){
     alert("Error: " + e.message);
   }
 }
 
-/* EDIT AD */
 function editAd(id, ad){
-  if(!isOwner(id, ad.ownerKey)) return alert("You don’t have access to edit this ad");
+  if(!isOwner(id, ad.ownerKey)) return alert("No access to edit this ad");
 
   editingAdId = id;
   document.getElementById("editBox").style.display = "block";
@@ -379,6 +375,7 @@ function editAd(id, ad){
 
   document.getElementById("editTitle").value = ad.title;
   document.getElementById("editPrice").value = ad.price;
+  document.getElementById("editDescription").value = ad.description || "";
   document.getElementById("editPhone").value = ad.phone;
   document.getElementById("editLocation").value = ad.location || "";
   document.getElementById("editCategory").value = ad.category;
@@ -400,11 +397,12 @@ async function saveEdit(){
   let updateData = {
     title: document.getElementById("editTitle").value.trim(),
     price: document.getElementById("editPrice").value.trim(),
+    description: document.getElementById("editDescription").value.trim(),
     phone: phone,
     location: document.getElementById("editLocation").value.trim(),
     category: document.getElementById("editCategory").value,
     delivery: document.getElementById("editDelivery").value,
-    deliveryPrice: document.getElementById("deliveryPrice").value.trim()
+    deliveryPrice: document.getElementById("editDeliveryPrice").value.trim()
   };
 
   const file = document.getElementById("editImage").files[0];
@@ -422,15 +420,13 @@ async function saveEdit(){
   }).catch(e=>alert(e.message));
 }
 
-/* DELETE */
 function deleteAd(id, key){
-  if(!isOwner(id, key)) return alert("You don’t have access to delete this");
+  if(!isOwner(id, key)) return alert("No access to delete");
   if(confirm("Delete this ad?")){
     db.collection("ads").doc(id).delete().then(loadAds);
   }
 }
 
-/* REVIEWS */
 function openReview(id){
   currentAd = id;
   document.getElementById("reviewBox").style.display = "block";
@@ -460,7 +456,7 @@ function loadReviews(){
       let r = d.data();
       total += r.rating;
       count++;
-      reviewList.innerHTML += `<p>${'⭐'.repeat(r.rating)} - ${r.text}</p>`;
+      reviewList.innerHTML += `<p>${'⭐'.repeat(r.rating)} ${r.text}</p>`;
     });
 
     let avg = count? (total/count).toFixed(1) : "No rating";
@@ -468,7 +464,6 @@ function loadReviews(){
   });
 }
 
-/* LOAD ADS */
 function loadAds(){
   let sVal = document.getElementById("search").value.toLowerCase();
   let loc = document.getElementById("locationFilter").value.toLowerCase();
@@ -480,7 +475,7 @@ function loadAds(){
     adsDiv.innerHTML = "";
 
     if(snapshot.empty){
-      adsDiv.innerHTML = "<p style='text-align:center'>No ads yet. Be first to post!</p>";
+      adsDiv.innerHTML = "<p style='text-align:center;padding:20px'>No ads yet. Scroll down to post first!</p>";
       return;
     }
 
@@ -498,21 +493,22 @@ function loadAds(){
         ownerBtns = `
           <button class="edit-btn" onclick='editAd("${doc.id}", ${JSON.stringify(ad).replace(/"/g, "&quot;")})'>✏️ Edit</button>
           <button class="delete-btn" onclick="deleteAd('${doc.id}', '${ad.ownerKey}')">🗑️ Delete</button>
-          <p style="font-size:11px;color:#666">Ad ID: ${doc.id}</p>
+          <p style="font-size:10px;color:#999">ID: ${doc.id}</p>
         `;
       }
 
       adsDiv.innerHTML += `
         <div class="card">
           ${imgTag}
-          <p style="color:#1e5aa8;font-size:12px;margin:0">${ad.category} • 📍 ${ad.location || 'SA'}</p>
-          <h3 style="margin:5px 0">${ad.title}</h3>
+          <p style="color:#1e5aa8;font-size:11px">${ad.category} • 📍 ${ad.location || 'SA'}</p>
+          <h3>${ad.title}</h3>
           <p><b>R${ad.price}</b></p>
+          ${ad.description? `<p style="font-size:12px;color:#555">${ad.description}</p>` : ""}
           <p>⭐ ${ad.rating || "No rating"}</p>
-          <p>${ad.delivery==="delivery"? "🚚 Delivery R"+(ad.deliveryPrice||0) : "📦 Pickup"}</p>
+          <p style="font-size:12px">${ad.delivery==="delivery"? "🚚 Delivery R"+(ad.deliveryPrice||0) : "📦 Pickup"}</p>
 
           <button class="review-btn" onclick="openReview('${doc.id}')">⭐ Reviews</button>
-          <a class="wa-btn" href="https://wa.me/${ad.phone}" target="_blank">📲 WhatsApp Seller</a>
+          <a class="wa-btn" href="https://wa.me/${ad.phone}" target="_blank">📲 WhatsApp</a>
           ${ownerBtns}
         </div>
       `;
