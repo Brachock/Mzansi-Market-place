@@ -1,84 +1,119 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mzansi Market</title>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"></script>
+
+  <!-- ✅ Firebase Compat - works with your current code -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
   <style>
     body {
       font-family: Arial;
       background: #f2f2f2;
+      margin: 0;
+      padding-bottom: 40px;
     }
     header {
-      background: green;
+      background: #1e5aa8;
       color: white;
       text-align: center;
       padding: 15px;
       font-size: 24px;
+      font-weight: bold;
     }
-    .form, .card {
-      background: white;
-      padding: 15px;
-      margin: 15px auto;
-      border-radius: 10px;
+    .form-box {
+      background: #eee;
+      padding: 20px;
+      margin: 20px auto;
       max-width: 400px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 10px;
     }
-    input, select {
+    input {
       width: 100%;
-      padding: 10px;
-      margin: 5px 0;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
     }
     button {
-      background: green;
-      color: white;
-      padding: 10px;
       width: 100%;
+      padding: 12px;
+      background: #1e5aa8;
+      color: white;
       border: none;
       border-radius: 5px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
     }
-    a {
+    #ads {
+      max-width: 500px;
+      margin: auto;
+    }
+    .card {
+      background: white;
+      padding: 15px;
+      margin: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .card a {
       display: inline-block;
       margin-top: 10px;
       background: #25D366;
       color: white;
-      padding: 8px 12px;
-      text-decoration: none;
+      padding: 10px 14px;
       border-radius: 5px;
+      text-decoration: none;
+      font-weight: bold;
     }
   </style>
 </head>
 
 <body>
 
-<header>Mzansi Market</header>
+<header>🥛 Mzansi Market</header>
 
-<div class="form">
-  <input id="title" placeholder="Product name">
-  <input id="price" placeholder="Price">
-  <input id="phone" placeholder="WhatsApp number (27XXXXXXXXX)">
+<div class="form-box">
+  <input id="title" placeholder="Product name - e.g. Clover Milk 1L">
+  <input id="price" placeholder="Price - e.g. 25" type="number">
+  <input id="phone" placeholder="WhatsApp number - 2782XXXXXXX no + or 0">
   <button onclick="postAd()">Post Ad</button>
 </div>
 
-<div id="ads"></div>
+<div id="ads">Loading...</div>
 
 <script>
-  // ✅ PASTE YOUR FIREBASE CONFIG HERE
+  // ✅ PUT YOUR REAL FIREBASE CONFIG HERE
   const firebaseConfig = {
     apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_DOMAIN",
+    authDomain: "YOUR_AUTH_DOMAIN",
     projectId: "YOUR_PROJECT_ID"
   };
 
-  const app = firebase.initializeApp(firebaseConfig);
+  firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // ✅ POST AD (Saves to Firebase)
   function postAd() {
-    let title = document.getElementById("title").value;
-    let price = document.getElementById("price").value;
-    let phone = document.getElementById("phone").value;
+    const title = document.getElementById("title").value.trim();
+    const price = document.getElementById("price").value.trim();
+    let phone = document.getElementById("phone").value.trim();
+
+    if (!title || !price || !phone) {
+      alert("Fill all fields");
+      return;
+    }
+
+    // Force correct WhatsApp format: 27XXXXXXXXX
+    phone = phone.replace(/\+|\s|0/g, '');
+    if (!phone.startsWith('27') || phone.length !== 11) {
+      alert("Phone must be 11 digits starting with 27. Example: 27825551234");
+      return;
+    }
 
     db.collection("ads").add({
       title: title,
@@ -87,27 +122,41 @@
       createdAt: new Date()
     }).then(() => {
       alert("Ad posted!");
+      document.getElementById("title").value = "";
+      document.getElementById("price").value = "";
+      document.getElementById("phone").value = "";
       loadAds();
-    });
+    }).catch(err => alert("Error: " + err.message));
   }
 
-  // ✅ LOAD ADS (Shows on ALL phones)
   function loadAds() {
     const adsDiv = document.getElementById("ads");
-    adsDiv.innerHTML = "";
+    adsDiv.innerHTML = "Loading...";
 
-    db.collection("ads").orderBy("createdAt", "desc").get()
-    .then(snapshot => {
-      snapshot.forEach(doc => {
-        let ad = doc.data();
+    db.collection("ads")
+      .orderBy("createdAt", "desc")
+      .get()
+      .then(snapshot => {
+        adsDiv.innerHTML = "";
 
-        adsDiv.innerHTML += `
-          <div class="card">
-            <h3>${ad.title}</h3>
-            <p>R${ad.price}</p>
-            <a href="https://wa.me/${ad.phone}" target        `;
-      });
-    });
+        if (snapshot.empty) {
+          adsDiv.innerHTML = "<p style='text-align:center'>No ads yet. Be the first to post!</p>";
+          return;
+        }
+
+        snapshot.forEach(doc => {
+          const ad = doc.data();
+          // FIXED: Closed the <a> tag properly + added WhatsApp text
+          adsDiv.innerHTML += `
+            <div class="card">
+              <h3>${ad.title}</h3>
+              <p><b>R${ad.price}</b></p>
+              <a href="https://wa.me/${ad.phone}" target="_blank">📲 WhatsApp Seller</a>
+            </div>
+          `;
+        });
+      })
+      .catch(err => adsDiv.innerHTML = "Error loading ads: " + err.message);
   }
 
   loadAds();
