@@ -277,7 +277,7 @@ function isOwner(adId, key){
   return getOwnerKeys() === key;
 }
 
-// Fix phone number: auto convert 0... to 27...
+// Fix phone: auto convert 064... to 27864...
 function fixPhone(num){
   let phone = num.replace(/\+|\s/g, '');
   if(phone.startsWith('0')){
@@ -458,14 +458,20 @@ function submitReview(){
 }
 
 function loadReviews(){
-  db.collection("reviews").where("adId","==",currentAd).orderBy("createdAt","desc").get()
+  db.collection("reviews").where("adId","==",currentAd).get()
 .then(s=>{
     const reviewList = document.getElementById("reviewList");
     reviewList.innerHTML = "";
     let total = 0, count = 0;
 
+    let reviews = [];
     s.forEach(d=>{
       let r = d.data();
+      reviews.push(r);
+    });
+    reviews.sort((a,b)=> (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+
+    reviews.forEach(r=>{
       total += r.rating;
       count++;
       reviewList.innerHTML += `<p>${'⭐'.repeat(r.rating)} ${r.text}</p>`;
@@ -476,12 +482,13 @@ function loadReviews(){
   });
 }
 
+// FIXED: No orderBy so ads don't disappear on refresh
 function loadAds(){
   let sVal = document.getElementById("search").value.toLowerCase();
   let loc = document.getElementById("locationFilter").value.toLowerCase();
   let keys = getOwnerKeys();
 
-  db.collection("ads").orderBy("createdAt","desc").get()
+  db.collection("ads").get()
 .then(snapshot=>{
     const adsDiv = document.getElementById("ads");
     adsDiv.innerHTML = "";
@@ -491,8 +498,21 @@ function loadAds(){
       return;
     }
 
+    // Sort in JS instead of Firestore to avoid crash
+    let ads = [];
     snapshot.forEach(doc=>{
-      let ad = doc.data();
+      ads.push({id: doc.id, data: doc.data()});
+    });
+
+    ads.sort((a,b)=>{
+      let timeA = a.data.createdAt?.seconds || 0;
+      let timeB = b.data.createdAt?.seconds || 0;
+      return timeB - timeA;
+    });
+
+    ads.forEach(item=>{
+      let ad = item.data;
+      let docId = item.id;
 
       if(sVal &&!ad.title.toLowerCase().includes(sVal)) return;
       if(activeCategory && ad.category!== activeCategory) return;
@@ -501,11 +521,11 @@ function loadAds(){
       const imgTag = ad.imageUrl? `<img src="${ad.imageUrl}" alt="${ad.title}">` : "";
 
       let ownerBtns = "";
-      if(isOwner(doc.id, ad.ownerKey)){
+      if(isOwner(docId, ad.ownerKey)){
         ownerBtns = `
-          <button class="edit-btn" onclick='editAd("${doc.id}", ${JSON.stringify(ad).replace(/"/g, "&quot;")})'>✏️ Edit</button>
-          <button class="delete-btn" onclick="deleteAd('${doc.id}', '${ad.ownerKey}')">🗑️ Delete</button>
-          <p style="font-size:10px;color:#999">ID: ${doc.id}</p>
+          <button class="edit-btn" onclick='editAd("${docId}", ${JSON.stringify(ad).replace(/"/g, "&quot;")})'>✏️ Edit</button>
+          <button class="delete-btn" onclick="deleteAd('${docId}', '${ad.ownerKey}')">🗑️ Delete</button>
+          <p style="font-size:10px;color:#999">ID: ${docId}</p>
         `;
       }
 
@@ -519,12 +539,15 @@ function loadAds(){
           <p>⭐ ${ad.rating || "No rating"}</p>
           <p style="font-size:12px">${ad.delivery==="delivery"? "🚚 Delivery R"+(ad.deliveryPrice||0) : "📦 Pickup"}</p>
 
-          <button class="review-btn" onclick="openReview('${doc.id}')">⭐ Reviews</button>
+          <button class="review-btn" onclick="openReview('${docId}')">⭐ Reviews</button>
           <a class="wa-btn" href="https://wa.me/${ad.phone}" target="_blank">📲 WhatsApp</a>
           ${ownerBtns}
         </div>
       `;
     });
+  }).catch(e=>{
+    document.getElementById("ads").innerHTML = "<p style='color:red;text-align:center'>Error: "+e.message+"</p>";
+    console.log(e);
   });
 }
 
