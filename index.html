@@ -9,39 +9,37 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
 <style>
+*{box-sizing:border-box}
 body{font-family:Arial;margin:0;background:#f2f2f2;padding-bottom:80px}
-.navbar{background:#1e5aa8;color:white;padding:12px;font-size:20px;font-weight:bold;text-align:center;position:sticky;top:0}
+.navbar{background:#1e5aa8;color:white;padding:14px;font-size:20px;font-weight:bold;text-align:center;position:sticky;top:0;z-index:10}
 .form-box{background:#eee;padding:12px;margin:10px;border-radius:8px}
-input,select,textarea{width:100%;padding:8px;margin:4px 0;border-radius:5px;border:1px solid #ccc;box-sizing:border-box;font-size:14px}
-button{width:100%;padding:10px;background:#1e5aa8;color:white;border:none;margin-top:5px;border-radius:5px;font-weight:bold;cursor:pointer;font-size:14px}
-button:disabled{background:#999}
+input,select,textarea{width:100%;padding:10px;margin:5px 0;border-radius:6px;border:1px solid #ccc;font-size:14px}
+button{width:100%;padding:12px;background:#1e5aa8;color:white;border:none;margin-top:6px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:15px}
+button:disabled{background:#999;cursor:not-allowed}
 .cat-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}
 .cat-btn{padding:8px 4px;background:white;border:2px solid #1e5aa8;color:#1e5aa8;border-radius:6px;font-size:12px;cursor:pointer;font-weight:bold}
 .cat-btn.active{background:#1e5aa8;color:white}
 .search-row{display:flex;gap:5px;margin:8px 0}
 .search-row input{flex:1}
-.search-row button{width:80px;margin:0}
-.card{background:white;padding:12px;margin:10px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
-.wa-btn{display:inline-block;margin-top:6px;background:#25D366;color:white;padding:8px 12px;border-radius:5px;text-decoration:none;font-weight:bold;font-size:13px}
+.search-row button{width:90px;margin:0}
+.card{background:white;padding:14px;margin:10px;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
+.wa-btn{display:inline-block;margin-top:8px;background:#25D366;color:white;padding:10px 14px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:14px}
 .section-title{font-size:16px;font-weight:bold;margin:8px 0;color:#1e5aa8}
-small{font-size:11px;color:#666;display:block;margin-bottom:4px}
+small{font-size:11px;color:#666;display:block;margin:3px 0 6px 0}
 </style>
 </head>
 <body>
 
 <div class="navbar">🇿🇦 Mzansi Market</div>
 
-<!-- CATEGORIES + SEARCH -->
+<!-- SEARCH + CATEGORIES -->
 <div class="form-box">
   <div class="section-title">Browse Categories</div>
-
   <div class="search-row">
     <input id="search" placeholder="Search product...">
     <button onclick="loadAds()">Search</button>
   </div>
-
   <input id="locationFilter" placeholder="Filter by Location - e.g. Bloemfontein" oninput="loadAds()">
-
   <div class="cat-btns">
     <button class="cat-btn active" onclick="filterCat('')">All</button>
     <button class="cat-btn" onclick="filterCat('Dairy')">🥛 Dairy</button>
@@ -55,20 +53,19 @@ small{font-size:11px;color:#666;display:block;margin-bottom:4px}
   </div>
 </div>
 
-<!-- ADS -->
-<div id="ads">Loading...</div>
+<!-- ADS LIST -->
+<div id="ads">Loading ads...</div>
 
-<!-- POST AD - NO IMAGE FIELD AT ALL -->
+<!-- POST AD FORM - NO IMAGE -->
 <div class="form-box">
   <div class="section-title">Post New Ad</div>
   <input id="title" placeholder="Product name / Service" required>
-  <input id="price" placeholder="Price" type="number" required>
-  <textarea id="description" placeholder="Description"></textarea>
+  <input id="price" placeholder="Price R" type="number" required>
+  <textarea id="description" placeholder="Description" rows="3"></textarea>
   <input id="phone" placeholder="27826405603" required>
-  <small>Type 082... it auto-fixes to 2782...</small>
+  <small>Type 0826405603 or +2764... it auto-fixes to 27826405603</small>
   <input id="location" placeholder="Your Location - e.g. Bloemfontein" required>
-  <input id="pin" placeholder="4 digit PIN" type="password" maxlength="6" required>
-
+  <input id="pin" placeholder="4 digit PIN to delete later" type="password" maxlength="6" required>
   <select id="category">
     <option>Dairy</option>
     <option>Cars</option>
@@ -79,12 +76,11 @@ small{font-size:11px;color:#666;display:block;margin-bottom:4px}
     <option>Transport</option>
     <option>Other</option>
   </select>
-
   <button id="postBtn" onclick="postAd()">Post Ad</button>
 </div>
 
 <script>
-// ⚠️ REPLACE WITH YOUR FIREBASE CONFIG
+// ⚠️⚠️ REPLACE THESE 3 LINES WITH YOUR FIREBASE CONFIG ⚠️⚠️
 const firebaseConfig = {
   apiKey: "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
   authDomain: "your-project.firebaseapp.com",
@@ -97,7 +93,7 @@ const db = firebase.firestore();
 let activeCategory = "";
 
 function fixPhone(num){
-  let phone = num.replace(/\s|\+|\-/g, '');
+  let phone = num.replace(/\s|\+|\-|\(|\)/g, '');
   if(phone.startsWith('0')) phone = '27' + phone.substring(1);
   if(!phone.startsWith('27')) phone = '27' + phone;
   return phone;
@@ -115,32 +111,48 @@ async function postAd(){
   btn.disabled = true;
   btn.innerText = "Saving...";
 
-  try{
-    let phone = fixPhone(document.getElementById("phone").value);
-    let pin = document.getElementById("pin").value.trim();
-    let location = document.getElementById("location").value.trim();
+  // 6 second timeout so button doesn't freeze forever
+  let timeout = setTimeout(() => {
+    btn.disabled = false;
+    btn.innerText = "Post Ad";
+    alert("❌ TIMEOUT\nFirebase not responding.\n1. Check internet\n2. Check Firestore Rules = allow create: if true\n3. Check projectId is correct");
+  }, 6000);
 
+  try{
+    let title = document.getElementById("title").value.trim();
+    let price = document.getElementById("price").value.trim();
+    let desc = document.getElementById("description").value.trim();
+    let phone = fixPhone(document.getElementById("phone").value);
+    let location = document.getElementById("location").value.trim();
+    let pin = document.getElementById("pin").value.trim();
+    let category = document.getElementById("category").value;
+
+    if(!title) throw new Error("Title required");
+    if(!price) throw new Error("Price required");
     if(phone.length!== 11) throw new Error("Phone must be 11 digits. You typed: " + phone);
-    if(!location) throw new Error("Location is required");
+    if(!location) throw new Error("Location required");
     if(pin.length < 4) throw new Error("PIN must be 4+ digits");
 
     await db.collection("ads").add({
-      title: document.getElementById("title").value.trim(),
-      price: document.getElementById("price").value.trim(),
-      description: document.getElementById("description").value.trim(),
+      title: title,
+      price: price,
+      description: desc,
       phone: phone,
-      category: document.getElementById("category").value,
+      category: category,
       location: location,
       pin: pin,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      createdAt: new Date()
     });
 
+    clearTimeout(timeout);
     alert("✅ Posted successfully!");
     document.querySelectorAll('#title,#price,#description,#phone,#location,#pin').forEach(i=>i.value="");
     loadAds();
 
   }catch(e){
-    alert("❌ ERROR: " + e.message);
+    clearTimeout(timeout);
+    alert("❌ ERROR:\n\n" + e.message + "\n\nCommon fixes:\n1. Firestore Rules must be 'allow create: if true'\n2. Check projectId matches Firebase");
+    console.error(e);
   }
 
   btn.disabled = false;
@@ -156,13 +168,14 @@ function loadAds(){
     const adsDiv = document.getElementById("ads");
     adsDiv.innerHTML = "";
     if(snapshot.empty){
-      adsDiv.innerHTML = "<p style='text-align:center;padding:20px'>No ads yet. Post below!</p>";
+      adsDiv.innerHTML = "<p style='text-align:center;padding:30px;color:#666'>No ads yet. Be the first to post below!</p>";
       return;
     }
 
     let ads = [];
     snapshot.forEach(doc=> ads.push({id: doc.id, data: doc.data()}));
-    ads.sort((a,b)=> (b.data.createdAt?.seconds||0) - (a.data.createdAt?.seconds||0));
+    // Sort newest first
+    ads.sort((a,b)=> new Date(b.data.createdAt) - new Date(a.data.createdAt));
 
     ads.forEach(item=>{
       let ad = item.data;
@@ -172,15 +185,15 @@ function loadAds(){
 
       adsDiv.innerHTML += `
         <div class="card">
-          <p style="color:#1e5aa8;font-size:11px">${ad.category} • 📍 ${ad.location || 'SA'}</p>
-          <h3>${ad.title}</h3>
-          <p><b>R${ad.price}</b></p>
-          <p>${ad.description || ''}</p>
-          <a class="wa-btn" href="https://wa.me/${ad.phone}" target="_blank">📲 WhatsApp</a>
+          <p style="color:#1e5aa8;font-size:12px;margin:0 0 5px 0">${ad.category} • 📍 ${ad.location || 'SA'}</p>
+          <h3 style="margin:5px 0">${ad.title}</h3>
+          <p style="font-size:18px;font-weight:bold;margin:5px 0">R${ad.price}</p>
+          <p style="margin:8px 0;color:#444">${ad.description || ''}</p>
+          <a class="wa-btn" href="https://wa.me/${ad.phone}" target="_blank">📲 WhatsApp Seller</a>
         </div>`;
     });
   }).catch(e=> {
-    document.getElementById("ads").innerHTML = "<p style='color:red;text-align:center'>Error: " + e.message + "</p>";
+    document.getElementById("ads").innerHTML = "<p style='color:red;text-align:center;padding:20px'>Error loading ads: " + e.message + "</p>";
   });
 }
 
