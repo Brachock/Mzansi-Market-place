@@ -1,24 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
   <title>Mzansi Market</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"></script>
+
   <style>
     body {
       font-family: Arial;
       background: #f2f2f2;
-      margin: 0;
-      padding: 10px;
     }
     header {
-      background: #0a4fa3;
+      background: green;
       color: white;
       text-align: center;
       padding: 15px;
       font-size: 24px;
-      font-weight: bold;
     }
     .form, .card {
       background: white;
@@ -26,27 +23,22 @@
       margin: 15px auto;
       border-radius: 10px;
       max-width: 400px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    input {
+    input, select {
       width: 100%;
       padding: 10px;
-      margin: 8px 0;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      box-sizing: border-box;
+      margin: 5px 0;
     }
     button {
-      background: #0a4fa3;
+      background: green;
       color: white;
-      padding: 12px;
+      padding: 10px;
       width: 100%;
       border: none;
       border-radius: 5px;
-      font-weight: bold;
-      cursor: pointer;
     }
-    .wa-btn {
+    a {
       display: inline-block;
       margin-top: 10px;
       background: #25D366;
@@ -54,85 +46,67 @@
       padding: 8px 12px;
       text-decoration: none;
       border-radius: 5px;
-      font-weight: bold;
     }
   </style>
 </head>
 
 <body>
 
-<header>🥛 Mzansi Market</header>
+<header>Mzansi Market</header>
 
 <div class="form">
-  <input id="title" placeholder="Product name - e.g. Clover Milk 1L">
-  <input id="price" placeholder="Price - e.g. 25" type="number">
-  <input id="phone" placeholder="WhatsApp number - 2782XXXXXXX no + or spaces">
+  <input id="title" placeholder="Product name">
+  <input id="price" placeholder="Price">
+  <input id="phone" placeholder="WhatsApp number (27XXXXXXXXX)">
   <button onclick="postAd()">Post Ad</button>
 </div>
 
 <div id="ads"></div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
+<script>
   // ✅ PASTE YOUR FIREBASE CONFIG HERE
   const firebaseConfig = {
     apiKey: "YOUR_API_KEY",
     authDomain: "YOUR_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_BUCKET",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    projectId: "YOUR_PROJECT_ID"
   };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-  window.postAd = async function() {
-    let title = document.getElementById("title").value.trim();
-    let price = document.getElementById("price").value.trim();
-    let phone = document.getElementById("phone").value.trim();
+  // ✅ POST AD (Saves to Firebase)
+  function postAd() {
+    let title = document.getElementById("title").value;
+    let price = document.getElementById("price").value;
+    let phone = document.getElementById("phone").value;
 
-    // Validation
-    if(!title || !price || !phone) return alert("Fill all fields");
-    if(!phone.startsWith("27")) return alert("Phone must start with 27, no + or 0");
-    if(phone.length < 11) return alert("Phone number too short");
-
-    try {
-      await addDoc(collection(db, "ads"), {
-        title: title,
-        price: price,
-        phone: phone,
-        createdAt: new Date()
-      });
+    db.collection("ads").add({
+      title: title,
+      price: price,
+      phone: phone,
+      createdAt: new Date()
+    }).then(() => {
       alert("Ad posted!");
-      document.getElementById("title").value = "";
-      document.getElementById("price").value = "";
-      document.getElementById("phone").value = "";
       loadAds();
-    } catch(e) {
-      alert("Error: " + e.message);
-    }
+    });
   }
 
-  async function loadAds() {
+  // ✅ LOAD ADS (Shows on ALL phones)
+  function loadAds() {
     const adsDiv = document.getElementById("ads");
-    adsDiv.innerHTML = "Loading...";
-
-    const q = query(collection(db, "ads"), orderBy("createdAt", "desc"));
-    const snapshot = await getDocs(q);
-    
     adsDiv.innerHTML = "";
-    snapshot.forEach(doc => {
-      let ad = doc.data();
-      adsDiv.innerHTML += `
-        <div class="card">
-          <h3>${ad.title}</h3>
-          <p><b>R${ad.price}</b></p>
-          <a class="wa-btn" href="https://wa.me/${ad.phone}" target="_blank">📲 WhatsApp Buyer</a>
-        </div>
-      `;
+
+    db.collection("ads").orderBy("createdAt", "desc").get()
+    .then(snapshot => {
+      snapshot.forEach(doc => {
+        let ad = doc.data();
+
+        adsDiv.innerHTML += `
+          <div class="card">
+            <h3>${ad.title}</h3>
+            <p>R${ad.price}</p>
+            <a href="https://wa.me/${ad.phone}" target        `;
+      });
     });
   }
 
