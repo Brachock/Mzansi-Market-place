@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mzansi Market 🇿🇦</title>
 
-<!-- Firebase Compat -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -58,6 +57,29 @@ button {
   font-size:15px;
 }
 button:disabled { background:#aaa; }
+
+/* Category buttons */
+.cat-btns {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  margin:10px 0;
+}
+.cat-btn {
+  padding:10px 5px;
+  background:white;
+  border:2px solid #1e5aa8;
+  color:#1e5aa8;
+  border-radius:8px;
+  font-size:13px;
+  cursor:pointer;
+  font-weight:bold;
+}
+.cat-btn.active {
+  background:#1e5aa8;
+  color:white;
+}
+
 .card {
   background:white;
   padding:15px;
@@ -87,8 +109,8 @@ button:disabled { background:#aaa; }
 .delete-btn { background:#dc3545; }
 .review-btn { background:#6c757d; }
 #userInfo { text-align:center; padding:10px; font-weight:bold; color:#1e5aa8; }
+.locked { opacity:0.6; pointer-events:none; }
 
-/* Floating WhatsApp Admin Button */
 .whatsapp-float {
   position: fixed;
   width: 170px;
@@ -110,13 +132,13 @@ button:disabled { background:#aaa; }
 }
 .whatsapp-float:hover { background-color: #20ba5a; }
 @media screen and (max-width: 600px) {
-  .whatsapp-float {
+.whatsapp-float {
     width: 55px;
     height: 55px;
     border-radius: 50%;
     font-size: 26px;
   }
-  .whatsapp-float span { display: none; }
+.whatsapp-float span { display: none; }
 }
 </style>
 </head>
@@ -124,11 +146,12 @@ button:disabled { background:#aaa; }
 <body>
 
 <div class="navbar">🇿🇦 Mzansi Market</div>
-<div id="userInfo">Not logged in</div>
+<div id="userInfo">Browse as guest • Login to post ads</div>
 
-<!-- LOGIN / SIGNUP -->
+<!-- LOGIN / SIGNUP - Only for posting -->
 <div class="form-box">
   <h3>Login / Sign Up</h3>
+  <p style="font-size:13px;color:#666">You can browse all ads without login. Login only needed to post/edit/delete.</p>
   <input id="email" placeholder="Email" type="email">
   <input id="password" type="password" placeholder="Password">
   <button onclick="login()">Login</button>
@@ -136,12 +159,34 @@ button:disabled { background:#aaa; }
   <button onclick="logout()">Logout</button>
 </div>
 
-<!-- SEARCH + FILTER -->
+<!-- SEARCH + CATEGORY BUTTONS - No login needed -->
 <div class="form-box">
-  <h3>Search Ads</h3>
+  <h3>Find Ads</h3>
   <input id="search" placeholder="Search product..." oninput="loadAds()">
-  <select id="filterCategory" onchange="loadAds()">
-    <option value="">All Categories</option>
+  <input id="locationFilter" placeholder="Location - e.g. Bloemfontein" oninput="loadAds()">
+
+  <p style="margin:10px 0 5px;font-weight:bold">Browse by Category:</p>
+  <div class="cat-btns">
+    <button class="cat-btn active" onclick="filterCat('')">All</button>
+    <button class="cat-btn" onclick="filterCat('Dairy')">🥛 Dairy</button>
+    <button class="cat-btn" onclick="filterCat('Cars')">🚗 Cars</button>
+    <button class="cat-btn" onclick="filterCat('Electronics')">📱 Electronics</button>
+    <button class="cat-btn" onclick="filterCat('Furniture')">🪑 Furniture</button>
+    <button class="cat-btn" onclick="filterCat('Clothes')">👕 Clothes</button>
+    <button class="cat-btn" onclick="filterCat('Personal')">💄 Personal</button>
+    <button class="cat-btn" onclick="filterCat('Other')">📦 Other</button>
+  </div>
+</div>
+
+<!-- POST AD - Hidden if not logged in -->
+<div class="form-box" id="postBox" style="display:none;">
+  <h3>Post New Ad</h3>
+  <input id="title" placeholder="Product name" required>
+  <input id="price" placeholder="Price" type="number" required>
+  <input id="phone" placeholder="WhatsApp 2782XXXXXXX no + or 0" required>
+  <input id="location" placeholder="Location - e.g. Bloemfontein">
+
+  <select id="category">
     <option>Dairy</option>
     <option>Cars</option>
     <option>Electronics</option>
@@ -150,3 +195,316 @@ button:disabled { background:#aaa; }
     <option>Personal</option>
     <option>Other</option>
   </select>
+
+  <select id="delivery">
+    <option value="pickup">Pickup</option>
+    <option value="delivery">Delivery</option>
+  </select>
+
+  <input id="deliveryPrice" placeholder="Delivery Fee" type="number">
+  <input type="file" id="image" accept="image/*">
+  <button id="postBtn" onclick="postAd()">Post Ad</button>
+</div>
+
+<!-- EDIT AD -->
+<div class="form-box" id="editBox" style="display:none;">
+  <h3>Edit Ad</h3>
+  <input id="editTitle" placeholder="Product name">
+  <input id="editPrice" placeholder="Price" type="number">
+  <input id="editPhone" placeholder="WhatsApp 2782XXXXXXX">
+  <input id="editLocation" placeholder="Location">
+  <select id="editCategory">
+    <option>Dairy</option>
+    <option>Cars</option>
+    <option>Electronics</option>
+    <option>Furniture</option>
+    <option>Clothes</option>
+    <option>Personal</option>
+    <option>Other</option>
+  </select>
+  <select id="editDelivery">
+    <option value="pickup">Pickup</option>
+    <option value="delivery">Delivery</option>
+  </select>
+  <input id="editDeliveryPrice" placeholder="Delivery Fee" type="number">
+  <input type="file" id="editImage" accept="image/*">
+  <button onclick="saveEdit()">Save Changes</button>
+  <button onclick="cancelEdit()" style="background:#666">Cancel</button>
+</div>
+
+<div id="ads">Loading...</div>
+
+<!-- REVIEWS -->
+<div id="reviewBox" class="form-box" style="display:none;">
+  <h3>⭐ Reviews</h3>
+  <select id="rating">
+    <option value="5">⭐ 5 Stars</option>
+    <option value="4">⭐ 4 Stars</option>
+    <option value="3">⭐ 3 Stars</option>
+    <option value="2">⭐ 2 Stars</option>
+    <option value="1">⭐ 1 Star</option>
+  </select>
+  <input id="reviewText" placeholder="Write review">
+  <button onclick="submitReview()">Submit Review</button>
+  <div id="reviewList" style="margin-top:10px"></div>
+  <button onclick="reviewBox.style.display='none'" style="background:#666">Close</button>
+</div>
+
+<a href="https://wa.me/278XXXXXXXXX" target="_blank" class="whatsapp-float">
+  <span>📲 Chat Admin</span>
+</a>
+
+<script>
+const firebaseConfig = {
+  apiKey: "PASTE_YOUR_REAL_API_KEY",
+  authDomain: "PASTE_YOUR_AUTH_DOMAIN",
+  projectId: "PASTE_YOUR_PROJECT_ID",
+  storageBucket: "PASTE_YOUR_PROJECT_ID.appspot.com"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+const storage = firebase.storage();
+
+let currentAd = "";
+let editingAdId = "";
+let activeCategory = "";
+
+/* AUTH */
+function signup(){
+  auth.createUserWithEmailAndPassword(email.value,password.value)
+.then(()=>alert("Account created!"))
+.catch(e=>alert(e.message));
+}
+
+function login(){
+  auth.signInWithEmailAndPassword(email.value,password.value)
+.catch(e=>alert(e.message));
+}
+
+function logout(){
+  auth.signOut();
+}
+
+auth.onAuthStateChanged(user=>{
+  document.getElementById("userInfo").innerHTML = user? "Logged in: "+user.email : "Browse as guest • Login to post ads";
+  document.getElementById("postBox").style.display = user? "block" : "none";
+});
+
+/* CATEGORY FILTER BUTTONS */
+function filterCat(cat){
+  activeCategory = cat;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  loadAds();
+}
+
+/* POST AD */
+async function postAd(){
+  if(!auth.currentUser) return alert("Login first to post ads");
+
+  const btn = document.getElementById("postBtn");
+  btn.disabled = true;
+  btn.innerText = "Posting...";
+
+  let phone = document.getElementById("phone").value.replace(/\+|\s|0/g, '');
+  if(!phone.startsWith('27') || phone.length!== 11){
+    alert("Phone must be 11 digits starting with 27");
+    btn.disabled = false;
+    btn.innerText = "Post Ad";
+    return;
+  }
+
+  let imageUrl = "";
+  const file = document.getElementById("image").files[0];
+  if(file){
+    const ref = storage.ref('ads/' + Date.now() + "_" + file.name);
+    const snap = await ref.put(file);
+    imageUrl = await snap.ref.getDownloadURL();
+  }
+
+  db.collection("ads").add({
+    title: document.getElementById("title").value.trim(),
+    price: document.getElementById("price").value.trim(),
+    phone: phone,
+    category: document.getElementById("category").value,
+    location: document.getElementById("location").value.trim(),
+    delivery: document.getElementById("delivery").value,
+    deliveryPrice: document.getElementById("deliveryPrice").value.trim(),
+    imageUrl: imageUrl,
+    user: auth.currentUser.uid,
+    email: auth.currentUser.email,
+    rating: "No rating",
+    createdAt: new Date()
+  }).then(()=>{
+    alert("Ad posted!");
+    document.getElementById("postBox").querySelectorAll("input").forEach(i=>i.value="");
+    btn.disabled = false;
+    btn.innerText = "Post Ad";
+    loadAds();
+  }).catch(e=>{
+    alert(e.message);
+    btn.disabled = false;
+    btn.innerText = "Post Ad";
+  });
+}
+
+/* EDIT AD - Only owner can edit */
+function editAd(id, ad){
+  if(!auth.currentUser || auth.currentUser.uid!== ad.user) return alert("You can only edit your own ads");
+
+  editingAdId = id;
+  document.getElementById("editBox").style.display = "block";
+  document.getElementById("postBox").style.display = "none";
+
+  document.getElementById("editTitle").value = ad.title;
+  document.getElementById("editPrice").value = ad.price;
+  document.getElementById("editPhone").value = ad.phone;
+  document.getElementById("editLocation").value = ad.location || "";
+  document.getElementById("editCategory").value = ad.category;
+  document.getElementById("editDelivery").value = ad.delivery;
+  document.getElementById("editDeliveryPrice").value = ad.deliveryPrice || "";
+  window.scrollTo(0,0);
+}
+
+function cancelEdit(){
+  document.getElementById("editBox").style.display = "none";
+  document.getElementById("postBox").style.display = auth.currentUser? "block" : "none";
+  editingAdId = "";
+}
+
+async function saveEdit(){
+  if(!editingAdId) return;
+
+  let phone = document.getElementById("editPhone").value.replace(/\+|\s|0/g, '');
+  if(!phone.startsWith('27') || phone.length!== 11) return alert("Phone must start with 27");
+
+  let updateData = {
+    title: document.getElementById("editTitle").value.trim(),
+    price: document.getElementById("editPrice").value.trim(),
+    phone: phone,
+    location: document.getElementById("editLocation").value.trim(),
+    category: document.getElementById("editCategory").value,
+    delivery: document.getElementById("editDelivery").value,
+    deliveryPrice: document.getElementById("editDeliveryPrice").value.trim()
+  };
+
+  const file = document.getElementById("editImage").files[0];
+  if(file){
+    const ref = storage.ref('ads/' + Date.now() + "_" + file.name);
+    const snap = await ref.put(file);
+    updateData.imageUrl = await snap.ref.getDownloadURL();
+  }
+
+  db.collection("ads").doc(editingAdId).update(updateData)
+.then(()=>{
+    alert("Ad updated!");
+    cancelEdit();
+    loadAds();
+  }).catch(e=>alert(e.message));
+}
+
+/* DELETE - Only owner */
+function deleteAd(id){
+  if(!auth.currentUser) return alert("Login first");
+  if(confirm("Delete this ad?")){
+    db.collection("ads").doc(id).delete().then(loadAds);
+  }
+}
+
+/* REVIEWS - Anyone can review */
+function openReview(id){
+  currentAd = id;
+  document.getElementById("reviewBox").style.display = "block";
+  loadReviews();
+}
+
+function submitReview(){
+  db.collection("reviews").add({
+    adId: currentAd,
+    rating: Number(document.getElementById("rating").value),
+    text: document.getElementById("reviewText").value.trim(),
+    createdAt: new Date()
+  }).then(()=>{
+    document.getElementById("reviewText").value = "";
+    loadReviews();
+  });
+}
+
+function loadReviews(){
+  db.collection("reviews").where("adId","==",currentAd).orderBy("createdAt","desc").get()
+.then(s=>{
+    const reviewList = document.getElementById("reviewList");
+    reviewList.innerHTML = "";
+    let total = 0, count = 0;
+
+    s.forEach(d=>{
+      let r = d.data();
+      total += r.rating;
+      count++;
+      reviewList.innerHTML += `<p>${'⭐'.repeat(r.rating)} - ${r.text}</p>`;
+    });
+
+    let avg = count? (total/count).toFixed(1) : "No rating";
+    db.collection("ads").doc(currentAd).update({rating: avg});
+  });
+}
+
+/* LOAD ADS - No login required */
+function loadAds(){
+  let sVal = document.getElementById("search").value.toLowerCase();
+  let loc = document.getElementById("locationFilter").value.toLowerCase();
+
+  db.collection("ads").orderBy("createdAt","desc").get()
+.then(snapshot=>{
+    const adsDiv = document.getElementById("ads");
+    adsDiv.innerHTML = "";
+
+    if(snapshot.empty){
+      adsDiv.innerHTML = "<p style='text-align:center'>No ads yet. Be first to post!</p>";
+      return;
+    }
+
+    snapshot.forEach(doc=>{
+      let ad = doc.data();
+
+      if(sVal &&!ad.title.toLowerCase().includes(sVal)) return;
+      if(activeCategory && ad.category!== activeCategory) return;
+      if(loc &&!ad.location?.toLowerCase().includes(loc)) return;
+
+      const imgTag = ad.imageUrl? `<img src="${ad.imageUrl}" alt="${ad.title}">` : "";
+
+      // Edit/Delete only show to owner
+      let ownerBtns = "";
+      if(auth.currentUser?.uid === ad.user){
+        ownerBtns = `
+          <button class="edit-btn" onclick='editAd("${doc.id}", ${JSON.stringify(ad).replace(/"/g, "&quot;")})'>✏️ Edit</button>
+          <button class="delete-btn" onclick="deleteAd('${doc.id}')">🗑️ Delete</button>
+        `;
+      }
+
+      adsDiv.innerHTML += `
+        <div class="card">
+          ${imgTag}
+          <p style="color:#1e5aa8;font-size:12px;margin:0">${ad.category} • 📍 ${ad.location || 'SA'}</p>
+          <h3 style="margin:5px 0">${ad.title}</h3>
+          <p><b>R${ad.price}</b></p>
+          <p>⭐ ${ad.rating || "No rating"}</p>
+          <p>${ad.delivery==="delivery"? "🚚 Delivery R"+(ad.deliveryPrice||0) : "📦 Pickup"}</p>
+          <p style="font-size:12px;color:#666">Posted by: ${ad.email}</p>
+
+          <button class="review-btn" onclick="openReview('${doc.id}')">⭐ Reviews</button>
+          <a class="wa-btn" href="https://wa.me/${ad.phone}" target="_blank">📲 WhatsApp Seller</a>
+          ${ownerBtns}
+        </div>
+      `;
+    });
+  });
+}
+
+loadAds();
+</script>
+
+</body>
+</html>
