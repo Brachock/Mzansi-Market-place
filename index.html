@@ -14,11 +14,14 @@ body{font-family:Arial;margin:0;background:#f2f2f2;padding-bottom:80px}
 .navbar{background:#1e5aa8;color:white;padding:12px;font-size:20px;font-weight:bold;text-align:center;position:sticky;top:0}
 .form-box{background:#eee;padding:12px;margin:10px;border-radius:8px}
 input,select,textarea{width:100%;padding:8px;margin:4px 0;border-radius:5px;border:1px solid #ccc;box-sizing:border-box;font-size:14px}
-button{width:100%;padding:10px;background:#1e5aa8;color:white;border:none;margin-top:5px;border-radius:5px;font-weight:bold;cursor:pointer}
+button{width:100%;padding:10px;background:#1e5aa8;color:white;border:none;margin-top:5px;border-radius:5px;font-weight:bold;cursor:pointer;font-size:14px}
 button:disabled{background:#999}
 .cat-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}
 .cat-btn{padding:8px 4px;background:white;border:2px solid #1e5aa8;color:#1e5aa8;border-radius:6px;font-size:12px;cursor:pointer;font-weight:bold}
 .cat-btn.active{background:#1e5aa8;color:white}
+.search-row{display:flex;gap:5px;margin:8px 0}
+.search-row input{flex:1}
+.search-row button{width:80px;margin:0}
 .card{background:white;padding:12px;margin:10px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
 .card img{width:100%;height:200px;object-fit:cover;border-radius:6px;margin-bottom:8px}
 .wa-btn{display:inline-block;margin-top:6px;background:#25D366;color:white;padding:8px 12px;border-radius:5px;text-decoration:none;font-weight:bold;font-size:13px}
@@ -30,11 +33,17 @@ small{font-size:11px;color:#666;display:block;margin-bottom:4px}
 
 <div class="navbar">🇿🇦 Mzansi Market</div>
 
-<!-- 1. CATEGORIES + SEARCH FIRST -->
+<!-- 1. CATEGORIES + SEARCH WITH BUTTON -->
 <div class="form-box">
   <div class="section-title">Browse Categories</div>
-  <input id="search" placeholder="Search product..." oninput="loadAds()">
-  <input id="locationFilter" placeholder="Location - e.g. Bloemfontein" oninput="loadAds()">
+
+  <div class="search-row">
+    <input id="search" placeholder="Search product...">
+    <button onclick="loadAds()">Search</button>
+  </div>
+
+  <input id="locationFilter" placeholder="Filter by Location - e.g. Bloemfontein" oninput="loadAds()">
+
   <div class="cat-btns">
     <button class="cat-btn active" onclick="filterCat('')">All</button>
     <button class="cat-btn" onclick="filterCat('Dairy')">🥛 Dairy</button>
@@ -42,32 +51,43 @@ small{font-size:11px;color:#666;display:block;margin-bottom:4px}
     <button class="cat-btn" onclick="filterCat('Electronics')">📱 Electronics</button>
     <button class="cat-btn" onclick="filterCat('Furniture')">🪑 Furniture</button>
     <button class="cat-btn" onclick="filterCat('Clothes')">👕 Clothes</button>
+    <button class="cat-btn" onclick="filterCat('Beauty')">💄 Beauty</button>
+    <button class="cat-btn" onclick="filterCat('Transport')">🚚 Transport</button>
     <button class="cat-btn" onclick="filterCat('Other')">📦 Other</button>
   </div>
 </div>
 
-<!-- 2. ADS SHOW HERE -->
+<!-- 2. ADS -->
 <div id="ads">Loading...</div>
 
-<!-- 3. POST AD AT BOTTOM -->
+<!-- 3. POST AD -->
 <div class="form-box">
   <div class="section-title">Post New Ad</div>
-  <input id="title" placeholder="Product name" required>
+  <input id="title" placeholder="Product name / Service" required>
   <input id="price" placeholder="Price" type="number" required>
   <textarea id="description" placeholder="Description"></textarea>
   <input id="phone" placeholder="27826405603" required>
-  <small>Type 082... or 27... it will auto-fix</small>
+  <small>Type 082... it auto-fixes to 2782...</small>
+  <input id="location" placeholder="Your Location - e.g. Bloemfontein" required>
   <input id="pin" placeholder="4 digit PIN" type="password" maxlength="6" required>
+
   <select id="category">
-    <option>Dairy</option><option>Cars</option><option>Electronics</option>
-    <option>Furniture</option><option>Clothes</option><option>Other</option>
+    <option>Dairy</option>
+    <option>Cars</option>
+    <option>Electronics</option>
+    <option>Furniture</option>
+    <option>Clothes</option>
+    <option>Beauty</option>
+    <option>Transport</option>
+    <option>Other</option>
   </select>
+
   <input type="file" id="image" accept="image/*">
   <button id="postBtn" onclick="postAd()">Post Ad</button>
 </div>
 
 <script>
-// ⚠️ REPLACE WITH YOUR REAL FIREBASE CONFIG
+// ⚠️ REPLACE WITH YOUR FIREBASE CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
   authDomain: "your-project.firebaseapp.com",
@@ -103,8 +123,10 @@ async function postAd(){
   try{
     let phone = fixPhone(document.getElementById("phone").value);
     let pin = document.getElementById("pin").value.trim();
+    let location = document.getElementById("location").value.trim();
 
     if(phone.length!== 11) throw new Error("Phone must be 11 digits. You typed: " + phone);
+    if(!location) throw new Error("Location is required");
     if(pin.length < 4) throw new Error("PIN must be 4+ digits");
 
     let imageUrl = "";
@@ -123,27 +145,26 @@ async function postAd(){
       description: document.getElementById("description").value.trim(),
       phone: phone,
       category: document.getElementById("category").value,
-      location: document.getElementById("locationFilter").value.trim(),
+      location: location,
       imageUrl: imageUrl,
       pin: pin,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
     alert("✅ Posted successfully!");
-    document.querySelectorAll('#title,#price,#description,#phone,#pin').forEach(i=>i.value="");
+    document.querySelectorAll('#title,#price,#description,#phone,#location,#pin').forEach(i=>i.value="");
     document.getElementById("image").value = "";
     loadAds();
 
   }catch(e){
     alert("❌ ERROR: " + e.message);
-    console.error(e);
   }
 
   btn.disabled = false;
   btn.innerText = "Post Ad";
 }
 
-// FIXED: No orderBy so ads don't disappear. Sort in JS
+// No orderBy so ads don't disappear on refresh
 function loadAds(){
   let sVal = document.getElementById("search").value.toLowerCase();
   let loc = document.getElementById("locationFilter").value.toLowerCase();
@@ -159,8 +180,6 @@ function loadAds(){
 
     let ads = [];
     snapshot.forEach(doc=> ads.push({id: doc.id, data: doc.data()}));
-
-    // Sort newest first, handle missing createdAt
     ads.sort((a,b)=> (b.data.createdAt?.seconds||0) - (a.data.createdAt?.seconds||0));
 
     ads.forEach(item=>{
