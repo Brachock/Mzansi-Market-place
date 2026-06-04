@@ -9,34 +9,44 @@
     body { font-family: Arial; padding: 15px; max-width: 800px; margin: 0 auto; background: #f8f9fa; }
     h1 { color: #ff6b00; text-align: center; margin-bottom: 10px; }
 
-  .card { background: white; padding: 15px; border-radius: 8px; margin: 12px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+ .card { background: white; padding: 15px; border-radius: 8px; margin: 12px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
-    /* ✅ CATEGORIES AT TOP */
-  .categories { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 15px 0; }
-  .cat-btn { padding: 8px 14px; background: white; border: 2px solid #ff6b00; color: #ff6b00; border-radius: 20px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s; }
-  .cat-btn:hover { background: #fff3e0; }
-  .cat-btn.active { background: #ff6b00; color: white; }
+ .filter-section { margin: 15px 0; }
+ .filter-title { font-size: 14px; color: #666; margin-bottom: 5px; font-weight: bold; }
+
+.categories { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 10px 0; }
+.cat-btn { padding: 8px 14px; background: white; border: 2px solid #ff6b00; color: #ff6b00; border-radius: 20px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s; }
+.cat-btn:hover { background: #fff3e0; }
+.cat-btn.active { background: #ff6b00; color: white; }
+
+ .location-filter { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 20px; font-size: 14px; margin: 10px 0; }
 
     input, select, textarea, button { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; }
     button { background: #ff6b00; color: white; border: none; cursor: pointer; font-weight: bold; }
     button:hover { background: #e55f00; }
     button:disabled { background: #ccc; cursor: not-allowed; }
     button.danger { background: #d32f2f; }
+    button.small { padding: 6px 10px; font-size: 13px; width: auto; margin-right: 5px; }
 
-  .ad-card { border-left: 4px solid #ff6b00; }
-  .ad-price { color: #2e7d32; font-size: 18px; font-weight: bold; }
-  .badge { background: #ff6b00; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; }
+ .ad-card { border-left: 4px solid #ff6b00; position: relative; }
+ .ad-price { color: #2e7d32; font-size: 18px; font-weight: bold; }
+ .badge { background: #ff6b00; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; margin-right: 5px; }
+ .location-badge { background: #2196f3; }
     a.whatsapp-btn { display: inline-block; background: #25D366; color: white; padding: 8px 12px; border-radius: 5px; text-decoration: none; margin-top: 8px; }
-  .ad-img { width: 100%; max-height: 250px; object-fit: cover; border-radius: 6px; margin: 8px 0; }
+ .ad-img { width: 100%; max-height: 250px; object-fit: cover; border-radius: 6px; margin: 8px 0; }
     #imgPreview { max-width: 100%; max-height: 200px; margin-top: 8px; border-radius: 6px; display: none; }
-  .uploading { color: #ff6b00; font-size: 14px; }
-  .hidden { display: none; }
-  .toggle-link { text-align: center; margin-top: 10px; color: #ff6b00; cursor: pointer; text-decoration: underline; font-size: 14px; }
-  .post-btn-top { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; border-radius: 50%; font-size: 30px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); z-index: 999; }
+ .uploading { color: #ff6b00; font-size: 14px; }
+ .hidden { display: none; }
+ .toggle-link { text-align: center; margin-top: 10px; color: #ff6b00; cursor: pointer; text-decoration: underline; font-size: 14px; }
+ .post-btn-top { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; border-radius: 50%; font-size: 30px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); z-index: 999; }
+
+.ad-actions { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+.share-btn { background: #1877f2; }
+ .ad-location { color: #2196f3; font-size: 14px; margin: 5px 0; }
 
     @media (max-width: 600px) {
-    .categories { gap: 6px; }
-    .cat-btn { padding: 6px 10px; font-size: 13px; }
+  .categories { gap: 6px; }
+  .cat-btn { padding: 6px 10px; font-size: 13px; }
     }
   </style>
 </head>
@@ -44,41 +54,71 @@
 
 <h1>🇿🇦 Mzansi Marketplace</h1>
 
-<!-- ✅ CATEGORIES AT TOP - CLICK TO FILTER -->
-<div class="categories">
-  <button class="cat-btn active" onclick="filterAds('')">All</button>
-  <button class="cat-btn" onclick="filterAds('Plumbing')">Plumbing</button>
-  <button class="cat-btn" onclick="filterAds('Cleaning')">Cleaning</button>
-  <button class="cat-btn" onclick="filterAds('Electrician')">Electrician</button>
-  <button class="cat-btn" onclick="filterAds('Hair & Beauty')">Hair & Beauty</button>
-  <button class="cat-btn" onclick="filterAds('Transport')">Transport</button>
-  <button class="cat-btn" onclick="filterAds('Repairs')">Repairs</button>
-  <button class="cat-btn" onclick="filterAds('Personal')">Personal</button>
-  <button class="cat-btn" onclick="filterAds('Other')">Other</button>
+<!-- ✅ FILTERS AT TOP -->
+<div class="filter-section">
+  <div class="filter-title">📍 Filter by Location</div>
+  <select class="location-filter" id="locationFilter" onchange="filterAds()">
+    <option value="">All Locations</option>
+    <option>Cape Town</option>
+    <option>Johannesburg</option>
+    <option>Durban</option>
+    <option>Pretoria</option>
+    <option>Port Elizabeth</option>
+    <option>Bloemfontein</option>
+    <option>East London</option>
+    <option>Polokwane</option>
+    <option>Other</option>
+  </select>
+
+  <div class="filter-title">🔧 Filter by Category</div>
+  <div class="categories">
+    <button class="cat-btn active" onclick="setCategory('')">All</button>
+    <button class="cat-btn" onclick="setCategory('Plumbing')">Plumbing</button>
+    <button class="cat-btn" onclick="setCategory('Cleaning')">Cleaning</button>
+    <button class="cat-btn" onclick="setCategory('Electrician')">Electrician</button>
+    <button class="cat-btn" onclick="setCategory('Hair & Beauty')">Hair & Beauty</button>
+    <button class="cat-btn" onclick="setCategory('Transport')">Transport</button>
+    <button class="cat-btn" onclick="setCategory('Repairs')">Repairs</button>
+    <button class="cat-btn" onclick="setCategory('Personal')">Personal</button>
+    <button class="cat-btn" onclick="setCategory('Other')">Other</button>
+  </div>
 </div>
 
 <hr>
 
-<!-- 📢 ADS SHOW IMMEDIATELY -->
 <h2 id="adsTitle">All Ads</h2>
 <div id="ads">Loading...</div>
 
-<!-- 🔐 LOGIN/SET PASSWORD - ONLY SHOWS WHEN POSTING -->
+<!-- ADMIN PASSWORD -->
 <div id="authDiv" class="card hidden">
-  <h3 id="authTitle">Enter Password to Post Ads</h3>
-  <input type="password" id="password" placeholder="Enter password">
+  <h3 id="authTitle">Enter Admin Password</h3>
+  <input type="password" id="password" placeholder="Admin password">
   <button id="authBtn" onclick="login()">Login</button>
-  <p class="toggle-link" onclick="toggleMode()">Set new password / Register</p>
+  <p class="toggle-link" onclick="toggleMode()">Set admin password first time</p>
   <button class="danger" onclick="closeAuth()">Cancel</button>
 </div>
 
-<!-- 📝 POST AD -->
+<!-- POST/EDIT AD -->
 <div id="postDiv" class="card hidden">
-  <h2>Post an Ad</h2>
+  <h2 id="postTitle">Post an Ad</h2>
 
   <input id="title" placeholder="Service/Product Title" required>
   <input id="price" type="number" placeholder="Price R" required>
   <input id="whatsapp" type="tel" placeholder="WhatsApp: 2772xxxxxxx" required>
+
+  <!-- ✅ LOCATION FIELD -->
+  <select id="location" required>
+    <option value="">Select Location</option>
+    <option>Cape Town</option>
+    <option>Johannesburg</option>
+    <option>Durban</option>
+    <option>Pretoria</option>
+    <option>Port Elizabeth</option>
+    <option>Bloemfontein</option>
+    <option>East London</option>
+    <option>Polokwane</option>
+    <option>Other</option>
+  </select>
 
   <select id="category" required>
     <option value="">Select Category</option>
@@ -94,22 +134,21 @@
 
   <textarea id="description" placeholder="Describe your service/product" rows="3" required></textarea>
 
-  <label style="font-size: 14px; color: #666;">Upload Image - Optional</label>
+  <label style="font-size: 14px; color: #666;">Upload New Image - Optional</label>
   <input type="file" id="imageFile" accept="image/*">
   <img id="imgPreview" alt="Preview">
   <p id="uploadStatus" class="uploading"></p>
 
   <button id="postBtn" onclick="saveAd()">Post Ad</button>
-  <button class="danger" onclick="logout()">Logout</button>
+  <button class="danger" onclick="logout()">Cancel</button>
 </div>
 
-<!-- ✅ FLOATING POST BUTTON -->
+<!-- FLOATING POST BUTTON -->
 <button class="post-btn-top" onclick="showAuth()">+</button>
 
-<!-- 🔥 FIREBASE + CLOUDINARY -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBgJZL1w5KWMTiDqrRziBM64wA8donunIs",
@@ -123,43 +162,50 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ✅ CLOUDINARY - REPLACE THESE
 const CLOUD_NAME = "demo";
 const UPLOAD_PRESET = "mzansi_ads";
 
 let uploadedImageUrl = "";
 let isRegisterMode = false;
-let currentFilter = "";
+let currentCategory = "";
+let currentLocation = "";
+let editingId = null;
 
-// Load ads on page open - no password needed
 window.onload = loadAds;
 
-// ✅ FILTER ADS BY CATEGORY
-window.filterAds = function(category) {
-  currentFilter = category;
-
-  // Update active button
+// SET CATEGORY FILTER
+window.setCategory = function(category) {
+  currentCategory = category;
   document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
   event.target.classList.add('active');
+  filterAds();
+}
 
-  // Update title
-  document.getElementById('adsTitle').textContent = category? category + ' Ads' : 'All Ads';
+// FILTER ADS
+window.filterAds = function() {
+  currentLocation = document.getElementById('locationFilter').value;
 
+  let title = "All Ads";
+  if (currentCategory && currentLocation) title = `${currentCategory} in ${currentLocation}`;
+  else if (currentCategory) title = `${currentCategory} Ads`;
+  else if (currentLocation) title = `Ads in ${currentLocation}`;
+
+  document.getElementById('adsTitle').textContent = title;
   loadAds();
 }
 
-// Show auth modal when clicking +
+// Show auth
 window.showAuth = function() {
-  if (localStorage.getItem("mzansi_pass")) {
-    document.getElementById("authTitle").textContent = "Enter Password to Post Ads";
+  document.getElementById("authDiv").classList.remove("hidden");
+  if (localStorage.getItem("mzansi_admin_pass")) {
+    document.getElementById("authTitle").textContent = "Enter Admin Password";
     document.getElementById("authBtn").textContent = "Login";
+    isRegisterMode = false;
   } else {
-    document.getElementById("authTitle").textContent = "Set Password First";
+    document.getElementById("authTitle").textContent = "Set Admin Password First";
     isRegisterMode = true;
     document.getElementById("authBtn").textContent = "Set Password";
-    document.querySelector(".toggle-link").textContent = "Already set? Login here";
   }
-  document.getElementById("authDiv").classList.remove("hidden");
 }
 
 window.closeAuth = function() {
@@ -169,9 +215,8 @@ window.closeAuth = function() {
 
 window.toggleMode = function() {
   isRegisterMode =!isRegisterMode;
-  document.getElementById("authTitle").textContent = isRegisterMode? "Set New Password" : "Enter Password to Post Ads";
+  document.getElementById("authTitle").textContent = isRegisterMode? "Set Admin Password" : "Enter Admin Password";
   document.getElementById("authBtn").textContent = isRegisterMode? "Set Password" : "Login";
-  document.querySelector(".toggle-link").textContent = isRegisterMode? "Already set? Login here" : "Set new password / Register";
 }
 
 // Image upload
@@ -211,7 +256,7 @@ async function uploadImage(file) {
   }
 }
 
-// Login / Set Password
+// Admin Login
 window.login = function() {
   const pass = document.getElementById("password").value;
   if (pass.length < 4) {
@@ -220,12 +265,12 @@ window.login = function() {
   }
 
   if (isRegisterMode) {
-    localStorage.setItem("mzansi_pass", pass);
-    alert("Password set! Now enter it to post.");
+    localStorage.setItem("mzansi_admin_pass", pass);
+    alert("Admin password set!");
     isRegisterMode = false;
     toggleMode();
   } else {
-    const savedPass = localStorage.getItem("mzansi_pass");
+    const savedPass = localStorage.getItem("mzansi_admin_pass");
     if (pass === savedPass) {
       document.getElementById("authDiv").classList.add("hidden");
       document.getElementById("postDiv").classList.remove("hidden");
@@ -236,24 +281,38 @@ window.login = function() {
   document.getElementById("password").value = "";
 }
 
-// Logout
 window.logout = function() {
   document.getElementById("postDiv").classList.add("hidden");
-  document.getElementById("authDiv").classList.remove("hidden");
-  document.getElementById("authTitle").textContent = "Enter Password to Post Ads";
-  isRegisterMode = false;
+  clearForm();
 }
 
-// Save Ad
+function clearForm() {
+  editingId = null;
+  document.getElementById("postTitle").textContent = "Post an Ad";
+  document.getElementById("postBtn").textContent = "Post Ad";
+  document.getElementById("title").value = "";
+  document.getElementById("price").value = "";
+  document.getElementById("whatsapp").value = "";
+  document.getElementById("location").value = "";
+  document.getElementById("category").value = "";
+  document.getElementById("description").value = "";
+  document.getElementById("imageFile").value = "";
+  document.getElementById("imgPreview").style.display = "none";
+  document.getElementById("uploadStatus").textContent = "";
+  uploadedImageUrl = "";
+}
+
+// SAVE or UPDATE AD
 window.saveAd = async function() {
   const title = document.getElementById("title").value.trim();
   const price = Number(document.getElementById("price").value);
   const whatsapp = document.getElementById("whatsapp").value.trim();
-  const description = document.getElementById("description").value.trim();
+  const location = document.getElementById("location").value;
   const category = document.getElementById("category").value;
+  const description = document.getElementById("description").value.trim();
 
-  if (!title ||!price ||!whatsapp ||!description ||!category) {
-    alert("Fill all fields bro");
+  if (!title ||!price ||!whatsapp ||!location ||!category ||!description) {
+    alert("Fill all fields including location bro");
     return;
   }
 
@@ -263,26 +322,22 @@ window.saveAd = async function() {
   }
 
   try {
-    const adData = { title, price, whatsapp, description, category, createdAt: new Date() };
+    const adData = { title, price, whatsapp, location, category, description };
     if (uploadedImageUrl && uploadedImageUrl!== "") {
       adData.imageUrl = uploadedImageUrl;
     }
 
-    await addDoc(collection(db, "ads"), adData);
-    alert("✅ Ad posted!");
+    if (editingId) {
+      await updateDoc(doc(db, "ads", editingId), adData);
+      alert("✅ Ad updated!");
+    } else {
+      adData.createdAt = new Date();
+      await addDoc(collection(db, "ads"), adData);
+      alert("✅ Ad posted!");
+    }
 
-    // Clear + close form
-    document.getElementById("title").value = "";
-    document.getElementById("price").value = "";
-    document.getElementById("whatsapp").value = "";
-    document.getElementById("description").value = "";
-    document.getElementById("category").value = "";
-    document.getElementById("imageFile").value = "";
-    document.getElementById("imgPreview").style.display = "none";
-    document.getElementById("uploadStatus").textContent = "";
-    uploadedImageUrl = "";
     document.getElementById("postDiv").classList.add("hidden");
-
+    clearForm();
     loadAds();
 
   } catch (error) {
@@ -290,7 +345,50 @@ window.saveAd = async function() {
   }
 }
 
-// Load Ads with current filter
+// EDIT AD
+window.editAd = function(id, ad) {
+  showAuth();
+  editingId = id;
+  document.getElementById("postTitle").textContent = "Edit Ad";
+  document.getElementById("postBtn").textContent = "Update Ad";
+
+  document.getElementById("title").value = ad.title;
+  document.getElementById("price").value = ad.price;
+  document.getElementById("whatsapp").value = ad.whatsapp;
+  document.getElementById("location").value = ad.location;
+  document.getElementById("category").value = ad.category;
+  document.getElementById("description").value = ad.description;
+
+  if (ad.imageUrl) {
+    document.getElementById("imgPreview").src = ad.imageUrl;
+    document.getElementById("imgPreview").style.display = "block";
+    uploadedImageUrl = ad.imageUrl;
+  }
+}
+
+// DELETE AD
+window.deleteAd = async function(id) {
+  if (confirm("Delete this ad permanently?")) {
+    await deleteDoc(doc(db, "ads", id));
+    alert("Ad deleted");
+    loadAds();
+  }
+}
+
+// SHARE AD
+window.shareAd = function(title, id) {
+  const url = window.location.href.split('#')[0] + '#ad-' + id;
+  const text = `Check this out: ${title} on Mzansi Marketplace`;
+
+  if (navigator.share) {
+    navigator.share({ title: title, text: text, url: url });
+  } else {
+    navigator.clipboard.writeText(url);
+    alert("Link copied! Share on WhatsApp/Facebook");
+  }
+}
+
+// LOAD ADS with filters
 async function loadAds() {
   const adsContainer = document.getElementById("ads");
   adsContainer.innerHTML = "Loading...";
@@ -307,32 +405,46 @@ async function loadAds() {
     adsContainer.innerHTML = "";
     let hasAds = false;
 
-    querySnapshot.forEach((doc) => {
-      const ad = doc.data();
-      if (currentFilter && ad.category!== currentFilter) return;
-      hasAds = true;
+    querySnapshot.forEach((docSnap) => {
+      const ad = docSnap.data();
 
+      // Apply filters
+      if (currentCategory && ad.category!== currentCategory) return;
+      if (currentLocation && ad.location!== currentLocation) return;
+
+      hasAds = true;
       const cleanNumber = ad.whatsapp.replace(/\D/g, '');
       const date = ad.createdAt.toDate().toLocaleDateString('en-ZA');
+      const adId = docSnap.id;
 
       adsContainer.innerHTML += `
-        <div class="card ad-card">
+        <div class="card ad-card" id="ad-${adId}">
           <span class="badge">${ad.category}</span>
+          <span class="badge location-badge">📍 ${ad.location}</span>
           ${ad.imageUrl? `<img src="${ad.imageUrl}" class="ad-img" alt="${ad.title}">` : ''}
           <h3>${ad.title}</h3>
           <p class="ad-price">R${ad.price}</p>
+          <p class="ad-location">📍 ${ad.location}</p>
           <p>${ad.description}</p>
-          <a class="whatsapp-btn" href="https://wa.me/${cleanNumber}" target="_blank">📱 Contact on WhatsApp</a>
+          <a class="whatsapp-btn" href="https://wa.me/${cleanNumber}" target="_blank">📱 Contact WhatsApp</a>
+
+          <div class="ad-actions">
+            <button class="small share-btn" onclick='shareAd("${ad.title}", "${adId}")'>📤 Share</button>
+            <button class="small" onclick='editAd("${adId}", ${JSON.stringify(ad).replace(/"/g, '&quot;')})'>✏️ Edit</button>
+            <button class="small danger" onclick='deleteAd("${adId}")'>🗑️ Delete</button>
+          </div>
+
           <p style="font-size: 12px; color: #666; margin-top: 8px;">Posted: ${date}</p>
         </div>
       `;
     });
 
     if (!hasAds) {
-      adsContainer.innerHTML = `<p>No ads in ${currentFilter} category yet.</p>`;
+      adsContainer.innerHTML = `<p>No ads found for current filters.</p>`;
     }
   } catch (error) {
     adsContainer.innerHTML = "<p>Error loading ads.</p>";
+    console.error(error);
   }
 }
 </script>
