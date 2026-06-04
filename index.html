@@ -8,20 +8,21 @@
     * { box-sizing: border-box; }
     body { font-family: Arial; padding: 15px; max-width: 700px; margin: 0 auto; background: #f8f9fa; }
     h1 { color: #ff6b00; text-align: center; }
-  .card { background: white; padding: 15px; border-radius: 8px; margin: 12px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+   .card { background: white; padding: 15px; border-radius: 8px; margin: 12px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     input, select, textarea, button { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; }
     button { background: #ff6b00; color: white; border: none; cursor: pointer; font-weight: bold; }
     button:hover { background: #e55f00; }
+    button:disabled { background: #ccc; cursor: not-allowed; }
     button.danger { background: #d32f2f; }
-  .ad-card { border-left: 4px solid #ff6b00; }
-  .ad-price { color: #2e7d32; font-size: 18px; font-weight: bold; }
-  .badge { background: #ff6b00; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; }
+   .ad-card { border-left: 4px solid #ff6b00; }
+   .ad-price { color: #2e7d32; font-size: 18px; font-weight: bold; }
+   .badge { background: #ff6b00; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; }
     a.whatsapp-btn { display: inline-block; background: #25D366; color: white; padding: 8px 12px; border-radius: 5px; text-decoration: none; margin-top: 8px; }
-  .ad-img { width: 100%; max-height: 250px; object-fit: cover; border-radius: 6px; margin: 8px 0; }
+   .ad-img { width: 100%; max-height: 250px; object-fit: cover; border-radius: 6px; margin: 8px 0; }
     #imgPreview { max-width: 100%; max-height: 200px; margin-top: 8px; border-radius: 6px; display: none; }
-  .uploading { color: #ff6b00; font-size: 14px; }
-  .hidden { display: none; }
-  .toggle-link { text-align: center; margin-top: 10px; color: #ff6b00; cursor: pointer; text-decoration: underline; font-size: 14px; }
+   .uploading { color: #ff6b00; font-size: 14px; }
+   .hidden { display: none; }
+   .toggle-link { text-align: center; margin-top: 10px; color: #ff6b00; cursor: pointer; text-decoration: underline; font-size: 14px; }
   </style>
 </head>
 <body>
@@ -34,7 +35,7 @@
   <input type="password" id="password" placeholder="Enter password">
   <button id="authBtn" onclick="login()">Login</button>
   <p class="toggle-link" onclick="toggleMode()">Set new password / Register</p>
-  <p style="font-size: 12px; color: #666;">Password stored in browser. Not secure for public site.</p>
+  <p style="font-size: 12px; color: #666;">Password stored in browser only</p>
 </div>
 
 <!-- 📝 POST AD -->
@@ -59,6 +60,7 @@
 
   <textarea id="description" placeholder="Describe your service/product" rows="3" required></textarea>
 
+  <label style="font-size: 14px; color: #666;">Upload Image - Optional</label>
   <input type="file" id="imageFile" accept="image/*">
   <img id="imgPreview" alt="Preview">
   <p id="uploadStatus" class="uploading"></p>
@@ -106,14 +108,14 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ✅ CLOUDINARY - REPLACE THESE
+// ✅ CLOUDINARY - REPLACE THESE WITH YOURS
 const CLOUD_NAME = "demo";
 const UPLOAD_PRESET = "mzansi_ads";
 
 let uploadedImageUrl = "";
 let isRegisterMode = false;
 
-// Check if password exists in localStorage
+// Check if password exists
 if (localStorage.getItem("mzansi_pass")) {
   document.getElementById("authTitle").textContent = "Enter Password to Post Ads";
 } else {
@@ -143,6 +145,7 @@ document.getElementById("imageFile").addEventListener("change", function(e) {
 async function uploadImage(file) {
   document.getElementById("uploadStatus").textContent = "Uploading image...";
   document.getElementById("postBtn").disabled = true;
+  uploadedImageUrl = "";
 
   const formData = new FormData();
   formData.append("file", file);
@@ -154,11 +157,19 @@ async function uploadImage(file) {
       body: formData
     });
     const data = await res.json();
-    uploadedImageUrl = data.secure_url;
-    document.getElementById("uploadStatus").textContent = "✅ Image uploaded";
+
+    if (data.secure_url) {
+      uploadedImageUrl = data.secure_url;
+      document.getElementById("uploadStatus").textContent = "✅ Image uploaded";
+    } else {
+      throw new Error("Upload failed");
+    }
     document.getElementById("postBtn").disabled = false;
   } catch (error) {
-    document.getElementById("uploadStatus").textContent = "❌ Upload failed";
+    document.getElementById("uploadStatus").textContent = "❌ Upload failed - post without image";
+    document.getElementById("postBtn").disabled = false;
+    uploadedImageUrl = ""; // Reset to empty string
+    console.error(error);
   }
 }
 
@@ -195,7 +206,7 @@ window.logout = function() {
   document.getElementById("postDiv").classList.add("hidden");
 }
 
-// Save Ad
+// ✅ SAVE AD - FIXED: No undefined imageUrl
 window.saveAd = async function() {
   const title = document.getElementById("title").value.trim();
   const price = Number(document.getElementById("price").value);
@@ -208,23 +219,37 @@ window.saveAd = async function() {
     return;
   }
 
+  // Wait if image is still uploading
+  if (document.getElementById("postBtn").disabled) {
+    alert("Wait for image to finish uploading...");
+    return;
+  }
+
   try {
-    await addDoc(collection(db, "ads"), {
+    // Build ad object - only add imageUrl if it has value
+    const adData = {
       title,
       price,
       whatsapp,
       description,
       category,
-      imageUrl: uploadedImageUrl,
       createdAt: new Date()
-    });
+    };
+
+    // Only add imageUrl if upload succeeded
+    if (uploadedImageUrl && uploadedImageUrl!== "") {
+      adData.imageUrl = uploadedImageUrl;
+    }
+
+    await addDoc(collection(db, "ads"), adData);
 
     alert("✅ Ad posted!");
+    // Clear form
     document.getElementById("title").value = "";
     document.getElementById("price").value = "";
     document.getElementById("whatsapp").value = "";
     document.getElementById("description").value = "";
-    document.getElementById("category").value = "";
+    document.getElementById("category")..value = "";
     document.getElementById("imageFile").value = "";
     document.getElementById("imgPreview").style.display = "none";
     document.getElementById("uploadStatus").textContent = "";
@@ -233,6 +258,7 @@ window.saveAd = async function() {
 
   } catch (error) {
     alert("Error: " + error.message);
+    console.error(error);
   }
 }
 
@@ -280,6 +306,7 @@ async function loadAds() {
     }
   } catch (error) {
     adsContainer.innerHTML = "<p>Error loading ads.</p>";
+    console.error(error);
   }
 }
 
