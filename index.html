@@ -1,203 +1,204 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mzansi Market 🇿🇦</title>
-
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-
-<style>
-*{box-sizing:border-box}
-body{font-family:Arial;margin:0;background:#f2f2f2;padding-bottom:80px}
-.navbar{background:#1e5aa8;color:white;padding:14px;font-size:20px;font-weight:bold;text-align:center;position:sticky;top:0;z-index:10}
-.form-box{background:#eee;padding:12px;margin:10px;border-radius:8px}
-input,select,textarea{width:100%;padding:10px;margin:5px 0;border-radius:6px;border:1px solid #ccc;font-size:14px}
-button{width:100%;padding:12px;background:#1e5aa8;color:white;border:none;margin-top:6px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:15px}
-button:disabled{background:#999;cursor:not-allowed}
-.cat-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}
-.cat-btn{padding:8px 4px;background:white;border:2px solid #1e5aa8;color:#1e5aa8;border-radius:6px;font-size:12px;cursor:pointer;font-weight:bold}
-.cat-btn.active{background:#1e5aa8;color:white}
-.search-row{display:flex;gap:5px;margin:8px 0}
-.search-row input{flex:1}
-.search-row button{width:90px;margin:0}
-.card{background:white;padding:14px;margin:10px;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
-.wa-btn{display:inline-block;margin-top:8px;background:#25D366;color:white;padding:10px 14px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:14px}
-.section-title{font-size:16px;font-weight:bold;margin:8px 0;color:#1e5aa8}
-small{font-size:11px;color:#666;display:block;margin:3px 0 6px 0}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mzansi Marketplace</title>
+  <style>
+    * { box-sizing: border-box; font-family: Arial, sans-serif; }
+    body { max-width: 600px; margin: 0 auto; padding: 15px; background: #f5f5f5; }
+    h1 { color: #ff6b00; text-align: center; }
+    .card { background: white; padding: 15px; border-radius: 10px; margin: 10px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    input, textarea, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; }
+    button { background: #ff6b00; color: white; border: none; cursor: pointer; font-weight: bold; }
+    button:hover { background: #e55f00; }
+    button.danger { background: #d32f2f; }
+    .ad-card { border-left: 4px solid #ff6b00; }
+    .ad-price { color: #2e7d32; font-size: 20px; font-weight: bold; }
+    .ad-date { color: #666; font-size: 12px; }
+    .logout { background: #555; }
+    #postDiv { display: none; }
+    .hidden { display: none; }
+  </style>
 </head>
 <body>
 
-<div class="navbar">🇿🇦 Mzansi Market</div>
+<h1>🇿🇦 Mzansi Marketplace</h1>
 
-<!-- SEARCH + CATEGORIES -->
-<div class="form-box">
-  <div class="section-title">Browse Categories</div>
-  <div class="search-row">
-    <input id="search" placeholder="Search product...">
-    <button onclick="loadAds()">Search</button>
-  </div>
-  <input id="locationFilter" placeholder="Filter by Location - e.g. Bloemfontein" oninput="loadAds()">
-  <div class="cat-btns">
-    <button class="cat-btn active" onclick="filterCat('')">All</button>
-    <button class="cat-btn" onclick="filterCat('Dairy')">🥛 Dairy</button>
-    <button class="cat-btn" onclick="filterCat('Cars')">🚗 Cars</button>
-    <button class="cat-btn" onclick="filterCat('Electronics')">📱 Electronics</button>
-    <button class="cat-btn" onclick="filterCat('Furniture')">🪑 Furniture</button>
-    <button class="cat-btn" onclick="filterCat('Clothes')">👕 Clothes</button>
-    <button class="cat-btn" onclick="filterCat('Beauty')">💄 Beauty</button>
-    <button class="cat-btn" onclick="filterCat('Transport')">🚚 Transport</button>
-    <button class="cat-btn" onclick="filterCat('Other')">📦 Other</button>
-  </div>
+<!-- 🔐 LOGIN -->
+<div id="loginDiv" class="card">
+  <h3>Login to Post Ads</h3>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+  <button onclick="signup()">Sign Up</button>
+  <p style="font-size: 12px; color: #666;">Create account free. No "1234" passwords here 😂</p>
 </div>
 
-<!-- ADS LIST -->
-<div id="ads">Loading ads...</div>
-
-<!-- POST AD FORM - NO IMAGE -->
-<div class="form-box">
-  <div class="section-title">Post New Ad</div>
-  <input id="title" placeholder="Product name / Service" required>
-  <input id="price" placeholder="Price R" type="number" required>
-  <textarea id="description" placeholder="Description" rows="3"></textarea>
-  <input id="phone" placeholder="27826405603" required>
-  <small>Type 0826405603 or +2764... it auto-fixes to 27826405603</small>
-  <input id="location" placeholder="Your Location - e.g. Bloemfontein" required>
-  <input id="pin" placeholder="4 digit PIN to delete later" type="password" maxlength="6" required>
-  <select id="category">
-    <option>Dairy</option>
-    <option>Cars</option>
-    <option>Electronics</option>
-    <option>Furniture</option>
-    <option>Clothes</option>
-    <option>Beauty</option>
-    <option>Transport</option>
-    <option>Other</option>
-  </select>
-  <button id="postBtn" onclick="postAd()">Post Ad</button>
+<!-- 📝 POST AD -->
+<div id="postDiv" class="card">
+  <h3>Post an Ad</h3>
+  <input id="title" placeholder="Service/Product Title" required>
+  <input id="price" type="number" placeholder="Price R" required>
+  <input id="contact" placeholder="WhatsApp Number" required>
+  <textarea id="desc" rows="3" placeholder="Describe your service/product" required></textarea>
+  <button onclick="saveAd()">Post Ad</button>
+  <button class="logout" onclick="logout()">Logout</button>
 </div>
 
-<script>
-// ⚠️⚠️ REPLACE THESE 3 LINES WITH YOUR FIREBASE CONFIG ⚠️⚠️
+<hr>
+
+<!-- 📢 ADS -->
+<h2>Available Ads</h2>
+<div id="ads">Loading...</div>
+
+<!-- 🔥 FIREBASE SCRIPT -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// ✅ REPLACE WITH YOUR FIREBASE CONFIG
 const firebaseConfig = {
-  apiKey: "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-  authDomain: "your-project.firebaseapp.com",
-  projectId: "your-project"
+  apiKey: "AIzaSyBgJZL1w5KWMTiDqrRziBM64wA8donunIs",
+  authDomain: "mzansimarket-ac296.firebaseapp.com",
+  projectId: "mzansimarket-ac296",
+  storageBucket: "mzansimarket-ac296.firebasestorage.app",
+  messagingSenderId: "613890587901",
+  appId: "1:613890587901:web:8b7e278cc00a3610d11294"
 };
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-let activeCategory = "";
+const loginDiv = document.getElementById("loginDiv");
+const postDiv = document.getElementById("postDiv");
 
-function fixPhone(num){
-  let phone = num.replace(/\s|\+|\-|\(|\)/g, '');
-  if(phone.startsWith('0')) phone = '27' + phone.substring(1);
-  if(!phone.startsWith('27')) phone = '27' + phone;
-  return phone;
-}
-
-function filterCat(cat){
-  activeCategory = cat;
-  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
-  event.target.classList.add('active');
+// 🔐 Check login state
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    loginDiv.classList.add("hidden");
+    postDiv.style.display = "block";
+  } else {
+    loginDiv.classList.remove("hidden");
+    postDiv.style.display = "none";
+  }
   loadAds();
+});
+
+// Login
+window.login = async function() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (error) {
+    alert("Login failed: " + error.message);
+  }
 }
 
-async function postAd(){
-  const btn = document.getElementById("postBtn");
-  btn.disabled = true;
-  btn.innerText = "Saving...";
+// Signup
+window.signup = async function() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  if (password.length < 6) {
+    alert("Password must be 6+ characters");
+    return;
+  }
+  try {
+    await createUserWithEmailAndPassword(auth, email, password);
+    alert("Account created! You can now post ads.");
+  } catch (error) {
+    alert("Signup failed: " + error.message);
+  }
+}
 
-  // 6 second timeout so button doesn't freeze forever
-  let timeout = setTimeout(() => {
-    btn.disabled = false;
-    btn.innerText = "Post Ad";
-    alert("❌ TIMEOUT\nFirebase not responding.\n1. Check internet\n2. Check Firestore Rules = allow create: if true\n3. Check projectId is correct");
-  }, 6000);
+// Logout
+window.logout = async function() {
+  await signOut(auth);
+}
 
-  try{
-    let title = document.getElementById("title").value.trim();
-    let price = document.getElementById("price").value.trim();
-    let desc = document.getElementById("description").value.trim();
-    let phone = fixPhone(document.getElementById("phone").value);
-    let location = document.getElementById("location").value.trim();
-    let pin = document.getElementById("pin").value.trim();
-    let category = document.getElementById("category").value;
+// Save Ad
+window.saveAd = async function() {
+  const title = document.getElementById("title").value.trim();
+  const price = document.getElementById("price").value.trim();
+  const contact = document.getElementById("contact").value.trim();
+  const desc = document.getElementById("desc").value.trim();
 
-    if(!title) throw new Error("Title required");
-    if(!price) throw new Error("Price required");
-    if(phone.length!== 11) throw new Error("Phone must be 11 digits. You typed: " + phone);
-    if(!location) throw new Error("Location required");
-    if(pin.length < 4) throw new Error("PIN must be 4+ digits");
+  if (!title || !price || !contact || !desc) {
+    alert("Fill all fields bro");
+    return;
+  }
 
-    await db.collection("ads").add({
-      title: title,
-      price: price,
-      description: desc,
-      phone: phone,
-      category: category,
-      location: location,
-      pin: pin,
+  try {
+    await addDoc(collection(db, "ads"), {
+      title,
+      price: Number(price),
+      contact,
+      desc,
+      userId: auth.currentUser.uid,
+      userEmail: auth.currentUser.email,
       createdAt: new Date()
     });
 
-    clearTimeout(timeout);
-    alert("✅ Posted successfully!");
-    document.querySelectorAll('#title,#price,#description,#phone,#location,#pin').forEach(i=>i.value="");
+    alert("✅ Ad posted!");
+    document.getElementById("title").value = "";
+    document.getElementById("price").value = "";
+    document.getElementById("contact").value = "";
+    document.getElementById("desc").value = "";
     loadAds();
 
-  }catch(e){
-    clearTimeout(timeout);
-    alert("❌ ERROR:\n\n" + e.message + "\n\nCommon fixes:\n1. Firestore Rules must be 'allow create: if true'\n2. Check projectId matches Firebase");
-    console.error(e);
+  } catch (error) {
+    alert("Error: " + error.message);
   }
-
-  btn.disabled = false;
-  btn.innerText = "Post Ad";
 }
 
-function loadAds(){
-  let sVal = document.getElementById("search").value.toLowerCase();
-  let loc = document.getElementById("locationFilter").value.toLowerCase();
+// Load Ads
+window.loadAds = async function() {
+  const adsContainer = document.getElementById("ads");
+  adsContainer.innerHTML = "Loading...";
 
-  db.collection("ads").get()
-.then(snapshot=>{
-    const adsDiv = document.getElementById("ads");
-    adsDiv.innerHTML = "";
-    if(snapshot.empty){
-      adsDiv.innerHTML = "<p style='text-align:center;padding:30px;color:#666'>No ads yet. Be the first to post below!</p>";
+  try {
+    const q = query(collection(db, "ads"), orderBy("createdAt", "desc"));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      adsContainer.innerHTML = "<p>No ads yet. Be the first to post!</p>";
       return;
     }
 
-    let ads = [];
-    snapshot.forEach(doc=> ads.push({id: doc.id, data: doc.data()}));
-    // Sort newest first
-    ads.sort((a,b)=> new Date(b.data.createdAt) - new Date(a.data.createdAt));
-
-    ads.forEach(item=>{
-      let ad = item.data;
-      if(sVal &&!ad.title.toLowerCase().includes(sVal)) return;
-      if(activeCategory && ad.category!== activeCategory) return;
-      if(loc &&!ad.location?.toLowerCase().includes(loc)) return;
-
-      adsDiv.innerHTML += `
-        <div class="card">
-          <p style="color:#1e5aa8;font-size:12px;margin:0 0 5px 0">${ad.category} • 📍 ${ad.location || 'SA'}</p>
-          <h3 style="margin:5px 0">${ad.title}</h3>
-          <p style="font-size:18px;font-weight:bold;margin:5px 0">R${ad.price}</p>
-          <p style="margin:8px 0;color:#444">${ad.description || ''}</p>
-          <a class="wa-btn" href="https://wa.me/${ad.phone}" target="_blank">📲 WhatsApp Seller</a>
-        </div>`;
+    adsContainer.innerHTML = "";
+    querySnapshot.forEach((docSnap) => {
+      const ad = docSnap.data();
+      const isOwner = auth.currentUser && ad.userId === auth.currentUser.uid;
+      const date = ad.createdAt.toDate().toLocaleDateString('en-ZA');
+      
+      adsContainer.innerHTML += `
+        <div class="card ad-card">
+          <h3>${ad.title}</h3>
+          <p class="ad-price">R${ad.price}</p>
+          <p>${ad.desc}</p>
+          <p>📱 WhatsApp: <a href="https://wa.me/${ad.contact.replace(/\D/g,'')}" target="_blank">${ad.contact}</a></p>
+          <p class="ad-date">Posted: ${date}</p>
+          ${isOwner ? `<button class="danger" onclick="deleteAd('${docSnap.id}')">Delete</button>` : ''}
+        </div>
+      `;
     });
-  }).catch(e=> {
-    document.getElementById("ads").innerHTML = "<p style='color:red;text-align:center;padding:20px'>Error loading ads: " + e.message + "</p>";
-  });
+  } catch (error) {
+    adsContainer.innerHTML = "<p>Error loading ads. Check console.</p>";
+    console.error(error);
+  }
 }
 
-loadAds();
+// Delete Ad
+window.deleteAd = async function(id) {
+  if (confirm("Delete this ad?")) {
+    await deleteDoc(doc(db, "ads", id));
+    loadAds();
+  }
+}
 </script>
+
 </body>
 </html>
