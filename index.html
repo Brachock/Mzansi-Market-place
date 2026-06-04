@@ -1,35 +1,127 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mzansi Marketplace</title>
 
-  <!-- ✅ GOOGLE ADSENSE -->
-  <script async 
-    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5097459177144739"
+  <!-- GOOGLE ADSENSE -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5097459177144739"
     crossorigin="anonymous"></script>
 
+  <!-- PWA FOR APP -->
+  <meta name="theme-color" content="#ff6b00">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: Arial; padding: 15px; max-width: 800px; margin: 0 auto; background: #f8f9fa; padding-bottom: 100px; }
+    h1 { color: #ff6b00; text-align: center; margin: 10px 0 20px; font-size: 24px; }
+
+   .card { background: white; padding: 15px; border-radius: 10px; margin: 12px 0; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+
+   .filter-box { margin-bottom: 15px; }
+   .filter-title { font-size: 14px; color: #666; font-weight: bold; margin-bottom: 8px; }
+
+   .categories { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+   .cat-btn { padding: 8px 16px; background: white; border: 2px solid #ff6b00; color: #ff6b00; border-radius: 25px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s; }
+   .cat-btn.active { background: #ff6b00; color: white; }
+
+   .location-filter { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; }
+
+    input, select, textarea, button { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+    button { background: #ff6b00; color: white; border: none; cursor: pointer; font-weight: bold; }
+    button:hover { background: #e55f00; }
+    button.danger { background: #d32f2f; }
+    button.small { padding: 8px 12px; font-size: 13px; width: auto; margin-right: 6px; }
+
+   .ad-card { border-left: 4px solid #ff6b00; position: relative; }
+   .featured { border: 2px solid gold!important; background: #fff8dc!important; }
+   .ad-price { color: #2e7d32; font-size: 20px; font-weight: bold; margin: 8px 0; }
+   .badge { background: #ff6b00; color: white; padding: 5px 10px; border-radius: 5px; font-size: 12px; margin-right: 6px; display: inline-block; }
+   .location-badge { background: #2196f3; }
+
+    a.whatsapp-btn { display: inline-block; background: #25D366; color: white; padding: 10px 18px; border-radius: 8px; text-decoration: none; margin-top: 10px; font-weight: bold; }
+
+   .hidden { display: none; }
+
+   .post-btn { position: fixed; bottom: 20px; right: 20px; width: 65px; height: 65px; border-radius: 50%; font-size: 35px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 999; }
+   .install-btn { background: #4caf50; position: fixed; bottom: 95px; right: 20px; padding: 14px 22px; border-radius: 30px; display: none; z-index: 999; font-size: 15px; }
+
+   .ad-actions { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+   .share-btn { background: #1877f2; }
+   .ad-location { color: #2196f3; font-size: 14px; margin: 5px 0; }
+   .ad-date { font-size: 12px; color: #888; margin-top: 8px; }
+
+    @media (max-width: 600px) {
+     .categories { gap: 6px; }
+     .cat-btn { padding: 6px 12px; font-size: 13px; }
+    }
+  </style>
 </head>
+<body>
 
-<body style="font-family: Arial; padding:20px;">
+<h1>🇿🇦 Mzansi Marketplace</h1>
 
-<h1>Mzansi Marketplace</h1>
+<!-- FILTERS -->
+<div class="card filter-box">
+  <div class="filter-title">📍 Location</div>
+  <select class="location-filter" id="locationFilter" onchange="loadAds()">
+    <option value="">All Locations</option>
+    <option>Cape Town</option>
+    <option>Johannesburg</option>
+    <option>Durban</option>
+    <option>Pretoria</option>
+    <option>Port Elizabeth</option>
+    <option>Bloemfontein</option>
+    <option>Other</option>
+  </select>
 
-<!-- 🔐 LOGIN -->
-<div id="loginDiv">
-  <h3>Enter Password</h3>
-  <input type="password" id="password">
+  <div class="filter-title" style="margin-top:15px">🔧 Category</div>
+  <div class="categories">
+    <button class="cat-btn active" onclick="setCategory('')">All</button>
+    <button class="cat-btn" onclick="setCategory('Plumbing')">Plumbing</button>
+    <button class="cat-btn" onclick="setCategory('Cleaning')">Cleaning</button>
+    <button class="cat-btn" onclick="setCategory('Electrician')">Electrician</button>
+    <button class="cat-btn" onclick="setCategory('Hair & Beauty')">Hair & Beauty</button>
+    <button class="cat-btn" onclick="setCategory('Transport')">Transport</button>
+    <button class="cat-btn" onclick="setCategory('Repairs')">Repairs</button>
+    <button class="cat-btn" onclick="setCategory('Personal')">Personal</button>
+    <button class="cat-btn" onclick="setCategory('Other')">Other</button>
+  </div>
+</div>
+
+<h2 id="adsTitle">All Ads</h2>
+<div id="ads">Loading...</div>
+
+<!-- LOGIN -->
+<div id="loginDiv" class="card">
+  <h3>🔐 Admin Login</h3>
+  <input type="password" id="password" placeholder="Password: 1234">
   <button onclick="login()">Login</button>
 </div>
 
-<!-- 📝 POST AD -->
-<div id="postDiv" style="display:none;">
-  <h2>Post Ad</h2>
+<!-- POST/EDIT AD -->
+<div id="postDiv" class="card hidden">
+  <h2 id="postTitle">Post New Ad</h2>
+  <input id="title" placeholder="Title - e.g. Plumber Available 24/7" required>
+  <input id="price" type="number" placeholder="Price R" required>
+  <input id="whatsapp" type="tel" placeholder="WhatsApp: 2781xxxxxxx" required>
 
-  <input id="title" placeholder="Title"><br><br>
-  <input id="price" placeholder="Price"><br><br>
-  <input id="whatsapp" placeholder="WhatsApp Number (e.g. 27812345678)"><br><br>
+  <select id="location" required>
+    <option value="">Select Location</option>
+    <option>Cape Town</option>
+    <option>Johannesburg</option>
+    <option>Durban</option>
+    <option>Pretoria</option>
+    <option>Port Elizabeth</option>
+    <option>Bloemfontein</option>
+    <option>Other</option>
+  </select>
 
-  <select id="category">
+  <select id="category" required>
     <option value="">Select Category</option>
     <option>Plumbing</option>
     <option>Cleaning</option>
@@ -39,43 +131,23 @@
     <option>Repairs</option>
     <option>Personal</option>
     <option>Other</option>
-  </select><br><br>
+  </select>
 
-  <textarea id="description" placeholder="Description"></textarea><br><br>
+  <textarea id="description" placeholder="Describe your service..." rows="3" required></textarea>
 
-  <!-- 💰 PAID AD -->
-  <label>
-    <input type="checkbox" id="paid"> Make Featured Ad
-  </label><br><br>
+  <label><input type="checkbox" id="paid"> ⭐ Make Featured Ad - Shows on top</label>
 
-  <button onclick="saveAd()">Post Ad</button>
-  <button onclick="logout()">Logout</button>
+  <button id="postBtn" onclick="saveAd()">Post Ad</button>
+  <button class="danger" onclick="logout()">Cancel</button>
 </div>
 
-<hr>
+<!-- FLOATING BUTTONS -->
+<button class="post-btn" onclick="showPost()">+</button>
+<button class="install-btn" id="installBtn">📱 Install App</button>
 
-<!-- 🔍 FILTER -->
-<select id="filter" onchange="loadAds()">
-  <option value="">All Categories</option>
-  <option>Plumbing</option>
-  <option>Cleaning</option>
-  <option>Electrician</option>
-  <option>Hair & Beauty</option>
-  <option>Transport</option>
-  <option>Repairs</option>
-  <option>Personal</option>
-</select>
-
-<hr>
-
-<!-- 📢 ADS -->
-<div id="ads"></div>
-
-<!-- ✅ FIREBASE -->
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBgJZL1w5KWMTiDqrRziBM64wA8donunIs",
@@ -89,119 +161,204 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 🔐 LOGIN
-function login() {
-  if (document.getElementById("password").value === "1234") {
-    document.getElementById("loginDiv").style.display = "none";
-    document.getElementById("postDiv").style.display = "block";
-  } else {
-    alert("Wrong password");
+let currentCategory = "";
+let currentLocation = "";
+let editingId = null;
+let deferredPrompt;
+
+// PWA Install
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBtn').style.display = 'block';
+});
+document.getElementById('installBtn').addEventListener('click', async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') document.getElementById('installBtn').style.display = 'none';
+    deferredPrompt = null;
   }
-}
+});
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 
-function logout() {
-  document.getElementById("loginDiv").style.display = "block";
-  document.getElementById("postDiv").style.display = "none";
-}
-
-window.login = login;
-window.logout = logout;
-
-// ✅ SAVE AD
-async function saveAd() {
-  const title = document.getElementById("title").value;
-  const price = document.getElementById("price").value;
-  const whatsapp = document.getElementById("whatsapp").value;
-  const description = document.getElementById("description").value;
-  const category = document.getElementById("category").value;
-  const paid = document.getElementById("paid").checked;
-
-  if (!title || !price || !whatsapp || !description || !category) {
-    alert("Fill all fields");
-    return;
-  }
-
-  await addDoc(collection(db, "ads"), {
-    title, price, whatsapp, description, category, paid,
-    createdAt: new Date()
-  });
-
-  alert("✅ Ad Posted!");
-
-  // clear form
-  document.getElementById("title").value = "";
-  document.getElementById("price").value = "";
-  document.getElementById("whatsapp").value = "";
-  document.getElementById("description").value = "";
-  document.getElementById("category").value = "";
-  document.getElementById("paid").checked = false;
-
+// Category filter
+window.setCategory = function(cat) {
+  currentCategory = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
   loadAds();
 }
 
-window.saveAd = saveAd;
+// Login
+window.login = function() {
+  if (document.getElementById("password").value === "1234") {
+    document.getElementById("loginDiv").classList.add("hidden");
+    document.getElementById("postDiv").classList.remove("hidden");
+  } else {
+    alert("Wrong password. Use: 1234");
+  }
+}
 
-// ✅ LOAD ADS
-async function loadAds() {
+window.showPost = function() {
+  document.getElementById("loginDiv").classList.add("hidden");
+  document.getElementById("postDiv").classList.remove("hidden");
+}
+
+window.logout = function() {
+  editingId = null;
+  document.getElementById("postTitle").textContent = "Post New Ad";
+  document.getElementById("postBtn").textContent = "Post Ad";
+  ["title","price","whatsapp","location","category","description"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("paid").checked = false;
+  document.getElementById("postDiv").classList.add("hidden");
+  document.getElementById("loginDiv").classList.remove("hidden");
+}
+
+// Save Ad
+window.saveAd = async function() {
+  const title = document.getElementById("title").value.trim();
+  const price = document.getElementById("price").value;
+  const whatsapp = document.getElementById("whatsapp").value.trim();
+  const location = document.getElementById("location").value;
+  const description = document.getElementById("description").value.trim();
+  const category = document.getElementById("category").value;
+  const paid = document.getElementById("paid").checked;
+
+  if (!title ||!price ||!whatsapp ||!location ||!description ||!category) {
+    alert("Fill all fields including location");
+    return;
+  }
+
+  try {
+    const adData = { title, price, whatsapp, location, description, category, paid, createdAt: new Date() };
+
+    if (editingId) {
+      await updateDoc(doc(db, "ads", editingId), adData);
+      alert("✅ Ad Updated!");
+    } else {
+      await addDoc(collection(db, "ads"), adData);
+      alert("✅ Ad Posted!");
+    }
+
+    logout();
+    loadAds();
+  } catch (e) {
+    alert("Error: " + e.message);
+  }
+}
+
+// Edit Ad
+window.editAd = function(id, ad) {
+  editingId = id;
+  document.getElementById("postTitle").textContent = "Edit Ad";
+  document.getElementById("postBtn").textContent = "Update Ad";
+  document.getElementById("title").value = ad.title;
+  document.getElementById("price").value = ad.price;
+  document.getElementById("whatsapp").value = ad.whatsapp;
+  document.getElementById("location").value = ad.location;
+  document.getElementById("category").value = ad.category;
+  document.getElementById("description").value = ad.description;
+  document.getElementById("paid").checked = ad.paid;
+  document.getElementById("loginDiv").classList.add("hidden");
+  document.getElementById("postDiv").classList.remove("hidden");
+}
+
+// Delete Ad
+window.deleteAd = async function(id) {
+  if (confirm("Delete this ad permanently?")) {
+    await deleteDoc(doc(db, "ads", id));
+    alert("Deleted");
+    loadAds();
+  }
+}
+
+// Share Ad
+window.shareAd = function(title, id) {
+  const url = window.location.href.split('#')[0] + '#ad-' + id;
+  if (navigator.share) navigator.share({ title, text: `Check: ${title} on Mzansi Marketplace`, url });
+  else { navigator.clipboard.writeText(url); alert("Link copied! Paste on WhatsApp"); }
+}
+
+// Load Ads
+window.loadAds = async function() {
+  currentLocation = document.getElementById("locationFilter").value;
   const adsDiv = document.getElementById("ads");
-  const filter = document.getElementById("filter").value;
+  adsDiv.innerHTML = "Loading...";
 
-  adsDiv.innerHTML = "";
+  let title = "All Ads";
+  if (currentCategory && currentLocation) title = `${currentCategory} in ${currentLocation}`;
+  else if (currentCategory) title = `${currentCategory} Ads`;
+  else if (currentLocation) title = `Ads in ${currentLocation}`;
+  document.getElementById('adsTitle').textContent = title;
 
-  const querySnapshot = await getDocs(collection(db, "ads"));
+  try {
+    const q = query(collection(db, "ads"), orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
 
-  let adsArray = [];
+    if (snap.empty) { adsDiv.innerHTML = "<p>No ads yet. Click + to post first one!</p>"; return; }
 
-  querySnapshot.forEach((doc) => {
-    adsArray.push(doc.data());
-  });
+    let adsArray = [];
+    snap.forEach((docSnap) => adsArray.push({id: docSnap.id,...docSnap.data()}));
 
-  // ✅ sort (featured first)
-  adsArray.sort((a,b) => b.paid - a.paid);
+    adsArray.sort((a,b) => b.paid - a.paid);
 
-  adsArray.forEach(ad => {
+    adsDiv.innerHTML = "";
+    let adCount = 0;
+    let hasAds = false;
 
-    if (filter && ad.category !== filter) return;
+    adsArray.forEach(ad => {
+      if (currentCategory && ad.category!== currentCategory) return;
+      if (currentLocation && ad.location!== currentLocation) return;
+      hasAds = true;
+      adCount++;
 
-    adsDiv.innerHTML += `
-      <div style="
-        border:2px solid ${ad.paid ? 'gold' : 'black'};
-        background:${ad.paid ? '#fff8dc' : 'white'};
-        padding:15px;
-        margin:10px;
-      ">
-        <h3>${ad.paid ? '⭐ FEATURED ' : ''}${ad.title}</h3>
-        <p><b>${ad.category}</b></p>
-        <p>${ad.price}</p>
-        <p>${ad.description}</p>
+      const num = ad.whatsapp.replace(/\D/g, '');
+      const date = ad.createdAt?.toDate? ad.createdAt.toDate().toLocaleDateString('en-ZA') : '';
 
-        <a href="https://wa.me/${ad.whatsapp}" target="_t on WhatsApp
-        </a>
+      adsDiv.innerHTML += `
+        <div class="card ad-card ${ad.paid? 'featured' : ''}" id="ad-${ad.id}">
+          <span class="badge">${ad.category}</span>
+          <span class="badge location-badge">📍 ${ad.location}</span>
+          ${ad.paid? '<span class="badge" style="background:gold;color:black">⭐ FEATURED</span>' : ''}
+          <h3 style="margin:10px 0">${ad.title}</h3>
+          <p class="ad-price">R${ad.price}</p>
+          <p class="ad-location">📍 ${ad.location}</p>
+          <p style="line-height:1.5">${ad.description}</p>
 
-        ${!ad.paid ? `
-        <br><br>
-        <a href="https://wa.me/27700000000?text=I want to upgrade my ad to
-          💰 Upgrade to Featured
-        </a>` : ""}
-      </div>
+          <a class="whatsapp-btn" href="https://wa.me/${num}" target="_blank">📱 Contact on WhatsApp</a>
 
-      <!-- ✅ GOOGLE AD -->
-      <ins class="adsbygoogle"
-           style="display:block; margin:10px 0;"
-           data-ad-client="ca-pub-5097459177144739"
-           data-ad-slot="1234567890"
-           data-ad-format="auto"></ins>
-    `;
-  });
+          <div class="ad-actions">
+            <button class="small share-btn" onclick='shareAd("${ad.title}", "${ad.id}")'>📤 Share</button>
+            <button class="small" onclick='editAd("${ad.id}", ${JSON.stringify(ad).replace(/"/g, '&quot;')})'>✏️ Edit</button>
+            <button class="small danger" onclick='deleteAd("${ad.id}")'>🗑️ Delete</button>
+          </div>
 
-  // load ads
-  (adsbygoogle = window.adsbygoogle || []).push({});
+          ${!ad.paid? `<br><a href="https://wa.me/27700000?text=Hi, I want to upgrade my ad '${ad.title}' to Featured" target="_blank" style="color:#ff6b00">💰 Upgrade to Featured</a>` : ""}
+          <p class="ad-date">Posted: ${date}</p>
+        </div>
+
+        ${adCount % 3 === 0? `
+        <ins class="adsbygoogle"
+             style="display:block; margin:15px 0;"
+             data-ad-client="ca-pub-5097459177144739"
+             data-ad-slot="1234567890"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        ` : ""}
+      `;
+    });
+
+    if (!hasAds) adsDiv.innerHTML = `<p>No ads found for current filters.</p>`;
+
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  } catch (e) {
+    adsDiv.innerHTML = "<p>Error loading ads. Check internet.</p>";
+    console.error(e);
+  }
 }
 
 window.onload = loadAds;
-
 </script>
-
 </body>
 </html>
-``
