@@ -1,384 +1,342 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mzansi Marketplace</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Mzansi Marketplace - Free Classifieds SA</title>
+<meta name="description" content="Buy and sell vehicles, property, jobs, electronics in South Africa">
+
+<!-- Google Analytics 4 - Replace G-XXXXXXXXXX -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-XXXXXXXXXX');</script>
+
+<!-- AdSense - Replace ca-pub-XXXXXXXXXXXX after approval -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXX" crossorigin="anonymous"></script>
 
 <style>
-body{
-font-family:Arial,sans-serif;
-background:#f2f2f2;
-margin:0;
+:root{
+  --bg:#f5f7fa;
+  --card:#ffffff;
+  --text:#1a1a1a;
+  --primary:#0a7cff;
+  --border:#e0e0e0;
+  --success:#25D366;
 }
-
-header{
-background:#0a7cff;
-color:white;
-padding:15px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
-
-.container{
-max-width:1000px;
-margin:auto;
-padding:20px;
-}
-
-.card{
-background:white;
-padding:15px;
-border-radius:10px;
-margin-bottom:15px;
-box-shadow:0 2px 6px rgba(0,0,0,.1);
-}
-
-input,textarea{
-width:100%;
-padding:10px;
-margin:5px 0;
-border:1px solid #ccc;
-border-radius:5px;
-box-sizing:border-box;
-}
-
-button{
-background:#0a7cff;
-color:white;
-border:none;
-padding:10px 15px;
-border-radius:5px;
-cursor:pointer;
-}
-
-button:hover{
-opacity:.9;
-}
-
-.product{
-border-bottom:1px solid #eee;
-padding:10px 0;
-}
-
-.hidden{
-display:none;
-}
-
-.price{
-color:green;
-font-weight:bold;
-}
+.dark{--bg:#121212;--card:#1e1e1e;--text:#fff;--border:#333}
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+body{background:var(--bg);color:var(--text);padding-bottom:80px;transition:background 0.3s}
+header{background:var(--primary);color:white;padding:15px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+.logo{font-weight:700;font-size:18px}
+.container{max-width:900px;margin:auto;padding:15px}
+.card{background:var(--card);padding:15px;border-radius:12px;margin-bottom:15px;border:1px solid var(--border)}
+input,textarea,select{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:16px;min-height:44px}
+button{background:var(--primary);color:white;border:none;padding:12px 20px;border-radius:8px;cursor:pointer;font-weight:600;font-size:16px;min-height:44px}
+button:active{opacity:0.8}
+.btn-whatsapp{background:var(--success)}
+.btn-danger{background:#dc3545}
+.btn-secondary{background:#6c757d}
+.hidden{display:none}
+.modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:1000;overflow-y:auto}
+.modal-content{background:var(--card);color:var(--text);padding:20px;max-width:500px;margin:50px auto;border-radius:12px}
+.product{display:flex;gap:12px;padding:12px;border-bottom:1px solid var(--border)}
+.product:last-child{border-bottom:none}
+.product img{width:90px;height:90px;object-fit:cover;border-radius:8px;flex-shrink:0}
+.product-info{flex:1}
+.price{color:#28a745;font-weight:700;font-size:18px;margin:5px 0}
+.featured{border:2px solid #ffc107;background:#fffdf5}
+.featured-badge{background:#ffc107;color:#000;padding:3px 8px;border-radius:5px;font-size:12px;font-weight:700;margin-right:5px}
+.categories{display:flex;gap:8px;overflow-x:auto;padding:10px 0;margin-bottom:10px}
+.categories button{white-space:nowrap;padding:8px 16px;font-size:14px;background:var(--bg);color:var(--text);border:1px solid var(--border)}
+.categories button.active{background:var(--primary);color:white;border-color:var(--primary)}
+.ad-container{text-align:center;margin:15px 0;min-height:100px}
+.nav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;background:var(--card);border-top:1px solid var(--border);padding:8px 0;z-index:99}
+.nav button{background:none;color:var(--text);font-size:12px;padding:5px;min-height:auto}
+.loading{text-align:center;padding:30px;color:#888}
+.empty{text-align:center;padding:40px;color:#888}
+footer{text-align:center;padding:20px;font-size:12px;color:#888}
+footer a{color:var(--primary);text-decoration:none;margin:0 10px}
+@media(max-width:600px){.product img{width:80px;height:80px}.container{padding:10px}}
 </style>
 </head>
 <body>
 
 <header>
-<h2>Mzansi Marketplace</h2>
-<div id="userInfo"></div>
+  <div class="logo">Mzansi Marketplace</div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button onclick="toggleDark()" style="background:none;padding:8px">🌙</button>
+    <div id="userInfo"></div>
+  </div>
 </header>
 
 <div class="container">
 
-<div id="authSection" class="card">
+  <!-- Auth Section -->
+  <div id="authSection" class="card">
+    <h3>Login</h3>
+    <input id="loginEmail" placeholder="Email" type="email">
+    <input id="loginPassword" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <hr style="margin:15px 0">
+    <h3>Register</h3>
+    <input id="regEmail" placeholder="Email" type="email">
+    <input id="regPassword" type="password" placeholder="Password min 6 chars">
+    <button onclick="register()">Register</button>
+  </div>
 
-<h3>Login</h3>
+  <!-- App Section -->
+  <div id="appSection" class="hidden">
+    
+    <!-- Search + Categories -->
+    <div class="card">
+      <input id="searchInput" placeholder="Search vehicles, property, jobs..." oninput="renderProducts()">
+      <div class="categories">
+        <button class="active" onclick="setCategory('All', this)">All</button>
+        <button onclick="setCategory('Vehicles', this)">Vehicles</button>
+        <button onclick="setCategory('Property', this)">Property</button>
+        <button onclick="setCategory('Jobs', this)">Jobs</button>
+        <button onclick="setCategory('Electronics', this)">Electronics</button>
+        <button onclick="setCategory('Services', this)">Services</button>
+      </div>
+    </div>
 
-<input id="loginEmail" placeholder="Email">
-<input id="loginPassword" type="password" placeholder="Password">
+    <!-- AdSense Banner -->
+    <div class="ad-container">
+      <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
 
-<button onclick="login()">
-Login
-</button>
+    <!-- Post Form -->
+    <div class="card">
+      <h3>Post Free Listing</h3>
+      <input id="title" placeholder="Title - e.g. Toyota Corolla 2015" maxlength="100">
+      <input id="price" placeholder="Price - 85000" inputmode="numeric">
+      <select id="category">
+        <option>Vehicles</option>
+        <option>Property</option>
+        <option>Jobs</option>
+        <option>Electronics</option>
+        <option>Services</option>
+      </select>
+      <input id="location" placeholder="Location - Johannesburg">
+      <input id="whatsapp" placeholder="WhatsApp - 0712345678">
+      <textarea id="description" placeholder="Description..." rows="3" maxlength="500"></textarea>
+      <label style="display:flex;align-items:center;gap:8px;margin:10px 0;font-size:14px">
+        <input type="checkbox" id="featured"> Featured R20 via PayFast
+      </label>
+      <button onclick="addProduct()">Publish</button>
+      <button class="btn-secondary" onclick="logout()" style="margin-left:8px">Logout</button>
+    </div>
 
-<hr>
+    <!-- Listings -->
+    <div class="card">
+      <h3>Latest Listings</h3>
+      <div id="products"><div class="loading">Loading...</div></div>
+    </div>
 
-<h3>Register</h3>
-
-<input id="regEmail" placeholder="Email">
-<input id="regPassword" type="password" placeholder="Password">
-
-<button onclick="register()">
-Register
-</button>
-
+    <footer>
+      <a href="#" onclick="showLegal('privacy')">Privacy</a>
+      <a href="#" onclick="showLegal('terms')">Terms</a>
+      <a href="#" onclick="showLegal('contact')">Contact</a>
+      <br><br>© 2026 Mzansi Marketplace
+    </footer>
+  </div>
 </div>
 
-<div id="appSection" class="hidden">
-
-<div class="card">
-
-<h3>Post Product</h3>
-
-<input id="title" placeholder="Product title">
-
-<input id="price" placeholder="Price">
-
-<textarea
-id="description"
-placeholder="Description"></textarea>
-
-<button onclick="addProduct()">
-Publish
-</button>
-
-<button onclick="logout()">
-Logout
-</button>
-
+<!-- Bottom Nav -->
+<div class="nav">
+  <button onclick="window.scrollTo(0,0)">🏠<br>Home</button>
+  <button onclick="document.getElementById('title').scrollIntoView()">➕<br>Post</button>
+  <button onclick="alert('Saved listings coming soon')">❤️<br>Saved</button>
+  <button onclick="alert('Contact via WhatsApp')">💬<br>Chat</button>
+  <button onclick="alert(currentUser ? currentUser.email : 'Login first')">👤<br>Profile</button>
 </div>
 
-<div class="card">
-
-<h3>Marketplace Listings</h3>
-
-<div id="products"></div>
-
-</div>
-
-</div>
-
+<!-- Legal Modal -->
+<div id="legalModal" class="modal">
+  <div class="modal-content">
+    <div id="legalContent"></div>
+    <button class="btn-secondary" onclick="closeLegal()">Close</button>
+  </div>
 </div>
 
 <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
-import {
-getAuth,
-createUserWithEmailAndPassword,
-signInWithEmailAndPassword,
-signOut,
-onAuthStateChanged
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-import {
-getFirestore,
-collection,
-addDoc,
-query,
-orderBy,
-onSnapshot
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
+// REPLACE WITH YOUR FIREBASE CONFIG
 const firebaseConfig = {
-
-apiKey: "YOUR_API_KEY",
-authDomain: "YOUR_PROJECT.firebaseapp.com",
-projectId: "YOUR_PROJECT_ID",
-storageBucket: "YOUR_PROJECT.appspot.com",
-messagingSenderId: "YOUR_SENDER_ID",
-appId: "YOUR_APP_ID"
-
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
 
 const app = initializeApp(firebaseConfig);
-
 const auth = getAuth(app);
-
 const db = getFirestore(app);
 
 let currentUser = null;
+let allProducts = [];
+let currentCategory = 'All';
 
+/* AUTH */
 window.register = async function(){
-
-const email =
-document.getElementById("regEmail").value.trim();
-
-const password =
-document.getElementById("regPassword").value;
-
-if(!email || !password){
-alert("Fill all fields");
-return;
-}
-
-try{
-
-await createUserWithEmailAndPassword(
-auth,
-email,
-password
-);
-
-alert("Registration successful");
-
-}catch(err){
-
-alert(err.message);
-
-}
-
+  const email = regEmail.value.trim();
+  const password = regPassword.value;
+  if(!email || !password){ alert("Fill all fields"); return; }
+  try{
+    await createUserWithEmailAndPassword(auth, email, password);
+    alert("Account created!");
+  }catch(err){ alert(err.message); }
 };
 
 window.login = async function(){
-
-const email =
-document.getElementById("loginEmail").value.trim();
-
-const password =
-document.getElementById("loginPassword").value;
-
-try{
-
-await signInWithEmailAndPassword(
-auth,
-email,
-password
-);
-
-}catch(err){
-
-alert(err.message);
-
-}
-
+  const email = loginEmail.value.trim();
+  const password = loginPassword.value;
+  try{ await signInWithEmailAndPassword(auth, email, password); }
+  catch(err){ alert(err.message); }
 };
 
-window.logout = async function(){
+window.logout = async function(){ await signOut(auth); };
 
-await signOut(auth);
-
-};
-
-onAuthStateChanged(auth,(user)=>{
-
-if(user){
-
-currentUser = user;
-
-loadApp();
-
-listenProducts();
-
-}else{
-
-currentUser = null;
-
-document
-.getElementById("authSection")
-.classList.remove("hidden");
-
-document
-.getElementById("appSection")
-.classList.add("hidden");
-
-document
-.getElementById("userInfo")
-.innerHTML = "";
-
-}
-
+onAuthStateChanged(auth, (user) => {
+  currentUser = user;
+  if(user){
+    authSection.classList.add("hidden");
+    appSection.classList.remove("hidden");
+    userInfo.innerHTML = `<span style="font-size:12px">${user.email}</span>`;
+    listenProducts();
+  }else{
+    authSection.classList.remove("hidden");
+    appSection.classList.add("hidden");
+    userInfo.innerHTML = "";
+  }
 });
 
-function loadApp(){
+/* DARK MODE */
+window.toggleDark = () => document.body.classList.toggle("dark");
 
-document
-.getElementById("authSection")
-.classList.add("hidden");
-
-document
-.getElementById("appSection")
-.classList.remove("hidden");
-
-document
-.getElementById("userInfo")
-.innerHTML = currentUser.email;
-
+/* CATEGORIES */
+window.setCategory = (cat, btn) => {
+  currentCategory = cat;
+  document.querySelectorAll('.categories button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderProducts();
 }
 
+/* LEGAL MODAL */
+window.showLegal = (type) => {
+  const content = {
+    privacy: `<h3>Privacy Policy</h3><p>We use Firebase to store listings and Google AdSense for ads. Email collected for accounts. Contact: info@mzansimarketplace.co.za</p>`,
+    terms: `<h3>Terms</h3><p>Users post at own risk. No illegal items. Featured listings R20 via PayFast. We are not liable for transactions.</p>`,
+    contact: `<h3>Contact</h3><p>Email: info@mzansimarketplace.co.za<br>WhatsApp: 081 000 0000<br>Johannesburg, SA</p>`
+  };
+  legalContent.innerHTML = content[type];
+  legalModal.style.display = "block";
+}
+window.closeLegal = () => legalModal.style.display = "none";
+
+/* POST PRODUCT */
 window.addProduct = async function(){
+  if(!currentUser){ alert("Login first"); return; }
 
-const title =
-document.getElementById("title").value;
+  const title = document.getElementById("title").value.trim();
+  const price = document.getElementById("price").value.replace(/[^0-9]/g, "");
+  const description = document.getElementById("description").value.trim();
+  const whatsapp = document.getElementById("whatsapp").value.replace(/[^0-9]/g, "");
 
-const price =
-document.getElementById("price").value;
+  if(!title || !price || !whatsapp){
+    alert("Enter title, price, and WhatsApp");
+    return;
+  }
 
-const description =
-document.getElementById("description").value;
+  try{
+    await addDoc(collection(db,"products"), {
+      title,
+      price: Number(price),
+      description,
+      category: category.value,
+      location: location.value,
+      whatsapp,
+      featured: featured.checked,
+      uid: currentUser.uid, // SECURITY: needed for rules
+      seller: currentUser.email,
+      createdAt: serverTimestamp()
+    });
 
-if(!title || !price){
+    // Clear form
+    ['title','price','description','location','whatsapp'].forEach(id => document.getElementById(id).value = '');
+    featured.checked = false;
 
-alert("Enter title and price");
+    // PayFast redirect if featured
+    if(featured.checked){
+      const pf = `merchant_id=YOUR_PAYFAST_ID&amount=20&item_name=Featured+Listing&return_url=${encodeURIComponent(window.location.href)}`;
+      window.open('https://www.payfast.co.za/eng/process?' + pf, '_blank');
+      alert("Complete R20 payment on PayFast to activate featured");
+    }else{
+      alert("Listing published!");
+    }
 
-return;
-
-}
-
-try{
-
-await addDoc(
-collection(db,"products"),
-{
-title,
-price,
-description,
-seller: currentUser.email,
-createdAt: Date.now()
-}
-);
-
-document.getElementById("title").value="";
-document.getElementById("price").value="";
-document.getElementById("description").value="";
-
-}catch(err){
-
-alert(err.message);
-
-}
-
+  }catch(err){ alert(err.message); }
 };
 
+/* REAL-TIME LISTINGS */
 function listenProducts(){
-
-const q = query(
-collection(db,"products"),
-orderBy("createdAt","desc")
-);
-
-onSnapshot(q,(snapshot)=>{
-
-const container =
-document.getElementById("products");
-
-container.innerHTML = "";
-
-snapshot.forEach((doc)=>{
-
-const p = doc.data();
-
-container.innerHTML += `
-<div class="product">
-
-<h4>${p.title}</h4>
-
-<div class="price">
-R${p.price}
-</div>
-
-<p>${p.description || ""}
-</p>
-
-<small>
-Seller: ${p.seller}
-</small>
-
-</div>
-`;
-
-});
-
-});
-
+  const q = query(collection(db,"products"), orderBy("createdAt","desc"));
+  onSnapshot(q, (snapshot) => {
+    allProducts = [];
+    snapshot.forEach(doc => allProducts.push({id: doc.id, ...doc.data()}));
+    renderProducts();
+  });
 }
 
-</script>
+/* RENDER */
+window.renderProducts = function(){
+  const search = searchInput.value.toLowerCase();
+  products.innerHTML = "";
+  
+  let filtered = allProducts.filter(p => {
+    const matchSearch = p.title.toLowerCase().includes(search) || p.description?.toLowerCase().includes(search);
+    const matchCat = currentCategory === 'All' || p.category === currentCategory;
+    return matchSearch && matchCat;
+  });
 
+  filtered.sort((a,b) => (b.featured?1:0) - (a.featured?1:0));
+
+  if(filtered.length === 0){
+    products.innerHTML = '<div class="empty">No listings yet. Be first to post!</div>';
+    return;
+  }
+
+  filtered.forEach((p, i) => {
+    // AdSense every 4th item
+    if(i > 0 && i % 4 === 0){
+      products.innerHTML += `<div class="ad-container"><ins class="adsbygoogle" style="display:block" data-ad-format="fluid" data-ad-client="ca-pub-XXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX"></ins><script>(adsbygoogle=window.adsbygoogle||[]).push({});</script></div>`;
+    }
+
+    const waLink = p.whatsapp ? `https://wa.me/27${p.whatsapp.replace(/^0/, '')}?text=Hi, interested in ${encodeURIComponent(p.title)}` : '#';
+    
+    products.innerHTML += `
+      <div class="product ${p.featured ? 'featured' : ''}">
+        <img src="https://picsum.photos/400/400?random=${p.id}" alt="${p.title}" loading="lazy">
+        <div class="product-info">
+          <h4>${p.featured ? '<span class="featured-badge">⭐ FEATURED</span>' : ''}${p.title}</h4>
+          <div class="price">R ${p.price.toLocaleString()}</div>
+          <p style="font-size:13px;color:#666">${p.location || ''} • ${p.category}</p>
+          <p style="font-size:13px;margin:5px 0">${p.description || ''}</p>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn-whatsapp" onclick="window.open('${waLink}')">WhatsApp</button>
+            ${currentUser && currentUser.uid === p.uid ? `<button class="btn-danger" onclick="alert('Delete coming soon')">Delete</button>` : ''}
+          </div>
+          <small style="color:#888">Posted by ${p.seller}</small>
+        </div>
+      </div>
+    `;
+  });
+};
+</script>
 </body>
 </html>
