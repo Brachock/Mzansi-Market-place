@@ -1,604 +1,383 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Mzansi Marketplace</title>
 
 <style>
-:root{
---bg:#f5f5f5;
---card:#ffffff;
---text:#111;
---primary:#0d6efd;
---border:#ddd;
-}
-
-.dark{
---bg:#121212;
---card:#1e1e1e;
---text:#fff;
---border:#333;
-}
-
-*{
-box-sizing:border-box;
-margin:0;
-padding:0;
-font-family:Arial,sans-serif;
-}
-
 body{
-background:var(--bg);
-color:var(--text);
-padding-bottom:80px;
+font-family:Arial,sans-serif;
+background:#f2f2f2;
+margin:0;
 }
 
 header{
+background:#0a7cff;
+color:white;
+padding:15px;
 display:flex;
 justify-content:space-between;
 align-items:center;
-padding:15px;
-background:var(--card);
-border-bottom:1px solid var(--border);
-position:sticky;
-top:0;
-z-index:100;
 }
 
-.logo{
-font-size:22px;
-font-weight:bold;
-}
-
-.search{
-padding:12px;
-}
-
-.search input{
-width:100%;
-padding:12px;
-border-radius:25px;
-border:1px solid var(--border);
-}
-
-.categories{
-display:flex;
-overflow:auto;
-gap:8px;
-padding:10px;
-}
-
-.categories button{
-padding:10px 15px;
-border:none;
-border-radius:20px;
-cursor:pointer;
+.container{
+max-width:1000px;
+margin:auto;
+padding:20px;
 }
 
 .card{
-background:var(--card);
-margin:12px;
-border-radius:15px;
-overflow:hidden;
-box-shadow:0 2px 5px rgba(0,0,0,.1);
+background:white;
+padding:15px;
+border-radius:10px;
+margin-bottom:15px;
+box-shadow:0 2px 6px rgba(0,0,0,.1);
 }
 
-.card img{
+input,textarea{
 width:100%;
-height:220px;
-object-fit:cover;
-}
-
-.content{
-padding:12px;
-}
-
-.price{
-font-size:20px;
-font-weight:bold;
+padding:10px;
 margin:5px 0;
-}
-
-.actions{
-display:flex;
-gap:10px;
-margin-top:10px;
+border:1px solid #ccc;
+border-radius:5px;
+box-sizing:border-box;
 }
 
 button{
+background:#0a7cff;
+color:white;
+border:none;
+padding:10px 15px;
+border-radius:5px;
 cursor:pointer;
 }
 
-.btn{
-padding:10px;
-border:none;
-border-radius:8px;
+button:hover{
+opacity:.9;
 }
 
-.primary{
-background:#000;
-color:white;
+.product{
+border-bottom:1px solid #eee;
+padding:10px 0;
 }
 
-.favorite{
-background:red;
-color:white;
-}
-
-.whatsapp{
-background:#25D366;
-color:white;
-}
-
-.nav{
-position:fixed;
-bottom:0;
-left:0;
-right:0;
-display:flex;
-justify-content:space-around;
-padding:10px;
-background:var(--card);
-border-top:1px solid var(--border);
-}
-
-.page{
+.hidden{
 display:none;
 }
 
-.active{
-display:block;
-}
-
-input,textarea,select{
-width:100%;
-padding:10px;
-margin:5px 0;
-border-radius:8px;
-border:1px solid var(--border);
-}
-
-.profile-card{
-background:var(--card);
-margin:15px;
-padding:15px;
-border-radius:15px;
-}
-
-.chat-window{
-height:300px;
-overflow:auto;
-background:var(--card);
-padding:10px;
-border-radius:10px;
-margin-bottom:10px;
-}
-
-.message{
-padding:8px;
-margin:5px;
-border-radius:8px;
-background:#ddd;
-}
-
-.dark .message{
-background:#333;
+.price{
+color:green;
+font-weight:bold;
 }
 </style>
 </head>
 <body>
 
 <header>
-<div class="logo">Mzansi Marketplace</div>
-<div>
-Credits: <span id="credits">10</span>
-<button onclick="toggleDark()">🌙</button>
-</div>
+<h2>Mzansi Marketplace</h2>
+<div id="userInfo"></div>
 </header>
 
-<div class="search">
-<input id="searchInput" placeholder="Search listings..." onkeyup="renderListings()">
+<div class="container">
+
+<div id="authSection" class="card">
+
+<h3>Login</h3>
+
+<input id="loginEmail" placeholder="Email">
+<input id="loginPassword" type="password" placeholder="Password">
+
+<button onclick="login()">
+Login
+</button>
+
+<hr>
+
+<h3>Register</h3>
+
+<input id="regEmail" placeholder="Email">
+<input id="regPassword" type="password" placeholder="Password">
+
+<button onclick="register()">
+Register
+</button>
+
 </div>
 
-<div class="categories">
-<button onclick="setCategory('All')">All</button>
-<button onclick="setCategory('Vehicles')">Vehicles</button>
-<button onclick="setCategory('Property')">Property</button>
-<button onclick="setCategory('Jobs')">Jobs</button>
-<button onclick="setCategory('Electronics')">Electronics</button>
-<button onclick="setCategory('Services')">Services</button>
-</div>
+<div id="appSection" class="hidden">
 
-<!-- HOME -->
-<div id="home" class="page active">
-<div id="listingContainer"></div>
-</div>
+<div class="card">
 
-<!-- POST -->
-<div id="post" class="page">
+<h3>Post Product</h3>
 
-<div style="padding:15px">
-
-<h2>Create Listing</h2>
-
-<input id="title" placeholder="Title">
+<input id="title" placeholder="Product title">
 
 <input id="price" placeholder="Price">
 
-<select id="category">
-<option>Vehicles</option>
-<option>Property</option>
-<option>Jobs</option>
-<option>Electronics</option>
-<option>Services</option>
-</select>
+<textarea
+id="description"
+placeholder="Description"></textarea>
 
-<input id="location" placeholder="Location">
+<button onclick="addProduct()">
+Publish
+</button>
 
-<input id="image" placeholder="Image URL">
-
-<textarea id="description" placeholder="Description"></textarea>
-
-<label>
-<input type="checkbox" id="featured">
-Featured Listing (3 Credits)
-</label>
-
-<button class="btn primary" onclick="addListing()">
-Post Listing
+<button onclick="logout()">
+Logout
 </button>
 
 </div>
 
-</div>
+<div class="card">
 
-<!-- FAVORITES -->
-<div id="favorites" class="page">
-<h2 style="padding:15px">Favorites</h2>
-<div id="favoriteContainer"></div>
-</div>
+<h3>Marketplace Listings</h3>
 
-<!-- CHAT -->
-<div id="chat" class="page">
-
-<div style="padding:15px">
-
-<h2>Messages</h2>
-
-<div class="chat-window" id="chatWindow"></div>
-
-<input id="chatInput">
-
-<button class="btn primary" onclick="sendMessage()">
-Send
-</button>
+<div id="products"></div>
 
 </div>
 
 </div>
 
-<!-- PROFILE -->
-<div id="profile" class="page">
-
-<div class="profile-card">
-
-<h2>Seller Profile</h2>
-
-<p>Name: Demo Seller</p>
-
-<p>Rating: ⭐⭐⭐⭐⭐</p>
-
-<p>Listings: <span id="listingCount">0</span></p>
-
-<p>Favorites: <span id="favoriteCount">0</span></p>
-
-<button onclick="inviteFriends()">
-Invite Friends
-</button>
-
 </div>
 
-</div>
+<script type="module">
 
-<div class="nav">
-<button onclick="showPage('home')">🏠</button>
-<button onclick="showPage('post')">➕</button>
-<button onclick="showPage('favorites')">❤️</button>
-<button onclick="showPage('chat')">💬</button>
-<button onclick="showPage('profile')">👤</button>
-</div>
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-<script>
-let listings =
-JSON.parse(localStorage.getItem("listings")) || [];
-
-let favorites =
-JSON.parse(localStorage.getItem("favorites")) || [];
-
-let categoryFilter="All";
-
-function saveStorage(){
-localStorage.setItem(
-"listings",
-JSON.stringify(listings)
-);
-
-localStorage.setItem(
-"favorites",
-JSON.stringify(favorites)
-);
+import {
+getAuth,
+createUserWithEmailAndPassword,
+signInWithEmailAndPassword,
+signOut,
+onAuthStateChanged
 }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-function toggleDark(){
-document.body.classList.toggle("dark");
+import {
+getFirestore,
+collection,
+addDoc,
+query,
+orderBy,
+onSnapshot
 }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-function showPage(id){
+const firebaseConfig = {
 
-document
-.querySelectorAll(".page")
-.forEach(p=>p.classList.remove("active"));
+apiKey: "YOUR_API_KEY",
+authDomain: "YOUR_PROJECT.firebaseapp.com",
+projectId: "YOUR_PROJECT_ID",
+storageBucket: "YOUR_PROJECT.appspot.com",
+messagingSenderId: "YOUR_SENDER_ID",
+appId: "YOUR_APP_ID"
 
-document
-.getElementById(id)
-.classList.add("active");
-}
+};
 
-function setCategory(cat){
-categoryFilter=cat;
-renderListings();
-}
+const app = initializeApp(firebaseConfig);
 
-function addListing(){
+const auth = getAuth(app);
 
-let cost=
-featured.checked ? 3 : 1;
+const db = getFirestore(app);
 
-let credits=
-parseInt(
-creditsEl().innerText
-);
+let currentUser = null;
 
-if(credits<cost){
-alert("Not enough credits");
+window.register = async function(){
+
+const email =
+document.getElementById("regEmail").value.trim();
+
+const password =
+document.getElementById("regPassword").value;
+
+if(!email || !password){
+alert("Fill all fields");
 return;
 }
 
-credits-=cost;
-creditsEl().innerText=credits;
+try{
 
-const listing={
-id:Date.now(),
-title:title.value,
-price:price.value,
-category:category.value,
-location:location.value,
-image:image.value ||
-"https://picsum.photos/600/400",
-description:description.value,
-featured:featured.checked
+await createUserWithEmailAndPassword(
+auth,
+email,
+password
+);
+
+alert("Registration successful");
+
+}catch(err){
+
+alert(err.message);
+
+}
+
 };
 
-listings.unshift(listing);
+window.login = async function(){
 
-saveStorage();
+const email =
+document.getElementById("loginEmail").value.trim();
 
-renderListings();
+const password =
+document.getElementById("loginPassword").value;
 
-alert("Listing posted");
+try{
+
+await signInWithEmailAndPassword(
+auth,
+email,
+password
+);
+
+}catch(err){
+
+alert(err.message);
+
 }
 
-function renderListings(){
+};
 
-const search=
-searchInput.value.toLowerCase();
+window.logout = async function(){
 
-const container=
-document.getElementById(
-"listingContainer"
-);
+await signOut(auth);
 
-container.innerHTML="";
+};
 
-let data=[...listings];
+onAuthStateChanged(auth,(user)=>{
 
-data.sort(
-(a,b)=>
-(b.featured?1:0)-
-(a.featured?1:0)
-);
+if(user){
 
-data.forEach(item=>{
+currentUser = user;
 
-if(
-categoryFilter!=="All" &&
-item.category!==categoryFilter
-) return;
+loadApp();
 
-if(
-!item.title.toLowerCase()
-.includes(search)
-) return;
+listenProducts();
 
-container.innerHTML+=`
-<div class="card">
+}else{
 
-<img src="${item.image}">
+currentUser = null;
 
-<div class="content">
+document
+.getElementById("authSection")
+.classList.remove("hidden");
 
-<h3>
-${item.featured ? "⭐" : ""}
-${item.title}
-</h3>
+document
+.getElementById("appSection")
+.classList.add("hidden");
 
-<div class="price">
-R ${item.price}
-</div>
+document
+.getElementById("userInfo")
+.innerHTML = "";
 
-<p>${item.location}</p>
+}
 
-<p>${item.description}</p>
-
-<div class="actions">
-
-<button
-class="btn favorite"
-onclick="toggleFavorite(${item.id})">
-❤️
-</button>
-
-<button
-class="btn primary"
-onclick="showPage('chat')">
-Chat
-</button>
-
-<button
-class="btn whatsapp"
-onclick="shareListing('${item.title}')">
-WhatsApp
-</button>
-
-</div>
-
-</div>
-</div>
-`;
 });
 
-updateStats();
+function loadApp(){
+
+document
+.getElementById("authSection")
+.classList.add("hidden");
+
+document
+.getElementById("appSection")
+.classList.remove("hidden");
+
+document
+.getElementById("userInfo")
+.innerHTML = currentUser.email;
+
 }
 
-function toggleFavorite(id){
+window.addProduct = async function(){
 
-if(favorites.includes(id))
-favorites=
-favorites.filter(x=>x!==id);
-else
-favorites.push(id);
+const title =
+document.getElementById("title").value;
 
-saveStorage();
+const price =
+document.getElementById("price").value;
 
-renderFavorites();
+const description =
+document.getElementById("description").value;
+
+if(!title || !price){
+
+alert("Enter title and price");
+
+return;
+
 }
 
-function renderFavorites(){
+try{
 
-const c=
-document.getElementById(
-"favoriteContainer"
+await addDoc(
+collection(db,"products"),
+{
+title,
+price,
+description,
+seller: currentUser.email,
+createdAt: Date.now()
+}
 );
 
-c.innerHTML="";
+document.getElementById("title").value="";
+document.getElementById("price").value="";
+document.getElementById("description").value="";
 
-favorites.forEach(id=>{
+}catch(err){
 
-const item=
-listings.find(
-x=>x.id===id
+alert(err.message);
+
+}
+
+};
+
+function listenProducts(){
+
+const q = query(
+collection(db,"products"),
+orderBy("createdAt","desc")
 );
 
-if(!item) return;
+onSnapshot(q,(snapshot)=>{
 
-c.innerHTML+=`
-<div class="card">
+const container =
+document.getElementById("products");
 
-<img src="${item.image}">
+container.innerHTML = "";
 
-<div class="content">
+snapshot.forEach((doc)=>{
 
-<h3>${item.title}</h3>
+const p = doc.data();
+
+container.innerHTML += `
+<div class="product">
+
+<h4>${p.title}</h4>
 
 <div class="price">
-R ${item.price}
+R${p.price}
 </div>
 
-</div>
+<p>${p.description || ""}
+</p>
+
+<small>
+Seller: ${p.seller}
+</small>
 
 </div>
 `;
+
 });
 
-updateStats();
+});
+
 }
 
-function shareListing(title){
-
-window.open(
-`https://wa.me/?text=${encodeURIComponent(title)}`
-);
-}
-
-function sendMessage(){
-
-const msg=
-chatInput.value;
-
-if(!msg) return;
-
-chatWindow.innerHTML+=`
-<div class="message">
-${msg}
-</div>
-`;
-
-chatInput.value="";
-}
-
-function inviteFriends(){
-
-alert(
-"Referral link copied (prototype)"
-);
-}
-
-function updateStats(){
-
-listingCount.innerText=
-listings.length;
-
-favoriteCount.innerText=
-favorites.length;
-}
-
-function creditsEl(){
-return document.getElementById(
-"credits"
-);
-}
-
-if(listings.length===0){
-
-listings.push(
-{
-id:1,
-title:"Toyota Corolla",
-price:"85000",
-category:"Vehicles",
-location:"Johannesburg",
-description:"Excellent condition",
-image:"https://picsum.photos/600/400?1",
-featured:true
-},
-{
-id:2,
-title:"2 Bedroom Flat",
-price:"450000",
-category:"Property",
-location:"Pretoria",
-description:"Close to schools",
-image:"https://picsum.photos/600/400?2",
-featured:false
-}
-);
-
-saveStorage();
-}
-
-renderListings();
-renderFavorites();
 </script>
 
 </body>
