@@ -3,61 +3,39 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>Mzansi Marketplace - Free Classifieds SA</title>
-<meta name="description" content="Buy and sell vehicles, property, jobs, electronics in South Africa">
-
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-XXXXXXXXXX');</script>
-
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXX" crossorigin="anonymous"></script>
-
+<title>Mzansi Marketplace</title>
 <style>
 :root{--bg:#f5f7fa;--card:#ffffff;--text:#1a1a1a;--primary:#0a7cff;--border:#e0e0e0;--success:#25D366}
 .dark{--bg:#121212;--card:#1e1e1e;--text:#fff;--border:#333}
-*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
-body{background:var(--bg);color:var(--text);padding-bottom:80px;transition:background 0.3s}
-header{background:var(--primary);color:white;padding:15px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
-.logo{font-weight:700;font-size:18px}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+body{background:var(--bg);color:var(--text);padding-bottom:80px}
+header{background:var(--primary);color:white;padding:15px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0}
 .container{max-width:900px;margin:auto;padding:15px}
 .card{background:var(--card);padding:15px;border-radius:12px;margin-bottom:15px;border:1px solid var(--border)}
 input,textarea,select{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:16px;min-height:44px}
 button{background:var(--primary);color:white;border:none;padding:12px 20px;border-radius:8px;cursor:pointer;font-weight:600;font-size:16px;min-height:44px}
-button:active{opacity:0.8}
 .btn-whatsapp{background:var(--success)}
 .btn-danger{background:#dc3545}
 .btn-secondary{background:#6c757d}
 .hidden{display:none}
-.modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:1000;overflow-y:auto}
-.modal-content{background:var(--card);color:var(--text);padding:20px;max-width:500px;margin:50px auto;border-radius:12px}
 .product{display:flex;gap:12px;padding:12px;border-bottom:1px solid var(--border)}
-.product:last-child{border-bottom:none}
-.product img{width:90px;height:90px;object-fit:cover;border-radius:8px;flex-shrink:0}
-.product-info{flex:1}
-.price{color:#28a745;font-weight:700;font-size:18px;margin:5px 0}
-.featured{border:2px solid #ffc107;background:#fffdf5}
+.product img{width:90px;height:90px;object-fit:cover;border-radius:8px}
+.price{color:#28a745;font-weight:700;font-size:18px}
+.featured{border:2px solid #ffc107}
 .featured-badge{background:#ffc107;color:#000;padding:3px 8px;border-radius:5px;font-size:12px;font-weight:700;margin-right:5px}
-.categories{display:flex;gap:8px;overflow-x:auto;padding:10px 0;margin-bottom:10px}
+.categories{display:flex;gap:8px;overflow-x:auto;padding:10px 0}
 .categories button{white-space:nowrap;padding:8px 16px;font-size:14px;background:var(--bg);color:var(--text);border:1px solid var(--border)}
-.categories button.active{background:var(--primary);color:white;border-color:var(--primary)}
-.ad-container{text-align:center;margin:15px 0;min-height:100px}
-.nav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;background:var(--card);border-top:1px solid var(--border);padding:8px 0;z-index:99}
-.nav button{background:none;color:var(--text);font-size:12px;padding:5px;min-height:auto}
+.categories button.active{background:var(--primary);color:white}
 .loading{text-align:center;padding:30px;color:#888}
 .empty{text-align:center;padding:40px;color:#888}
-footer{text-align:center;padding:20px;font-size:12px;color:#888}
-footer a{color:var(--primary);text-decoration:none;margin:0 10px}
 .preview-img{width:100%;height:200px;object-fit:cover;border-radius:8px;margin:8px 0;display:none}
-@media(max-width:600px){.product img{width:80px;height:80px}.container{padding:10px}}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">Mzansi Marketplace</div>
-  <div style="display:flex;gap:8px;align-items:center">
-    <button onclick="toggleDark()" style="background:none;padding:8px">🌙</button>
-    <div id="userInfo"></div>
-  </div>
+  <div><strong>Mzansi Marketplace</strong></div>
+  <button onclick="toggleDark()">🌙</button>
 </header>
 
 <div class="container">
@@ -75,7 +53,7 @@ footer a{color:var(--primary);text-decoration:none;margin:0 10px}
 
   <div id="appSection" class="hidden">
     <div class="card">
-      <input id="searchInput" placeholder="Search vehicles, property, jobs..." oninput="renderProducts()">
+      <input id="searchInput" placeholder="Search..." oninput="renderProducts()">
       <div class="categories">
         <button class="active" onclick="setCategory('All', this)">All</button>
         <button onclick="setCategory('Vehicles', this)">Vehicles</button>
@@ -86,60 +64,28 @@ footer a{color:var(--primary);text-decoration:none;margin:0 10px}
       </div>
     </div>
 
-    <div class="ad-container">
-      <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins>
-      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-    </div>
-
     <div class="card">
-      <h3>Post Free Listing</h3>
-      <input id="title" placeholder="Title - e.g. Toyota Corolla 2015" maxlength="100">
-      <input id="price" placeholder="Price - 85000" inputmode="numeric">
+      <h3>Post Listing</h3>
+      <input id="title" placeholder="Title">
+      <input id="price" placeholder="Price" inputmode="numeric">
       <select id="category">
-        <option>Vehicles</option>
-        <option>Property</option>
-        <option>Jobs</option>
-        <option>Electronics</option>
-        <option>Services</option>
+        <option>Vehicles</option><option>Property</option><option>Jobs</option>
+        <option>Electronics</option><option>Services</option>
       </select>
-      <input id="location" placeholder="Location - Johannesburg">
-      <input id="whatsapp" placeholder="WhatsApp - 0712345678">
+      <input id="location" placeholder="Location">
+      <input id="whatsapp" placeholder="WhatsApp 071...">
       <input id="imageFile" type="file" accept="image/*" onchange="previewImage(event)">
       <img id="preview" class="preview-img">
-      <textarea id="description" placeholder="Description..." rows="3" maxlength="500"></textarea>
-      <label style="display:flex;align-items:center;gap:8px;margin:10px 0;font-size:14px">
-        <input type="checkbox" id="featured"> Featured R20 via PayFast
-      </label>
+      <textarea id="description" placeholder="Description" rows="3"></textarea>
+      <label><input type="checkbox" id="featured"> Featured R20</label>
       <button onclick="addProduct()">Publish</button>
-      <button class="btn-secondary" onclick="logout()" style="margin-left:8px">Logout</button>
+      <button class="btn-secondary" onclick="logout()">Logout</button>
     </div>
 
     <div class="card">
-      <h3>Latest Listings</h3>
+      <h3>Listings</h3>
       <div id="products"><div class="loading">Loading...</div></div>
     </div>
-
-    <footer>
-      <a href="#" onclick="showLegal('privacy')">Privacy</a>
-      <a href="#" onclick="showLegal('terms')">Terms</a>
-      <a href="#" onclick="showLegal('contact')">Contact</a>
-      <br><br>© 2026 Mzansi Marketplace
-    </footer>
-  </div>
-</div>
-
-<div class="nav">
-  <button onclick="window.scrollTo(0,0)">🏠<br>Home</button>
-  <button onclick="document.getElementById('title').scrollIntoView()">➕<br>Post</button>
-  <button onclick="alert('Saved coming soon')">❤️<br>Saved</button>
-  <button onclick="alert('Contact via WhatsApp')">💬<br>Chat</button>
-  <button onclick="alert(currentUser ? currentUser.email : 'Login first')">👤<br>Profile</button>
-</div>
-
-<div id="legalModal" class="modal">
-  <div class="modal-content">
-    <div id="legalContent"></div>
-    <button class="btn-secondary" onclick="closeLegal()">Close</button>
   </div>
 </div>
 
@@ -169,40 +115,33 @@ let currentCategory = 'All';
 let selectedFile = null;
 
 window.register = async function(){
-  const email = regEmail.value.trim();
-  const password = regPassword.value;
-  if(!email || !password){ alert("Fill all fields"); return; }
-  try{ await createUserWithEmailAndPassword(auth, email, password); alert("Account created!"); }
+  try{ await createUserWithEmailAndPassword(auth, regEmail.value, regPassword.value); alert("Account created!"); }
   catch(err){ alert(err.message); }
 };
 
 window.login = async function(){
-  const email = loginEmail.value.trim();
-  const password = loginPassword.value;
-  try{ await signInWithEmailAndPassword(auth, email, password); }
+  try{ await signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value); }
   catch(err){ alert(err.message); }
 };
 
 window.logout = async function(){ await signOut(auth); };
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, function(user){
   currentUser = user;
   if(user){
     authSection.classList.add("hidden");
     appSection.classList.remove("hidden");
-    userInfo.innerHTML = '<span style="font-size:12px">' + user.email + '</span>';
     listenProducts();
   }else{
     authSection.classList.remove("hidden");
     appSection.classList.add("hidden");
-    userInfo.innerHTML = "";
   }
 });
 
 window.previewImage = function(e){
   selectedFile = e.target.files[0];
   if(selectedFile){
-    const reader = new FileReader();
+    var reader = new FileReader();
     reader.onload = function(e){ preview.src = e.target.result; preview.style.display = 'block'; }
     reader.readAsDataURL(selectedFile);
   }
@@ -217,73 +156,34 @@ window.setCategory = function(cat, btn){
   renderProducts();
 }
 
-window.showLegal = function(type){
-  var content = {
-    privacy: '<h3>Privacy Policy</h3><p>We use Firebase to store listings and Google AdSense for ads. Email collected for accounts. Contact: info@mzansimarketplace.co.za</p>',
-    terms: '<h3>Terms</h3><p>Users post at own risk. No illegal items. Featured listings R20 via PayFast. We are not liable for transactions.</p>',
-    contact: '<h3>Contact</h3><p>Email: info@mzansimarketplace.co.za<br>WhatsApp: 081 000 0000<br>Johannesburg, SA</p>'
-  };
-  legalContent.innerHTML = content[type];
-  legalModal.style.display = "block";
-}
-window.closeLegal = function(){ legalModal.style.display = "none"; }
-
 window.deleteProduct = async function(id){
-  if(!confirm("Delete this listing?")) return;
-  try{ await deleteDoc(doc(db, "products", id)); alert("Deleted"); }
-  catch(err){ alert(err.message); }
+  if(confirm("Delete?")) await deleteDoc(doc(db, "products", id));
 }
 
 window.addProduct = async function(){
   if(!currentUser){ alert("Login first"); return; }
+  var title = title.value.trim();
+  var price = price.value.replace(/[^0-9]/g, "");
+  var whatsapp = whatsapp.value.replace(/[^0-9]/g, "");
+  if(!title ||!price ||!whatsapp){ alert("Fill title, price, WhatsApp"); return; }
 
-  var title = document.getElementById("title").value.trim();
-  var price = document.getElementById("price").value.replace(/[^0-9]/g, "");
-  var description = document.getElementById("description").value.trim();
-  var whatsapp = document.getElementById("whatsapp").value.replace(/[^0-9]/g, "");
-
-  if(!title || !price || !whatsapp){
-    alert("Enter title, price, and WhatsApp");
-    return;
+  var imageUrl = "https://picsum.photos/400/400?random=" + Date.now();
+  if(selectedFile){
+    var storageRef = ref(storage, 'listings/' + Date.now());
+    var snap = await uploadBytes(storageRef, selectedFile);
+    imageUrl = await getDownloadURL(snap.ref);
   }
 
-  try{
-    var imageUrl = "https://picsum.photos/400/400?random=" + Date.now();
-    
-    if(selectedFile){
-      var storageRef = ref(storage, 'listings/' + Date.now() + '_' + selectedFile.name);
-      var snap = await uploadBytes(storageRef, selectedFile);
-      imageUrl = await getDownloadURL(snap.ref);
-    }
+  await addDoc(collection(db,"products"), {
+    title: title, price: Number(price), description: description.value,
+    category: category.value, location: location.value, whatsapp: whatsapp,
+    imageUrl: imageUrl, featured: featured.checked, uid: currentUser.uid,
+    seller: currentUser.email, createdAt: serverTimestamp()
+  });
 
-    await addDoc(collection(db,"products"), {
-      title: title,
-      price: Number(price),
-      description: description,
-      category: category.value,
-      location: location.value,
-      whatsapp: whatsapp,
-      imageUrl: imageUrl,
-      featured: featured.checked,
-      uid: currentUser.uid,
-      seller: currentUser.email,
-      createdAt: serverTimestamp()
-    });
-
-    ['title','price','description','location','whatsapp','imageFile'].forEach(function(id){ document.getElementById(id).value = ''; });
-    preview.style.display = 'none';
-    selectedFile = null;
-    featured.checked = false;
-
-    if(featured.checked){
-      var pf = 'merchant_id=YOUR_PAYFAST_ID&amount=20&item_name=Featured+Listing&return_url=' + encodeURIComponent(window.location.href);
-      window.open('https://www.payfast.co.za/eng/process?' + pf, '_blank');
-      alert("Complete R20 payment on PayFast to activate featured");
-    }else{
-      alert("Listing published!");
-    }
-
-  }catch(err){ alert(err.message); }
+  ['title','price','description','location','whatsapp','imageFile'].forEach(function(id){ document.getElementById(id).value = ''; });
+  preview.style.display = 'none'; selectedFile = null; featured.checked = false;
+  alert("Posted!");
 };
 
 function listenProducts(){
@@ -298,47 +198,42 @@ function listenProducts(){
 window.renderProducts = function(){
   var search = searchInput.value.toLowerCase();
   products.innerHTML = "";
-  
+
   var filtered = allProducts.filter(function(p){
-    var data = p.data;
-    var matchSearch = data.title.toLowerCase().indexOf(search) > -1 || (data.description || '').toLowerCase().indexOf(search) > -1;
-    var matchCat = currentCategory === 'All' || data.category === currentCategory;
-    return matchSearch && matchCat;
+    var d = p.data;
+    return (d.title.toLowerCase().indexOf(search) > -1 || (d.description || '').toLowerCase().indexOf(search) > -1)
+      && (currentCategory === 'All' || d.category === currentCategory);
   });
 
   filtered.sort(function(a,b){ return (b.data.featured?1:0) - (a.data.featured?1:0); });
 
   if(filtered.length === 0){
-    products.innerHTML = '<div class="empty">No listings yet. Be first to post!</div>';
+    products.innerHTML = '<div class="empty">No listings yet</div>';
     return;
   }
 
   for(var i = 0; i < filtered.length; i++){
     var p = filtered[i];
-    var data = p.data;
-    
-    if(i > 0 && i % 4 === 0){
-      products.innerHTML += '<div class="ad-container"><ins class="adsbygoogle" style="display:block" data-ad-format="fluid" data-ad-client="ca-pub-XXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX"></ins><script>(adsbygoogle=window.adsbygoogle||[]).push({});</script></div>';
-    }
+    var d = p.data;
 
-    var waNumber = data.whatsapp ? '27' + data.whatsapp.replace(/^0/, '') : '';
-    var waLink = waNumber ? 'https://wa.me/' + waNumber + '?text=Hi, interested in ' + encodeURIComponent(data.title) : '#';
-    var featuredBadge = data.featured ? '<span class="featured-badge">⭐ FEATURED</span>' : '';
-    var deleteBtn = currentUser && currentUser.uid === data.uid ? '<button class="btn-danger" onclick="deleteProduct(\'' + p.id + '\')">Delete</button>' : '';
-    
-    products.innerHTML += 
-      '<div class="product ' + (data.featured ? 'featured' : '') + '">' +
-        '<img src="' + data.imageUrl + '" alt="' + data.title + '" loading="lazy">' +
-        '<div class="product-info">' +
-          '<h4>' + featuredBadge + data.title + '</h4>' +
-          '<div class="price">R ' + Number(data.price).toLocaleString() + '</div>' +
-          '<p style="font-size:13px;color:#666">' + (data.location || '') + ' • ' + data.category + '</p>' +
-          '<p style="font-size:13px;margin:5px 0">' + (data.description || '') + '</p>' +
-          '<div style="display:flex;gap:8px;margin-top:8px">' +
-            '<button class="btn-whatsapp" onclick="window.open(\'' + waLink + '\')">WhatsApp</button>' +
+    var waNumber = d.whatsapp? '27' + d.whatsapp.replace(/^0/, '') : '';
+    var waLink = waNumber? 'https://wa.me/' + waNumber + '?text=Hi, about ' + encodeURIComponent(d.title) : '#';
+    var featuredBadge = d.featured? '<span class="featured-badge">⭐ FEATURED</span>' : '';
+    var deleteBtn = currentUser && currentUser.uid === d.uid? '<button class="btn-danger" onclick="deleteProduct(\'' + p.id + '\')">Delete</button>' : '';
+
+    products.innerHTML +=
+      '<div class="product ' + (d.featured? 'featured' : '') + '">' +
+        '<img src="' + d.imageUrl + '" loading="lazy">' +
+        '<div style="flex:1">' +
+          '<h4>' + featuredBadge + d.title + '</h4>' +
+          '<div class="price">R ' + Number(d.price).toLocaleString() + '</div>' +
+          '<p style="font-size:13px;color:#666">' + (d.location || '') + ' • ' + d.category + '</p>' +
+          '<p style="font-size:13px">' + (d.description || '') + '</p>' +
+          '<div style="margin-top:8px">' +
+            '<button class="btn-whatsapp" onclick="window.open(\'' + waLink + '\')">WhatsApp</button> ' +
             deleteBtn +
           '</div>' +
-          '<small style="color:#888">Posted by ' + data.seller + '</small>' +
+          '<small style="color:#888">By ' + d.seller + '</small>' +
         '</div>' +
       '</div>';
   }
