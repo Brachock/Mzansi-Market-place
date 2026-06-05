@@ -1,297 +1,604 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mzansi Marketplace</title>
 
 <style>
-body{
-font-family:Arial,sans-serif;
-background:#f2f2f2;
+:root{
+--bg:#f5f5f5;
+--card:#ffffff;
+--text:#111;
+--primary:#0d6efd;
+--border:#ddd;
+}
+
+.dark{
+--bg:#121212;
+--card:#1e1e1e;
+--text:#fff;
+--border:#333;
+}
+
+*{
+box-sizing:border-box;
 margin:0;
+padding:0;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:var(--bg);
+color:var(--text);
+padding-bottom:80px;
 }
 
 header{
-background:#0a7cff;
-color:white;
-padding:15px;
 display:flex;
 justify-content:space-between;
 align-items:center;
-}
-
-.container{
-max-width:1000px;
-margin:auto;
-padding:20px;
-}
-
-.card{
-background:white;
 padding:15px;
-border-radius:10px;
-margin-bottom:15px;
-box-shadow:0 2px 6px rgba(0,0,0,.1);
+background:var(--card);
+border-bottom:1px solid var(--border);
+position:sticky;
+top:0;
+z-index:100;
 }
 
-input,textarea{
+.logo{
+font-size:22px;
+font-weight:bold;
+}
+
+.search{
+padding:12px;
+}
+
+.search input{
 width:100%;
-padding:10px;
-margin:5px 0;
-border:1px solid #ccc;
-border-radius:5px;
-box-sizing:border-box;
+padding:12px;
+border-radius:25px;
+border:1px solid var(--border);
 }
 
-button{
-background:#0a7cff;
-color:white;
-border:none;
+.categories{
+display:flex;
+overflow:auto;
+gap:8px;
+padding:10px;
+}
+
+.categories button{
 padding:10px 15px;
-border-radius:5px;
+border:none;
+border-radius:20px;
 cursor:pointer;
 }
 
-button:hover{
-opacity:.9;
+.card{
+background:var(--card);
+margin:12px;
+border-radius:15px;
+overflow:hidden;
+box-shadow:0 2px 5px rgba(0,0,0,.1);
 }
 
-.product{
-border-bottom:1px solid #eee;
-padding:10px 0;
+.card img{
+width:100%;
+height:220px;
+object-fit:cover;
 }
 
-.hidden{
-display:none;
+.content{
+padding:12px;
 }
 
 .price{
-color:green;
+font-size:20px;
 font-weight:bold;
+margin:5px 0;
+}
+
+.actions{
+display:flex;
+gap:10px;
+margin-top:10px;
+}
+
+button{
+cursor:pointer;
+}
+
+.btn{
+padding:10px;
+border:none;
+border-radius:8px;
+}
+
+.primary{
+background:#000;
+color:white;
+}
+
+.favorite{
+background:red;
+color:white;
+}
+
+.whatsapp{
+background:#25D366;
+color:white;
+}
+
+.nav{
+position:fixed;
+bottom:0;
+left:0;
+right:0;
+display:flex;
+justify-content:space-around;
+padding:10px;
+background:var(--card);
+border-top:1px solid var(--border);
+}
+
+.page{
+display:none;
+}
+
+.active{
+display:block;
+}
+
+input,textarea,select{
+width:100%;
+padding:10px;
+margin:5px 0;
+border-radius:8px;
+border:1px solid var(--border);
+}
+
+.profile-card{
+background:var(--card);
+margin:15px;
+padding:15px;
+border-radius:15px;
+}
+
+.chat-window{
+height:300px;
+overflow:auto;
+background:var(--card);
+padding:10px;
+border-radius:10px;
+margin-bottom:10px;
+}
+
+.message{
+padding:8px;
+margin:5px;
+border-radius:8px;
+background:#ddd;
+}
+
+.dark .message{
+background:#333;
 }
 </style>
 </head>
 <body>
 
 <header>
-<h2>Mzansi Marketplace</h2>
-<div id="userInfo"></div>
+<div class="logo">Mzansi Marketplace</div>
+<div>
+Credits: <span id="credits">10</span>
+<button onclick="toggleDark()">🌙</button>
+</div>
 </header>
 
-<div class="container">
-
-<div id="authSection" class="card">
-
-<h3>Login</h3>
-
-<input id="loginEmail" placeholder="Email">
-<input id="loginPassword" type="password" placeholder="Password">
-<button onclick="login()">Login</button>
-
-<hr>
-
-<h3>Register</h3>
-
-<input id="regEmail" placeholder="Email">
-<input id="regPassword" type="password" placeholder="Password">
-<button onclick="register()">Register</button>
-
+<div class="search">
+<input id="searchInput" placeholder="Search listings..." onkeyup="renderListings()">
 </div>
 
-<div id="appSection" class="hidden">
+<div class="categories">
+<button onclick="setCategory('All')">All</button>
+<button onclick="setCategory('Vehicles')">Vehicles</button>
+<button onclick="setCategory('Property')">Property</button>
+<button onclick="setCategory('Jobs')">Jobs</button>
+<button onclick="setCategory('Electronics')">Electronics</button>
+<button onclick="setCategory('Services')">Services</button>
+</div>
 
-<div class="card">
-<h3>Post Product</h3>
+<!-- HOME -->
+<div id="home" class="page active">
+<div id="listingContainer"></div>
+</div>
 
-<input id="title" placeholder="Product title">
+<!-- POST -->
+<div id="post" class="page">
+
+<div style="padding:15px">
+
+<h2>Create Listing</h2>
+
+<input id="title" placeholder="Title">
 
 <input id="price" placeholder="Price">
 
-<textarea id="description"
-placeholder="Description"></textarea>
+<select id="category">
+<option>Vehicles</option>
+<option>Property</option>
+<option>Jobs</option>
+<option>Electronics</option>
+<option>Services</option>
+</select>
 
-<button onclick="addProduct()">Publish</button>
+<input id="location" placeholder="Location">
 
-<button onclick="logout()">Logout</button>
+<input id="image" placeholder="Image URL">
+
+<textarea id="description" placeholder="Description"></textarea>
+
+<label>
+<input type="checkbox" id="featured">
+Featured Listing (3 Credits)
+</label>
+
+<button class="btn primary" onclick="addListing()">
+Post Listing
+</button>
 
 </div>
 
-<div class="card">
-<h3>Marketplace Listings</h3>
-<div id="products"></div>
 </div>
+
+<!-- FAVORITES -->
+<div id="favorites" class="page">
+<h2 style="padding:15px">Favorites</h2>
+<div id="favoriteContainer"></div>
+</div>
+
+<!-- CHAT -->
+<div id="chat" class="page">
+
+<div style="padding:15px">
+
+<h2>Messages</h2>
+
+<div class="chat-window" id="chatWindow"></div>
+
+<input id="chatInput">
+
+<button class="btn primary" onclick="sendMessage()">
+Send
+</button>
 
 </div>
 
+</div>
+
+<!-- PROFILE -->
+<div id="profile" class="page">
+
+<div class="profile-card">
+
+<h2>Seller Profile</h2>
+
+<p>Name: Demo Seller</p>
+
+<p>Rating: ⭐⭐⭐⭐⭐</p>
+
+<p>Listings: <span id="listingCount">0</span></p>
+
+<p>Favorites: <span id="favoriteCount">0</span></p>
+
+<button onclick="inviteFriends()">
+Invite Friends
+</button>
+
+</div>
+
+</div>
+
+<div class="nav">
+<button onclick="showPage('home')">🏠</button>
+<button onclick="showPage('post')">➕</button>
+<button onclick="showPage('favorites')">❤️</button>
+<button onclick="showPage('chat')">💬</button>
+<button onclick="showPage('profile')">👤</button>
 </div>
 
 <script>
+let listings =
+JSON.parse(localStorage.getItem("listings")) || [];
 
-let users =
-JSON.parse(localStorage.getItem("users")) || [];
+let favorites =
+JSON.parse(localStorage.getItem("favorites")) || [];
 
-let products =
-JSON.parse(localStorage.getItem("products")) || [];
+let categoryFilter="All";
 
-let currentUser =
-JSON.parse(localStorage.getItem("currentUser"));
-
-function save(){
-localStorage.setItem("users",
-JSON.stringify(users));
-
-localStorage.setItem("products",
-JSON.stringify(products));
-}
-
-function register(){
-
-const email =
-document.getElementById("regEmail").value;
-
-const password =
-document.getElementById("regPassword").value;
-
-if(!email || !password){
-alert("Fill all fields");
-return;
-}
-
-if(users.find(u=>u.email===email)){
-alert("User exists");
-return;
-}
-
-users.push({
-email,
-password
-});
-
-save();
-
-alert("Registered successfully");
-}
-
-function login(){
-
-const email =
-document.getElementById("loginEmail").value;
-
-const password =
-document.getElementById("loginPassword").value;
-
-const user =
-users.find(
-u=>u.email===email &&
-u.password===password
+function saveStorage(){
+localStorage.setItem(
+"listings",
+JSON.stringify(listings)
 );
-
-if(!user){
-alert("Invalid login");
-return;
-}
-
-currentUser=user;
 
 localStorage.setItem(
-"currentUser",
-JSON.stringify(user)
+"favorites",
+JSON.stringify(favorites)
+);
+}
+
+function toggleDark(){
+document.body.classList.toggle("dark");
+}
+
+function showPage(id){
+
+document
+.querySelectorAll(".page")
+.forEach(p=>p.classList.remove("active"));
+
+document
+.getElementById(id)
+.classList.add("active");
+}
+
+function setCategory(cat){
+categoryFilter=cat;
+renderListings();
+}
+
+function addListing(){
+
+let cost=
+featured.checked ? 3 : 1;
+
+let credits=
+parseInt(
+creditsEl().innerText
 );
 
-loadApp();
-}
-
-function logout(){
-
-localStorage.removeItem("currentUser");
-currentUser=null;
-
-document.getElementById("authSection")
-.classList.remove("hidden");
-
-document.getElementById("appSection")
-.classList.add("hidden");
-
-document.getElementById("userInfo")
-.innerHTML="";
-}
-
-function loadApp(){
-
-document.getElementById("authSection")
-.classList.add("hidden");
-
-document.getElementById("appSection")
-.classList.remove("hidden");
-
-document.getElementById("userInfo")
-.innerHTML=
-`
-${currentUser.email}
-`;
-
-renderProducts();
-}
-
-function addProduct(){
-
-const title =
-document.getElementById("title").value;
-
-const price =
-document.getElementById("price").value;
-
-const description =
-document.getElementById("description").value;
-
-if(!title || !price){
-alert("Enter title and price");
+if(credits<cost){
+alert("Not enough credits");
 return;
 }
 
-products.unshift({
-title,
-price,
-description,
-seller:currentUser.email
-});
+credits-=cost;
+creditsEl().innerText=credits;
 
-save();
+const listing={
+id:Date.now(),
+title:title.value,
+price:price.value,
+category:category.value,
+location:location.value,
+image:image.value ||
+"https://picsum.photos/600/400",
+description:description.value,
+featured:featured.checked
+};
 
-document.getElementById("title").value="";
-document.getElementById("price").value="";
-document.getElementById("description").value="";
+listings.unshift(listing);
 
-renderProducts();
+saveStorage();
+
+renderListings();
+
+alert("Listing posted");
 }
 
-function renderProducts(){
+function renderListings(){
 
-const container =
-document.getElementById("products");
+const search=
+searchInput.value.toLowerCase();
+
+const container=
+document.getElementById(
+"listingContainer"
+);
 
 container.innerHTML="";
 
-products.forEach(p=>{
+let data=[...listings];
 
-container.innerHTML += `
-<div class="product">
-<h4>${p.title}</h4>
-<div class="price">R${p.price}</div>
-<p>${p.description}</p>
-<small>Seller: ${p.seller}</small>
+data.sort(
+(a,b)=>
+(b.featured?1:0)-
+(a.featured?1:0)
+);
+
+data.forEach(item=>{
+
+if(
+categoryFilter!=="All" &&
+item.category!==categoryFilter
+) return;
+
+if(
+!item.title.toLowerCase()
+.includes(search)
+) return;
+
+container.innerHTML+=`
+<div class="card">
+
+<img src="${item.image}">
+
+<div class="content">
+
+<h3>
+${item.featured ? "⭐" : ""}
+${item.title}
+</h3>
+
+<div class="price">
+R ${item.price}
+</div>
+
+<p>${item.location}</p>
+
+<p>${item.description}</p>
+
+<div class="actions">
+
+<button
+class="btn favorite"
+onclick="toggleFavorite(${item.id})">
+❤️
+</button>
+
+<button
+class="btn primary"
+onclick="showPage('chat')">
+Chat
+</button>
+
+<button
+class="btn whatsapp"
+onclick="shareListing('${item.title}')">
+WhatsApp
+</button>
+
+</div>
+
+</div>
+</div>
+`;
+});
+
+updateStats();
+}
+
+function toggleFavorite(id){
+
+if(favorites.includes(id))
+favorites=
+favorites.filter(x=>x!==id);
+else
+favorites.push(id);
+
+saveStorage();
+
+renderFavorites();
+}
+
+function renderFavorites(){
+
+const c=
+document.getElementById(
+"favoriteContainer"
+);
+
+c.innerHTML="";
+
+favorites.forEach(id=>{
+
+const item=
+listings.find(
+x=>x.id===id
+);
+
+if(!item) return;
+
+c.innerHTML+=`
+<div class="card">
+
+<img src="${item.image}">
+
+<div class="content">
+
+<h3>${item.title}</h3>
+
+<div class="price">
+R ${item.price}
+</div>
+
+</div>
+
+</div>
+`;
+});
+
+updateStats();
+}
+
+function shareListing(title){
+
+window.open(
+`https://wa.me/?text=${encodeURIComponent(title)}`
+);
+}
+
+function sendMessage(){
+
+const msg=
+chatInput.value;
+
+if(!msg) return;
+
+chatWindow.innerHTML+=`
+<div class="message">
+${msg}
 </div>
 `;
 
-});
-
+chatInput.value="";
 }
 
-if(currentUser){
-loadApp();
+function inviteFriends(){
+
+alert(
+"Referral link copied (prototype)"
+);
 }
 
+function updateStats(){
+
+listingCount.innerText=
+listings.length;
+
+favoriteCount.innerText=
+favorites.length;
+}
+
+function creditsEl(){
+return document.getElementById(
+"credits"
+);
+}
+
+if(listings.length===0){
+
+listings.push(
+{
+id:1,
+title:"Toyota Corolla",
+price:"85000",
+category:"Vehicles",
+location:"Johannesburg",
+description:"Excellent condition",
+image:"https://picsum.photos/600/400?1",
+featured:true
+},
+{
+id:2,
+title:"2 Bedroom Flat",
+price:"450000",
+category:"Property",
+location:"Pretoria",
+description:"Close to schools",
+image:"https://picsum.photos/600/400?2",
+featured:false
+}
+);
+
+saveStorage();
+}
+
+renderListings();
+renderFavorites();
 </script>
 
 </body>
