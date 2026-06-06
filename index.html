@@ -1,96 +1,140 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mzansi Marketplace</title>
 
 <style>
 body {font-family:Arial;margin:0;background:#f5f5f5}
-header {background:#007bff;color:white;padding:15px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0}
+header {
+  background:#007bff;color:white;padding:15px;
+  display:flex;justify-content:space-between
+}
 .container {padding:15px;max-width:900px;margin:auto}
-.card {background:white;padding:15px;margin-bottom:15px;border-radius:10px;border:1px solid #ddd}
-input,select,textarea {width:100%;padding:10px;margin:5px 0;border-radius:6px;border:1px solid #ddd;font-size:16px;min-height:44px}
-button {background:#007bff;color:white;border:none;padding:10px 15px;border-radius:6px;cursor:pointer;font-size:16px;min-height:44px}
-button:active{opacity:0.8}
-.product {display:flex;gap:10px;border-bottom:1px solid #ddd;padding:10px}
-.product:last-child{border-bottom:none}
-.product img {width:80px;height:80px;border-radius:6px;object-fit:cover;flex-shrink:0}
-.featured {border:2px solid gold;background:#fffdf0}
-.categories {display:flex;gap:5px;overflow-x:auto;margin:10px 0}
-.categories button {padding:6px 10px;border:1px solid #ddd;background:white;white-space:nowrap}
-.categories.active {background:#007bff;color:white;border-color:#007bff}
-.credit-box {padding:10px;background:white;margin-bottom:10px;border-radius:10px;border:1px solid #ddd}
-.bar {height:6px;background:#eee;margin-top:5px;border-radius:5px}
-.bar-fill {height:6px;background:#007bff;border-radius:5px;transition:width 0.3s}
-.hidden{display:none}
-.preview{width:100%;height:150px;object-fit:cover;border-radius:6px;margin:5px 0;display:none}
+
+.card {
+  background:white;padding:15px;margin-bottom:15px;
+  border-radius:10px
+}
+
+input,select,textarea {
+  width:100%;padding:10px;margin:5px 0;
+  border-radius:6px;border:1px solid #ddd
+}
+
+button {
+  background:#007bff;color:white;
+  border:none;padding:10px;border-radius:6px
+}
+
+.product {
+  display:flex;gap:10px;
+  border-bottom:1px solid #ddd;padding:10px
+}
+.product img {
+  width:80px;height:80px;border-radius:6px
+}
+
+.featured {border:2px solid gold}
+
+.categories {
+ display:flex;gap:5px;overflow-x:auto;margin:10px 0
+}
+
+.categories button {
+  padding:6px 10px;border:1px solid #ddd;background:white
+}
+
+.categories .active {background:#007bff;color:white}
+
+.credit-box {
+  padding:10px;background:white;margin-bottom:10px;border-radius:10px
+}
+
+.bar {
+  height:6px;background:#eee;margin-top:5px;border-radius:5px
+}
+.bar-fill {
+  height:6px;background:#007bff;border-radius:5px
+}
 </style>
 </head>
 
 <body>
 
 <header>
-<b>Mzansi Marketplace</b>
+<b>Mzansi Market</b>
 <button onclick="toggleDark()">🌙</button>
 </header>
 
 <div class="container">
 
 <!-- LOGIN -->
-<div id="auth" class="card">
-<h3>Login / Register</h3>
-<input id="email" placeholder="Email" type="email">
-<input id="password" type="password" placeholder="Password min 6 chars">
+<div id="auth">
+<input id="email" placeholder="Email">
+<input id="password" type="password">
 <button onclick="login()">Login</button>
-<button onclick="register()">Register - 10 Free Credits</button>
+<button onclick="register()">Register</button>
 </div>
 
 <!-- APP -->
-<div id="app" class="hidden">
+<div id="app" style="display:none">
 
 <div id="creditBox" class="credit-box"></div>
 
 <div class="card">
 <input id="search" placeholder="Search..." oninput="render()">
+
 <div class="categories" id="catBox"></div>
 </div>
 
 <div class="card">
-<h3>Post Ad</h3>
-<input id="title" placeholder="Title" maxlength="100">
-<input id="price" placeholder="Price" inputmode="numeric">
-<input id="whatsapp" placeholder="WhatsApp 0712345678">
+<h3>Post</h3>
+
+<input id="title" placeholder="Title">
+<input id="price" placeholder="Price">
+<input id="whatsapp" placeholder="071...">
+
 <select id="category"></select>
-<input type="file" id="img" accept="image/*" onchange="previewImg(event)">
-<img id="preview" class="preview">
-<label style="display:flex;gap:8px;align-items:center;margin:10px 0">
-<input type="checkbox" id="featured"> Featured Listing - 3 Credits
-</label>
+
+<input type="file" id="img">
+
+<label><input type="checkbox" id="featured"> Featured (3 credits)</label>
+
 <button onclick="postAd()">Post</button>
-<button onclick="logout()" style="background:#6c757d;margin-left:8px">Logout</button>
 </div>
 
 <div class="card">
-<div id="products"><div style="text-align:center;padding:20px;color:#888">Loading...</div></div>
+<div id="products"></div>
 </div>
 
 </div>
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged,signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore,doc,setDoc,getDoc,updateDoc,collection,addDoc,onSnapshot,query,orderBy,serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getStorage,ref,uploadBytes,getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
-/* ✅ REPLACE WITH YOUR FIREBASE CONFIG */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+getAuth,createUserWithEmailAndPassword,
+signInWithEmailAndPassword,onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+getFirestore,doc,setDoc,getDoc,updateDoc,
+collection,addDoc,getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import {
+getStorage,ref,uploadBytes,getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+/* ✅ YOUR FIREBASE CONFIG */
 const firebaseConfig = {
 apiKey:"YOUR_KEY",
-authDomain:"YOUR_DOMAIN.firebaseapp.com",
+authDomain:"YOUR_DOMAIN",
 projectId:"YOUR_ID",
-storageBucket:"YOUR_ID.appspot.com",
-messagingSenderId:"YOUR_SENDER_ID",
-appId:"YOUR_APP_ID"
+storageBucket:"YOUR_BUCKET"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -98,193 +142,196 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 
+/* ✅ VARIABLES */
 let currentUser;
 let userCredits = 0;
 let allAds = [];
 let currentCategory = "All";
-let selectedFile = null;
 
 const CATEGORIES = ["Vehicles","Property","Jobs","Electronics","Services"];
 
-/* ✅ REGISTER + 10 CREDITS */
-window.register = async function(){
-try{
+/* ✅ REGISTER */
+window.register = async ()=>{
 let u = await createUserWithEmailAndPassword(auth,email.value,password.value);
-await setDoc(doc(db,"users",u.user.uid),{credits:10, email:email.value});
+
+await setDoc(doc(db,"users",u.user.uid),{
+credits:10
+});
+
 alert("✅ 10 credits given!");
-}catch(err){ alert(err.message); }
 };
 
 /* ✅ LOGIN */
-window.login = async function(){
-try{ await signInWithEmailAndPassword(auth,email.value,password.value); }
-catch(err){ alert(err.message); }
+window.login = async ()=>{
+await signInWithEmailAndPassword(auth,email.value,password.value);
 };
 
-window.logout = async function(){ await signOut(auth); };
+/* ✅ AUTH */
+onAuthStateChanged(auth, async user=>{
 
-/* ✅ AUTH STATE */
-onAuthStateChanged(auth, async function(user){
-if(!user){
-auth.classList.remove("hidden");
-app.classList.add("hidden");
-return;
-}
+if(!user) return;
 
 currentUser = user;
-auth.classList.add("hidden");
-app.classList.remove("hidden");
+
+auth.style.display="none";
+app.style.display="block";
 
 /* GET CREDITS */
 let snap = await getDoc(doc(db,"users",user.uid));
-userCredits = snap.data().credits || 0;
+userCredits = snap.data().credits;
+
 updateCredit();
 
+/* LOAD */
 loadCategories();
 loadAds();
+
 });
 
 /* ✅ CREDIT UI */
 function updateCredit(){
-var percent = Math.min((userCredits/10)*100, 100);
-creditBox.innerHTML = 'Credits: ' + userCredits +
-'<div class="bar"><div class="bar-fill" style="width:' + percent + '%"></div></div>';
-}
-
-/* ✅ DARK MODE */
-window.toggleDark = function(){ document.body.style.background = document.body.style.background==='black'? '#f5f5f5':'black'; }
-
-/* ✅ IMAGE PREVIEW */
-window.previewImg = function(e){
-selectedFile = e.target.files[0];
-if(selectedFile){
-var reader = new FileReader();
-reader.onload = function(e){ preview.src = e.target.result; preview.style.display = 'block'; }
-reader.readAsDataURL(selectedFile);
-}
+creditBox.innerHTML=`
+Credits: ${userCredits}
+<div class="bar">
+<div class="bar-fill" style="width:${(userCredits/10)*100}%"></div>
+</div>
+`;
 }
 
 /* ✅ CATEGORIES */
 function loadCategories(){
-catBox.innerHTML = '<button class="active" onclick="setCat(\'All\',this)">All</button>';
-category.innerHTML = "";
-for(var i=0; i<CATEGORIES.length; i++){
-var cat = CATEGORIES[i];
-catBox.innerHTML += '<button onclick="setCat(\'' + cat + '\',this)">' + cat + '</button>';
-category.innerHTML += '<option>' + cat + '</option>';
-}
+
+catBox.innerHTML=`<button class="active" onclick="setCat('All',this)">All</button>`;
+
+category.innerHTML="";
+
+CATEGORIES.forEach(cat=>{
+catBox.innerHTML += `<button onclick="setCat('${cat}',this)">${cat}</button>`;
+category.innerHTML += `<option>${cat}</option>`;
+});
+
 }
 
-window.setCat = function(cat,btn){
+window.setCat = (cat,btn)=>{
 currentCategory = cat;
-var btns = document.querySelectorAll(".categories button");
-for(var i=0; i<btns.length; i++) btns[i].classList.remove("active");
+
+document.querySelectorAll(".categories button").forEach(b=>{
+b.classList.remove("active");
+});
 btn.classList.add("active");
+
 render();
 };
 
 /* ✅ POST AD */
-window.postAd = async function(){
-if(!currentUser){ alert("Login first"); return; }
+window.postAd = async ()=>{
 
-var cost = featured.checked? 3 : 1;
+let cost = featured.checked ? 3 : 1;
+
 if(userCredits < cost){
-alert("Not enough credits! Share ads to earn +1 credit");
+alert("No credits!");
 return;
 }
 
-var titleVal = title.value.trim();
-var priceVal = price.value.replace(/[^0-9]/g, "");
-var waVal = whatsapp.value.replace(/[^0-9]/g, "");
+let imgUrl="https://via.placeholder.com/100";
 
-if(!titleVal ||!priceVal ||!waVal){
-alert("Enter title, price, WhatsApp");
-return;
-}
-
-try{
-var imgUrl = "https://picsum.photos/400/400?random=" + Date.now();
-
-if(selectedFile){
-var r = ref(storage,"ads/" + Date.now() + "_" + selectedFile.name);
-var s = await uploadBytes(r,selectedFile);
+if(img.files[0]){
+let r = ref(storage,"ads/"+Date.now());
+let s = await uploadBytes(r,img.files[0]);
 imgUrl = await getDownloadURL(s.ref);
 }
 
 await addDoc(collection(db,"ads"),{
-title: titleVal,
-price: Number(priceVal),
-category: category.value,
-whatsapp: waVal,
-image: imgUrl,
-featured: featured.checked,
-uid: currentUser.uid,
-createdAt: serverTimestamp()
+title:title.value,
+price:price.value,
+category:category.value,
+whatsapp:whatsapp.value,
+image:imgUrl,
+featured:featured.checked,
+uid:currentUser.uid
 });
 
-/* deduct credits */
-userCredits -= cost;
-await updateDoc(doc(db,"users",currentUser.uid),{credits: userCredits});
+/* deduct */
+userCredits-=cost;
+
+await updateDoc(doc(db,"users",currentUser.uid),{
+credits:userCredits
+});
+
 updateCredit();
+loadAds();
 
-/* clear form */
-['title','price','whatsapp','img'].forEach(function(id){ document.getElementById(id).value = ''; });
-preview.style.display = 'none';
-selectedFile = null;
-featured.checked = false;
-
-alert("Posted successfully!");
-}catch(err){ alert(err.message); }
 };
 
-/* ✅ LOAD ADS REALTIME */
-function loadAds(){
-var q = query(collection(db,"ads"), orderBy("createdAt","desc"));
-onSnapshot(q, function(snapshot){
-allAds = [];
-snapshot.forEach(function(d){
-allAds.push({id: d.id, data: d.data()});
-render();
+/* ✅ LOAD ADS */
+async function loadAds(){
+
+let snap = await getDocs(collection(db,"ads"));
+
+allAds=[];
+
+snap.forEach(d=>{
+allAds.push(d.data());
 });
+
+render();
+
 }
 
 /* ✅ RENDER */
-window.render = function(){
-var s = search.value.toLowerCase();
-products.innerHTML = "";
+window.render = ()=>{
 
-for(var i=0; i<allAds.length; i++){
-var ad = allAds[i].data;
+let s = search.value.toLowerCase();
 
-if(currentCategory!= "All" && ad.category!= currentCategory) continue;
-if(ad.title.toLowerCase().indexOf(s) == -1) continue;
+products.innerHTML="";
 
-var waNumber = ad.whatsapp? '27' + ad.whatsapp.replace(/^0/, '') : '';
-var waLink = waNumber? 'https://wa.me/' + waNumber + '?text=Hi, about ' + encodeURIComponent(ad.title) : '#';
-var featuredClass = ad.featured? 'featured' : '';
-var featuredStar = ad.featured? '⭐ ' : '';
+allAds.forEach(ad=>{
 
-products.innerHTML +=
-'<div class="product ' + featuredClass + '">' +
-'<img src="' + ad.image + '" alt="' + ad.title + '" loading="lazy">' +
-'<div style="flex:1">' +
-'<h4>' + featuredStar + ad.title + '</h4>' +
-'<p style="font-size:13px;color:#666">📂 ' + ad.category + '</p>' +
-'<p style="font-weight:bold;color:green">R ' + Number(ad.price).toLocaleString() + '</p>' +
-'<button onclick="window.open(\'' + waLink + '\')">WhatsApp</button> ' +
-'<button onclick="shareAd(\'' + ad.id + '\')" style="background:#25D366">Share +1 Credit</button>' +
-'</div>' +
-'</div>';
-}
+if(currentCategory!="All" && ad.category!=currentCategory) return;
 
-if(products.innerHTML === ""){
-products.innerHTML = '<div style="text-align:center;padding:40px;color:#888">No ads yet. Be first to post!</div>';
-}
+if(!ad.title.toLowerCase().includes(s)) return;
+
+products.innerHTML+=`
+<div class="product ${ad.featured?'featured':''}">
+${ad.image}
+<div>
+
+<h4>${ad.featured?'⭐':''} ${ad.title}</h4>
+
+<p>📂 ${ad.category}</p>
+
+<p>R ${ad.price}</p>
+
+<button onclick="window.open('https://wa.me/${ad.whatsapp}')">
+WhatsApp
+</button>
+
+<button onclick="shareAd('${ad.title}')">Share</button>
+
+</div>
+</div>
+`;
+
+});
+
 };
 
-/* ✅ SHARE +1 CREDIT */
-window.shareAd = async function(id){
-var ad = allAds.find(function(a){ return a.id === id; });
-if(!ad) return;
+/* ✅ SHARE (+1 CREDIT) */
+window.shareAd = async (title)=>{
 
-window.open('
+window.open(`https://wa.me/?text=${encodeURIComponent(title)}`);
+
+userCredits +=1;
+
+await updateDoc(doc(db,"users",currentUser.uid),{
+credits:userCredits
+});
+
+updateCredit();
+alert("+1 credit!");
+};
+
+</script>
+
+</body>
+</html>
