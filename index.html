@@ -1,243 +1,290 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mzansi Marketplace</title>
+
 <style>
-:root{--bg:#f5f7fa;--card:#ffffff;--text:#1a1a1a;--primary:#0a7cff;--border:#e0e0e0;--success:#25D366}
-.dark{--bg:#121212;--card:#1e1e1e;--text:#fff;--border:#333}
-*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
-body{background:var(--bg);color:var(--text);padding-bottom:80px}
-header{background:var(--primary);color:white;padding:15px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0}
-.container{max-width:900px;margin:auto;padding:15px}
-.card{background:var(--card);padding:15px;border-radius:12px;margin-bottom:15px;border:1px solid var(--border)}
-input,textarea,select{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:16px;min-height:44px}
-button{background:var(--primary);color:white;border:none;padding:12px 20px;border-radius:8px;cursor:pointer;font-weight:600;font-size:16px;min-height:44px}
-.btn-whatsapp{background:var(--success)}
-.btn-danger{background:#dc3545}
-.btn-secondary{background:#6c757d}
+body {font-family:Arial;margin:0;background:#f5f5f5}
+header {background:#007bff;color:white;padding:15px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0}
+.container {padding:15px;max-width:900px;margin:auto}
+.card {background:white;padding:15px;margin-bottom:15px;border-radius:10px;border:1px solid #ddd}
+input,select,textarea {width:100%;padding:10px;margin:5px 0;border-radius:6px;border:1px solid #ddd;font-size:16px;min-height:44px}
+button {background:#007bff;color:white;border:none;padding:10px 15px;border-radius:6px;cursor:pointer;font-size:16px;min-height:44px}
+button:active{opacity:0.8}
+.product {display:flex;gap:10px;border-bottom:1px solid #ddd;padding:10px}
+.product:last-child{border-bottom:none}
+.product img {width:80px;height:80px;border-radius:6px;object-fit:cover;flex-shrink:0}
+.featured {border:2px solid gold;background:#fffdf0}
+.categories {display:flex;gap:5px;overflow-x:auto;margin:10px 0}
+.categories button {padding:6px 10px;border:1px solid #ddd;background:white;white-space:nowrap}
+.categories.active {background:#007bff;color:white;border-color:#007bff}
+.credit-box {padding:10px;background:white;margin-bottom:10px;border-radius:10px;border:1px solid #ddd}
+.bar {height:6px;background:#eee;margin-top:5px;border-radius:5px}
+.bar-fill {height:6px;background:#007bff;border-radius:5px;transition:width 0.3s}
 .hidden{display:none}
-.product{display:flex;gap:12px;padding:12px;border-bottom:1px solid var(--border)}
-.product img{width:90px;height:90px;object-fit:cover;border-radius:8px}
-.price{color:#28a745;font-weight:700;font-size:18px}
-.featured{border:2px solid #ffc107}
-.featured-badge{background:#ffc107;color:#000;padding:3px 8px;border-radius:5px;font-size:12px;font-weight:700;margin-right:5px}
-.categories{display:flex;gap:8px;overflow-x:auto;padding:10px 0}
-.categories button{white-space:nowrap;padding:8px 16px;font-size:14px;background:var(--bg);color:var(--text);border:1px solid var(--border)}
-.categories button.active{background:var(--primary);color:white}
-.loading{text-align:center;padding:30px;color:#888}
-.empty{text-align:center;padding:40px;color:#888}
-.preview-img{width:100%;height:200px;object-fit:cover;border-radius:8px;margin:8px 0;display:none}
+.preview{width:100%;height:150px;object-fit:cover;border-radius:6px;margin:5px 0;display:none}
 </style>
 </head>
+
 <body>
 
 <header>
-  <div><strong>Mzansi Marketplace</strong></div>
-  <button onclick="toggleDark()">🌙</button>
+<b>Mzansi Marketplace</b>
+<button onclick="toggleDark()">🌙</button>
 </header>
 
 <div class="container">
-  <div id="authSection" class="card">
-    <h3>Login</h3>
-    <input id="loginEmail" placeholder="Email" type="email">
-    <input id="loginPassword" type="password" placeholder="Password">
-    <button onclick="login()">Login</button>
-    <hr style="margin:15px 0">
-    <h3>Register</h3>
-    <input id="regEmail" placeholder="Email" type="email">
-    <input id="regPassword" type="password" placeholder="Password min 6 chars">
-    <button onclick="register()">Register</button>
-  </div>
 
-  <div id="appSection" class="hidden">
-    <div class="card">
-      <input id="searchInput" placeholder="Search..." oninput="renderProducts()">
-      <div class="categories">
-        <button class="active" onclick="setCategory('All', this)">All</button>
-        <button onclick="setCategory('Vehicles', this)">Vehicles</button>
-        <button onclick="setCategory('Property', this)">Property</button>
-        <button onclick="setCategory('Jobs', this)">Jobs</button>
-        <button onclick="setCategory('Electronics', this)">Electronics</button>
-        <button onclick="setCategory('Services', this)">Services</button>
-      </div>
-    </div>
+<!-- LOGIN -->
+<div id="auth" class="card">
+<h3>Login / Register</h3>
+<input id="email" placeholder="Email" type="email">
+<input id="password" type="password" placeholder="Password min 6 chars">
+<button onclick="login()">Login</button>
+<button onclick="register()">Register - 10 Free Credits</button>
+</div>
 
-    <div class="card">
-      <h3>Post Listing</h3>
-      <input id="title" placeholder="Title">
-      <input id="price" placeholder="Price" inputmode="numeric">
-      <select id="category">
-        <option>Vehicles</option><option>Property</option><option>Jobs</option>
-        <option>Electronics</option><option>Services</option>
-      </select>
-      <input id="location" placeholder="Location">
-      <input id="whatsapp" placeholder="WhatsApp 071...">
-      <input id="imageFile" type="file" accept="image/*" onchange="previewImage(event)">
-      <img id="preview" class="preview-img">
-      <textarea id="description" placeholder="Description" rows="3"></textarea>
-      <label><input type="checkbox" id="featured"> Featured R20</label>
-      <button onclick="addProduct()">Publish</button>
-      <button class="btn-secondary" onclick="logout()">Logout</button>
-    </div>
+<!-- APP -->
+<div id="app" class="hidden">
 
-    <div class="card">
-      <h3>Listings</h3>
-      <div id="products"><div class="loading">Loading...</div></div>
-    </div>
-  </div>
+<div id="creditBox" class="credit-box"></div>
+
+<div class="card">
+<input id="search" placeholder="Search..." oninput="render()">
+<div class="categories" id="catBox"></div>
+</div>
+
+<div class="card">
+<h3>Post Ad</h3>
+<input id="title" placeholder="Title" maxlength="100">
+<input id="price" placeholder="Price" inputmode="numeric">
+<input id="whatsapp" placeholder="WhatsApp 0712345678">
+<select id="category"></select>
+<input type="file" id="img" accept="image/*" onchange="previewImg(event)">
+<img id="preview" class="preview">
+<label style="display:flex;gap:8px;align-items:center;margin:10px 0">
+<input type="checkbox" id="featured"> Featured Listing - 3 Credits
+</label>
+<button onclick="postAd()">Post</button>
+<button onclick="logout()" style="background:#6c757d;margin-left:8px">Logout</button>
+</div>
+
+<div class="card">
+<div id="products"><div style="text-align:center;padding:20px;color:#888">Loading...</div></div>
+</div>
+
+</div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+import { getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged,signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore,doc,setDoc,getDoc,updateDoc,collection,addDoc,onSnapshot,query,orderBy,serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getStorage,ref,uploadBytes,getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
+/* ✅ REPLACE WITH YOUR FIREBASE CONFIG */
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+apiKey:"YOUR_KEY",
+authDomain:"YOUR_DOMAIN.firebaseapp.com",
+projectId:"YOUR_ID",
+storageBucket:"YOUR_ID.appspot.com",
+messagingSenderId:"YOUR_SENDER_ID",
+appId:"YOUR_APP_ID"
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getFirestore(app);
+const auth = getAuth(app);
 const storage = getStorage(app);
 
-let currentUser = null;
-let allProducts = [];
-let currentCategory = 'All';
+let currentUser;
+let userCredits = 0;
+let allAds = [];
+let currentCategory = "All";
 let selectedFile = null;
 
+const CATEGORIES = ["Vehicles","Property","Jobs","Electronics","Services"];
+
+/* ✅ REGISTER + 10 CREDITS */
 window.register = async function(){
-  try{ await createUserWithEmailAndPassword(auth, regEmail.value, regPassword.value); alert("Account created!"); }
-  catch(err){ alert(err.message); }
+try{
+let u = await createUserWithEmailAndPassword(auth,email.value,password.value);
+await setDoc(doc(db,"users",u.user.uid),{credits:10, email:email.value});
+alert("✅ 10 credits given!");
+}catch(err){ alert(err.message); }
 };
 
+/* ✅ LOGIN */
 window.login = async function(){
-  try{ await signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value); }
-  catch(err){ alert(err.message); }
+try{ await signInWithEmailAndPassword(auth,email.value,password.value); }
+catch(err){ alert(err.message); }
 };
 
 window.logout = async function(){ await signOut(auth); };
 
-onAuthStateChanged(auth, function(user){
-  currentUser = user;
-  if(user){
-    authSection.classList.add("hidden");
-    appSection.classList.remove("hidden");
-    listenProducts();
-  }else{
-    authSection.classList.remove("hidden");
-    appSection.classList.add("hidden");
-  }
+/* ✅ AUTH STATE */
+onAuthStateChanged(auth, async function(user){
+if(!user){
+auth.classList.remove("hidden");
+app.classList.add("hidden");
+return;
+}
+
+currentUser = user;
+auth.classList.add("hidden");
+app.classList.remove("hidden");
+
+/* GET CREDITS */
+let snap = await getDoc(doc(db,"users",user.uid));
+userCredits = snap.data().credits || 0;
+updateCredit();
+
+loadCategories();
+loadAds();
 });
 
-window.previewImage = function(e){
-  selectedFile = e.target.files[0];
-  if(selectedFile){
-    var reader = new FileReader();
-    reader.onload = function(e){ preview.src = e.target.result; preview.style.display = 'block'; }
-    reader.readAsDataURL(selectedFile);
-  }
+/* ✅ CREDIT UI */
+function updateCredit(){
+var percent = Math.min((userCredits/10)*100, 100);
+creditBox.innerHTML = 'Credits: ' + userCredits +
+'<div class="bar"><div class="bar-fill" style="width:' + percent + '%"></div></div>';
 }
 
-window.toggleDark = function(){ document.body.classList.toggle("dark"); }
+/* ✅ DARK MODE */
+window.toggleDark = function(){ document.body.style.background = document.body.style.background==='black'? '#f5f5f5':'black'; }
 
-window.setCategory = function(cat, btn){
-  currentCategory = cat;
-  document.querySelectorAll('.categories button').forEach(function(b){ b.classList.remove('active'); });
-  btn.classList.add('active');
-  renderProducts();
+/* ✅ IMAGE PREVIEW */
+window.previewImg = function(e){
+selectedFile = e.target.files[0];
+if(selectedFile){
+var reader = new FileReader();
+reader.onload = function(e){ preview.src = e.target.result; preview.style.display = 'block'; }
+reader.readAsDataURL(selectedFile);
+}
 }
 
-window.deleteProduct = async function(id){
-  if(confirm("Delete?")) await deleteDoc(doc(db, "products", id));
+/* ✅ CATEGORIES */
+function loadCategories(){
+catBox.innerHTML = '<button class="active" onclick="setCat(\'All\',this)">All</button>';
+category.innerHTML = "";
+for(var i=0; i<CATEGORIES.length; i++){
+var cat = CATEGORIES[i];
+catBox.innerHTML += '<button onclick="setCat(\'' + cat + '\',this)">' + cat + '</button>';
+category.innerHTML += '<option>' + cat + '</option>';
+}
 }
 
-window.addProduct = async function(){
-  if(!currentUser){ alert("Login first"); return; }
-  var title = title.value.trim();
-  var price = price.value.replace(/[^0-9]/g, "");
-  var whatsapp = whatsapp.value.replace(/[^0-9]/g, "");
-  if(!title ||!price ||!whatsapp){ alert("Fill title, price, WhatsApp"); return; }
-
-  var imageUrl = "https://picsum.photos/400/400?random=" + Date.now();
-  if(selectedFile){
-    var storageRef = ref(storage, 'listings/' + Date.now());
-    var snap = await uploadBytes(storageRef, selectedFile);
-    imageUrl = await getDownloadURL(snap.ref);
-  }
-
-  await addDoc(collection(db,"products"), {
-    title: title, price: Number(price), description: description.value,
-    category: category.value, location: location.value, whatsapp: whatsapp,
-    imageUrl: imageUrl, featured: featured.checked, uid: currentUser.uid,
-    seller: currentUser.email, createdAt: serverTimestamp()
-  });
-
-  ['title','price','description','location','whatsapp','imageFile'].forEach(function(id){ document.getElementById(id).value = ''; });
-  preview.style.display = 'none'; selectedFile = null; featured.checked = false;
-  alert("Posted!");
+window.setCat = function(cat,btn){
+currentCategory = cat;
+var btns = document.querySelectorAll(".categories button");
+for(var i=0; i<btns.length; i++) btns[i].classList.remove("active");
+btn.classList.add("active");
+render();
 };
 
-function listenProducts(){
-  var q = query(collection(db,"products"), orderBy("createdAt","desc"));
-  onSnapshot(q, function(snapshot){
-    allProducts = [];
-    snapshot.forEach(function(doc){ allProducts.push({id: doc.id, data: doc.data()}); });
-    renderProducts();
-  });
+/* ✅ POST AD */
+window.postAd = async function(){
+if(!currentUser){ alert("Login first"); return; }
+
+var cost = featured.checked? 3 : 1;
+if(userCredits < cost){
+alert("Not enough credits! Share ads to earn +1 credit");
+return;
 }
 
-window.renderProducts = function(){
-  var search = searchInput.value.toLowerCase();
-  products.innerHTML = "";
+var titleVal = title.value.trim();
+var priceVal = price.value.replace(/[^0-9]/g, "");
+var waVal = whatsapp.value.replace(/[^0-9]/g, "");
 
-  var filtered = allProducts.filter(function(p){
-    var d = p.data;
-    return (d.title.toLowerCase().indexOf(search) > -1 || (d.description || '').toLowerCase().indexOf(search) > -1)
-      && (currentCategory === 'All' || d.category === currentCategory);
-  });
+if(!titleVal ||!priceVal ||!waVal){
+alert("Enter title, price, WhatsApp");
+return;
+}
 
-  filtered.sort(function(a,b){ return (b.data.featured?1:0) - (a.data.featured?1:0); });
+try{
+var imgUrl = "https://picsum.photos/400/400?random=" + Date.now();
 
-  if(filtered.length === 0){
-    products.innerHTML = '<div class="empty">No listings yet</div>';
-    return;
-  }
+if(selectedFile){
+var r = ref(storage,"ads/" + Date.now() + "_" + selectedFile.name);
+var s = await uploadBytes(r,selectedFile);
+imgUrl = await getDownloadURL(s.ref);
+}
 
-  for(var i = 0; i < filtered.length; i++){
-    var p = filtered[i];
-    var d = p.data;
+await addDoc(collection(db,"ads"),{
+title: titleVal,
+price: Number(priceVal),
+category: category.value,
+whatsapp: waVal,
+image: imgUrl,
+featured: featured.checked,
+uid: currentUser.uid,
+createdAt: serverTimestamp()
+});
 
-    var waNumber = d.whatsapp? '27' + d.whatsapp.replace(/^0/, '') : '';
-    var waLink = waNumber? 'https://wa.me/' + waNumber + '?text=Hi, about ' + encodeURIComponent(d.title) : '#';
-    var featuredBadge = d.featured? '<span class="featured-badge">⭐ FEATURED</span>' : '';
-    var deleteBtn = currentUser && currentUser.uid === d.uid? '<button class="btn-danger" onclick="deleteProduct(\'' + p.id + '\')">Delete</button>' : '';
+/* deduct credits */
+userCredits -= cost;
+await updateDoc(doc(db,"users",currentUser.uid),{credits: userCredits});
+updateCredit();
 
-    products.innerHTML +=
-      '<div class="product ' + (d.featured? 'featured' : '') + '">' +
-        '<img src="' + d.imageUrl + '" loading="lazy">' +
-        '<div style="flex:1">' +
-          '<h4>' + featuredBadge + d.title + '</h4>' +
-          '<div class="price">R ' + Number(d.price).toLocaleString() + '</div>' +
-          '<p style="font-size:13px;color:#666">' + (d.location || '') + ' • ' + d.category + '</p>' +
-          '<p style="font-size:13px">' + (d.description || '') + '</p>' +
-          '<div style="margin-top:8px">' +
-            '<button class="btn-whatsapp" onclick="window.open(\'' + waLink + '\')">WhatsApp</button> ' +
-            deleteBtn +
-          '</div>' +
-          '<small style="color:#888">By ' + d.seller + '</small>' +
-        '</div>' +
-      '</div>';
-  }
+/* clear form */
+['title','price','whatsapp','img'].forEach(function(id){ document.getElementById(id).value = ''; });
+preview.style.display = 'none';
+selectedFile = null;
+featured.checked = false;
+
+alert("Posted successfully!");
+}catch(err){ alert(err.message); }
 };
-</script>
-</body>
-</html>
+
+/* ✅ LOAD ADS REALTIME */
+function loadAds(){
+var q = query(collection(db,"ads"), orderBy("createdAt","desc"));
+onSnapshot(q, function(snapshot){
+allAds = [];
+snapshot.forEach(function(d){
+allAds.push({id: d.id, data: d.data()});
+render();
+});
+}
+
+/* ✅ RENDER */
+window.render = function(){
+var s = search.value.toLowerCase();
+products.innerHTML = "";
+
+for(var i=0; i<allAds.length; i++){
+var ad = allAds[i].data;
+
+if(currentCategory!= "All" && ad.category!= currentCategory) continue;
+if(ad.title.toLowerCase().indexOf(s) == -1) continue;
+
+var waNumber = ad.whatsapp? '27' + ad.whatsapp.replace(/^0/, '') : '';
+var waLink = waNumber? 'https://wa.me/' + waNumber + '?text=Hi, about ' + encodeURIComponent(ad.title) : '#';
+var featuredClass = ad.featured? 'featured' : '';
+var featuredStar = ad.featured? '⭐ ' : '';
+
+products.innerHTML +=
+'<div class="product ' + featuredClass + '">' +
+'<img src="' + ad.image + '" alt="' + ad.title + '" loading="lazy">' +
+'<div style="flex:1">' +
+'<h4>' + featuredStar + ad.title + '</h4>' +
+'<p style="font-size:13px;color:#666">📂 ' + ad.category + '</p>' +
+'<p style="font-weight:bold;color:green">R ' + Number(ad.price).toLocaleString() + '</p>' +
+'<button onclick="window.open(\'' + waLink + '\')">WhatsApp</button> ' +
+'<button onclick="shareAd(\'' + ad.id + '\')" style="background:#25D366">Share +1 Credit</button>' +
+'</div>' +
+'</div>';
+}
+
+if(products.innerHTML === ""){
+products.innerHTML = '<div style="text-align:center;padding:40px;color:#888">No ads yet. Be first to post!</div>';
+}
+};
+
+/* ✅ SHARE +1 CREDIT */
+window.shareAd = async function(id){
+var ad = allAds.find(function(a){ return a.id === id; });
+if(!ad) return;
+
+window.open('
