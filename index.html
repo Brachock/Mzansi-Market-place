@@ -1,333 +1,281 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Mzansi Marketplace</title>
-
 <style>
-body {font-family:Arial;margin:0;background:#f5f5f5}
-header {
-  background:#007bff;color:white;padding:15px;
-  display:flex;justify-content:space-between;align-items:center;
-}
-.container {padding:15px;max-width:900px;margin:auto}
-
-.card {background:white;padding:15px;margin-bottom:15px;border-radius:10px}
-
-input,select {
-  width:100%;padding:10px;margin:6px 0;
-  border-radius:6px;border:1px solid #ddd
-}
-
-button {
-  background:#007bff;color:white;
-  border:none;padding:10px;border-radius:6px
-}
-
-.product {
-  display:flex;gap:10px;padding:10px;border-bottom:1px solid #ddd
-}
-.product img {width:80px;height:80px;border-radius:6px}
-.featured {border:2px solid gold}
-
-.categories {
- display:flex;gap:5px;overflow-x:auto;margin:10px 0
-}
-.categories button {padding:6px 10px;background:white;border:1px solid #ddd}
-.categories .active {background:#007bff;color:white}
-
-.credit-box {
-  padding:10px;background:white;margin-bottom:10px;border-radius:10px
-}
-.bar {height:6px;background:#eee;border-radius:5px;margin-top:5px}
-.bar-fill {height:6px;background:#007bff;border-radius:5px}
-
-.hidden {display:none}
+body{font-family:Arial;margin:0;background:#f5f5f5;padding-bottom:80px}
+header{background:#007bff;color:white;padding:15px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0}
+.container{max-width:900px;margin:auto;padding:15px}
+.card{background:white;padding:15px;margin-bottom:15px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+input,select,textarea{width:100%;padding:10px;margin:6px 0;border-radius:6px;border:1px solid #ddd;font-size:16px;min-height:44px}
+button{background:#007bff;color:white;border:none;padding:10px 15px;border-radius:6px;cursor:pointer;font-size:16px;min-height:44px}
+.btn-whatsapp{background:#25D366}
+.btn-fav{background:#ff4757}
+.hidden{display:none}
+.product{background:white;padding:12px;margin-bottom:15px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.product img{width:100%;height:220px;object-fit:cover;border-radius:8px}
+.price{color:green;font-weight:700;font-size:20px;margin:8px 0}
+.categories{display:flex;gap:8px;overflow-x:auto;margin:10px 0;padding-bottom:5px}
+.categories button{white-space:nowrap;padding:8px 12px;background:white;border:1px solid #ddd;border-radius:6px}
+.categories.active{background:#007bff;color:white;border-color:#007bff}
+.seller-info{font-size:13px;color:#666;margin-top:8px;display:flex;align-items:center;gap:6px}
+.seller-info img{width:24px;height:24px;border-radius:50%}
+.preview{width:100%;height:180px;object-fit:cover;border-radius:8px;margin:5px 0;display:none}
 </style>
 </head>
-
 <body>
 
 <header>
-  <b>Mzansi Market</b>
-  <button onclick="showLogin()">Login</button>
+  <b>Mzansi Marketplace</b>
+  <div id="userBox"><button onclick="showLogin()">Login</button></div>
 </header>
 
 <div class="container">
 
 <!-- LOGIN -->
 <div id="auth" class="card hidden">
-  <input id="email" placeholder="Email">
-  <input id="password" type="password">
+  <h3>Login / Register</h3>
+  <input id="email" placeholder="Email" type="email">
+  <input id="password" type="password" placeholder="Password">
   <button onclick="login()">Login</button>
   <button onclick="register()">Register</button>
 </div>
 
-<!-- CREDIT -->
-<div id="creditBox" class="credit-box hidden"></div>
-
-<!-- SEARCH -->
-<div class="card">
-<input id="search" placeholder="Search..." oninput="render()">
-
-<div class="categories" id="catBox"></div>
-</div>
-
 <!-- POST -->
 <div id="postSection" class="card hidden">
-<h3>Post Ad</h3>
+  <h3>Post Product</h3>
+  <input id="title" placeholder="Title" maxlength="100">
+  <input id="price" placeholder="Price" inputmode="numeric">
+  <select id="category"></select>
+  <input id="whatsapp" placeholder="WhatsApp 0712345678">
+  <textarea id="description" placeholder="Description" rows="3"></textarea>
+  <input type="file" id="imageFile" accept="image/*" onchange="previewImage(event)">
+  <img id="preview" class="preview">
+  <button onclick="addProduct()">Post</button>
+</div>
 
-<input id="title" placeholder="Title">
-<input id="price" placeholder="Price">
-<input id="whatsapp" placeholder="071...">
-
-<select id="category"></select>
-
-<input type="file" id="img">
-
-<label><input type="checkbox" id="featured"> Featured (3 credits)</label>
-
-<button onclick="postAd()">Post</button>
+<!-- SEARCH + CATEGORIES -->
+<div class="card">
+  <input id="search" placeholder="Search products..." oninput="renderProducts()">
+  <div class="categories" id="catBox"></div>
 </div>
 
 <!-- PRODUCTS -->
-<div class="card">
-<div id="products"></div>
-</div>
+<div id="products"><div style="text-align:center;padding:30px;color:#888">Loading...</div></div>
 
 </div>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-getAuth,createUserWithEmailAndPassword,
-signInWithEmailAndPassword,onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
-import {
-getFirestore,doc,setDoc,getDoc,updateDoc,
-collection,addDoc,getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-import {
-getStorage,ref,uploadBytes,getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
-
-/* 🔑 YOUR CONFIG */
+// REPLACE WITH YOUR CONFIG
 const firebaseConfig = {
-apiKey:"YOUR_KEY",
-authDomain:"YOUR_DOMAIN",
-projectId:"YOUR_ID",
-storageBucket:"YOUR_BUCKET"
+  apiKey: "YOUR_KEY",
+  authDomain: "YOUR_DOMAIN.firebaseapp.com",
+  projectId: "YOUR_ID",
+  storageBucket: "YOUR_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 const auth = getAuth(app);
+const db = getFirestore(app);
 const storage = getStorage(app);
 
 let currentUser = null;
-let userCredits = 0;
-let allAds = [];
+let allProducts = [];
+let userFavorites = [];
 let currentCategory = "All";
+let selectedFile = null;
 
-const CATEGORIES = ["Vehicles","Property","Jobs","Electronics","Services"];
+const CATEGORIES = ["All","Vehicles","Property","Jobs","Electronics","Furniture","Fashion","Services"];
 
-/* ✅ LOGIN PANEL */
-window.showLogin = () => {
-  auth.classList.toggle("hidden");
+/* AUTH */
+window.showLogin = () => auth.classList.toggle("hidden");
+
+window.register = async function(){
+  try{
+    const u = await createUserWithEmailAndPassword(auth, email.value, password.value);
+    await setDoc(doc(db,"users",u.user.uid),{
+      name: email.value.split('@')[0],
+      email: email.value,
+      photo: "https://i.pravatar.cc/100?u=" + u.user.uid,
+      joined: Date.now(),
+      favorites: []
+    });
+    alert("Account created!");
+  }catch(err){ alert(err.message); }
 };
 
-/* ✅ REGISTER */
-window.register = async ()=>{
-const u = await createUserWithEmailAndPassword(auth,email.value,password.value);
+window.login = async function(){
+  try{ await signInWithEmailAndPassword(auth, email.value, password.value); }
+  catch(err){ alert(err.message); }
+};
 
-await setDoc(doc(db,"users",u.user.uid),{
-credits:10
+window.logout = async function(){ await signOut(auth); };
+
+onAuthStateChanged(auth, async function(user){
+  currentUser = user;
+  if(user){
+    auth.classList.add("hidden");
+    postSection.classList.remove("hidden");
+    userBox.innerHTML = '<span>' + user.email + '</span> <button onclick="logout()">Logout</button>';
+
+    // load user favorites
+    const userSnap = await getDoc(doc(db,"users",user.uid));
+    userFavorites = userSnap.data().favorites || [];
+  }else{
+    auth.classList.remove("hidden");
+    postSection.classList.add("hidden");
+    userBox.innerHTML = '<button onclick="showLogin()">Login</button>';
+    userFavorites = [];
+  }
+  loadCategories();
+  loadProducts();
 });
 
-alert("✅ You got 10 credits!");
-};
-
-/* ✅ LOGIN */
-window.login = async ()=>{
-await signInWithEmailAndPassword(auth,email.value,password.value);
-};
-
-/* ✅ AUTH STATE */
-onAuthStateChanged(auth, async user=>{
-currentUser = user;
-
-/* Logged in */
-if(user){
-
-postSection.classList.remove("hidden");
-creditBox.classList.remove("hidden");
-auth.classList.add("hidden");
-
-const snap = await getDoc(doc(db,"users",user.uid));
-userCredits = snap.data().credits;
-
-updateCredits();
-
-}else{
-postSection.classList.add("hidden");
-creditBox.classList.add("hidden");
-}
-
-/* ✅ ALWAYS LOAD FOR VISITORS */
-loadCategories();
-loadAds();
-
-});
-
-/* ✅ CREDIT UI */
-function updateCredits(){
-creditBox.innerHTML = `
-Credits: ${userCredits}
-<div class="bar">
-<div class="bar-fill" style="width:${(userCredits/10)*100}%"></div>
-</div>
-`;
-}
-
-/* ✅ CATEGORIES */
+/* CATEGORIES */
 function loadCategories(){
-
-catBox.innerHTML = `<button class="active" onclick="setCat('All',this)">All</button>`;
-
-category.innerHTML="";
-
-CATEGORIES.forEach(cat=>{
-catBox.innerHTML += `<button onclick="setCat('${cat}',this)">${cat}</button>`;
-category.innerHTML += `<option>${cat}</option>`;
-});
-
+  catBox.innerHTML = "";
+  CATEGORIES.forEach(cat => {
+    catBox.innerHTML += '<button class="' + (cat===currentCategory?'active':'') + '" onclick="setCat(\'' + cat + '\',this)">' + cat + '</button>';
+  });
 }
 
-window.setCat = (cat,btn)=>{
-currentCategory = cat;
+window.setCat = function(cat,btn){
+  currentCategory = cat;
+  document.querySelectorAll(".categories button").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  renderProducts();
+}
 
-document.querySelectorAll(".categories button").forEach(b=>{
-b.classList.remove("active");
-});
-btn.classList.add("active");
+/* IMAGE PREVIEW */
+window.previewImage = function(e){
+  selectedFile = e.target.files[0];
+  if(selectedFile){
+    const reader = new FileReader();
+    reader.onload = function(e){ preview.src = e.target.result; preview.style.display = 'block'; }
+    reader.readAsDataURL(selectedFile);
+  }
+}
 
-render();
+/* POST PRODUCT WITH IMAGE UPLOAD */
+window.addProduct = async function(){
+  if(!currentUser){ showLogin(); return; }
+
+  const title = document.getElementById("title").value.trim();
+  const price = document.getElementById("price").value.replace(/[^0-9]/g,"");
+  const description = document.getElementById("description").value.trim();
+  const whatsapp = document.getElementById("whatsapp").value.replace(/[^0-9]/g,"");
+  const category = document.getElementById("category").value;
+  const file = document.getElementById("imageFile").files[0];
+
+  if(!title ||!price ||!whatsapp){
+    alert("Enter title, price, WhatsApp");
+    return;
+  }
+
+  try{
+    let imageUrl = "https://picsum.photos/400/400?random=" + Date.now();
+
+    if(file){
+      const imageRef = ref(storage, "products/" + Date.now() + "_" + file.name);
+      await uploadBytes(imageRef, file);
+      imageUrl = await getDownloadURL(imageRef);
+    }
+
+    await addDoc(collection(db,"products"), {
+      title,
+      price: Number(price),
+      description,
+      whatsapp,
+      category,
+      imageUrl,
+      seller: currentUser.email,
+      sellerUid: currentUser.uid,
+      createdAt: Date.now()
+    });
+
+    // clear form
+    ['title','price','description','whatsapp','imageFile'].forEach(id=>document.getElementById(id).value='');
+    preview.style.display = 'none';
+    selectedFile = null;
+    alert("Product posted!");
+  }catch(err){
+    alert(err.message);
+  }
 };
 
-/* ✅ POST */
-window.postAd = async ()=>{
-
-if(!currentUser){
-alert("⚠️ Login to post");
-return;
+/* LOAD PRODUCTS REALTIME */
+function loadProducts(){
+  const q = query(collection(db,"products"), orderBy("createdAt","desc"));
+  onSnapshot(q, snapshot => {
+    allProducts = [];
+    snapshot.forEach(doc => allProducts.push({id: doc.id, data: doc.data()}));
+    renderProducts();
+  });
 }
 
-let cost = featured.checked ? 3 : 1;
+/* RENDER PRODUCTS */
+window.renderProducts = function(){
+  const search = document.getElementById("search").value.toLowerCase();
+  products.innerHTML = "";
 
-if(userCredits < cost){
-alert("❌ No credits");
-return;
-}
+  let filtered = allProducts.filter(p => {
+    const d = p.data;
+    const matchSearch = d.title.toLowerCase().includes(search) || (d.description||"").toLowerCase().includes(search);
+    const matchCat = currentCategory === "All" || d.category === currentCategory;
+    return matchSearch && matchCat;
+  });
 
-/* Upload image */
-let imgUrl="https://via.placeholder.com/100";
+  if(filtered.length === 0){
+    products.innerHTML = '<div style="text-align:center;padding:40px;color:#888">No products yet</div>';
+    return;
+  }
 
-if(img.files[0]){
-const r = ref(storage,"ads/"+Date.now());
-const s = await uploadBytes(r,img.files[0]);
-imgUrl = await getDownloadURL(s.ref);
-}
+  filtered.forEach(p => {
+    const d = p.data;
+    const waNumber = '27' + d.whatsapp.replace(/^0/, '');
+    const isFav = userFavorites.includes(p.id);
+    const sellerName = d.seller.split('@')[0];
 
-/* Save ad */
-await addDoc(collection(db,"ads"),{
-title:title.value,
-price:price.value,
-category:category.value,
-whatsapp:whatsapp.value,
-image:imgUrl,
-featured:featured.checked,
-uid:currentUser.uid
-});
-
-/* Deduct credits */
-userCredits -= cost;
-
-await updateDoc(doc(db,"users",currentUser.uid),{
-credits:userCredits
-});
-
-updateCredits();
-loadAds();
-
+    products.innerHTML +=
+      '<div class="product">' +
+        '<img src="' + d.imageUrl + '" loading="lazy">' +
+        '<h3>' + d.title + '</h3>' +
+        '<div class="price">R' + Number(d.price).toLocaleString() + '</div>' +
+        '<p>' + (d.description || '') + '</p>' +
+        '<div class="seller-info">⭐ Seller: ' + sellerName + ' | Member since 2026</div>' +
+        '<div style="display:flex;gap:8px;margin-top:10px">' +
+          '<a href="https://wa.me/' + waNumber + '?text=Hi, interested in ' + encodeURIComponent(d.title) + '" target="_blank" style="flex:1">' +
+            '<button class="btn-whatsapp" style="width:100%">WhatsApp Seller</button>' +
+          '</a>' +
+          (currentUser? '<button class="btn-fav" onclick="saveFavorite(\'' + p.id + '\')">' + (isFav?'❤️ Saved':'🤍 Save') + '</button>' : '') +
+        '</div>' +
+      '</div>';
+  });
 };
 
-/* ✅ LOAD ADS */
-async function loadAds(){
+/* SAVE FAVORITE */
+window.saveFavorite = async function(adId){
+  if(!currentUser) return;
 
-const snap = await getDocs(collection(db,"ads"));
-allAds=[];
-
-snap.forEach(d=>{
-allAds.push(d.data());
-});
-
-render();
-
+  const userRef = doc(db,"users",currentUser.uid);
+  if(userFavorites.includes(adId)){
+    userFavorites = userFavorites.filter(id => id!== adId);
+    await updateDoc(userRef, {favorites: arrayRemove(adId)});
+  }else{
+    userFavorites.push(adId);
+    await updateDoc(userRef, {favorites: arrayUnion(adId)});
+  }
+  renderProducts();
 }
-
-/* ✅ RENDER */
-window.render = ()=>{
-
-let s = search.value.toLowerCase();
-products.innerHTML="";
-
-allAds.forEach(ad=>{
-
-if(currentCategory!="All" && ad.category!==currentCategory) return;
-if(!ad.title.toLowerCase().includes(s)) return;
-
-products.innerHTML += `
-<div class="product ${ad.featured?'featured':''}">
-<img srcge}
-<div>
-
-<h4>${ad.featured?'⭐':''} ${ad.title}</h4>
-
-<p>📂 ${ad.category}</p>
-<p>R ${ad.price}</p>
-
-<button onclick="window.open('https://wa.me/${ad.whatsapp}')">WhatsApp</button>
-<button onclick="shareAd('${ad.title}')">Share</button>
-
-</div>
-</div>
-`;
-
-});
-
-};
-
-/* ✅ SHARE (+1 CREDIT) */
-window.shareAd = async (title)=>{
-
-window.open(`https://wa.me/?text=${encodeURIComponent(title)}`);
-
-if(!currentUser) return;
-
-userCredits += 1;
-
-await updateDoc(doc(db,"users",currentUser.uid),{
-credits:userCredits
-});
-
-updateCredits();
-
-};
-
 </script>
-
 </body>
 </html>
