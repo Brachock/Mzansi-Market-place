@@ -2,85 +2,185 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mzansi Marketplace</title>
+
 <style>
-body{font-family:Arial;margin:0;background:#f5f5f5;padding-bottom:80px}
-header{background:#007bff;color:white;padding:15px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0}
-.container{max-width:900px;margin:auto;padding:15px}
-.card{background:white;padding:15px;margin-bottom:15px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
-input,select,textarea{width:100%;padding:10px;margin:6px 0;border-radius:6px;border:1px solid #ddd;font-size:16px;min-height:44px}
-button{background:#007bff;color:white;border:none;padding:10px 15px;border-radius:6px;cursor:pointer;font-size:16px;min-height:44px}
-.btn-whatsapp{background:#25D366}
-.btn-fav{background:#ff4757}
-.hidden{display:none}
-.product{background:white;padding:12px;margin-bottom:15px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
-.product img{width:100%;height:220px;object-fit:cover;border-radius:8px}
-.price{color:green;font-weight:700;font-size:20px;margin:8px 0}
-.categories{display:flex;gap:8px;overflow-x:auto;margin:10px 0;padding-bottom:5px}
-.categories button{white-space:nowrap;padding:8px 12px;background:white;border:1px solid #ddd;border-radius:6px}
-.categories.active{background:#007bff;color:white;border-color:#007bff}
-.seller-info{font-size:13px;color:#666;margin-top:8px;display:flex;align-items:center;gap:6px}
-.seller-info img{width:24px;height:24px;border-radius:50%}
-.preview{width:100%;height:180px;object-fit:cover;border-radius:8px;margin:5px 0;display:none}
+:root{
+--bg:#f5f5f5;
+--card:#fff;
+--text:#111;
+--primary:#0a7cff;
+--border:#ddd;
+}
+
+.dark{
+--bg:#121212;
+--card:#1e1e1e;
+--text:#fff;
+--border:#333;
+}
+
+*{
+box-sizing:border-box;
+margin:0;
+padding:0;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:var(--bg);
+color:var(--text);
+}
+
+header{
+background:var(--primary);
+color:white;
+padding:15px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.container{
+max-width:1000px;
+margin:auto;
+padding:15px;
+}
+
+.card{
+background:var(--card);
+padding:15px;
+border-radius:10px;
+margin-bottom:15px;
+border:1px solid var(--border);
+}
+
+input,textarea,select{
+width:100%;
+padding:10px;
+margin:5px 0;
+border-radius:5px;
+border:1px solid #ccc;
+}
+
+button{
+padding:10px 15px;
+border:none;
+border-radius:5px;
+cursor:pointer;
+background:var(--primary);
+color:white;
+}
+
+.product{
+padding:12px;
+border-bottom:1px solid var(--border);
+}
+
+.price{
+font-weight:bold;
+color:green;
+}
+
+.hidden{
+display:none;
+}
+
+.modal{
+display:none;
+position:fixed;
+top:0;
+left:0;
+right:0;
+bottom:0;
+background:rgba(0,0,0,.6);
+}
+
+.modal-content{
+background:white;
+padding:20px;
+max-width:400px;
+margin:100px auto;
+border-radius:10px;
+}
+
+.search{
+margin-bottom:15px;
+}
 </style>
 </head>
 <body>
 
 <header>
-  <b>Mzansi Marketplace</b>
-  <div id="userBox"><button onclick="showLogin()">Login</button></div>
+<div><strong>Mzansi Marketplace</strong></div>
+<div id="userInfo">
+<button onclick="showLogin()">Login</button>
+<button onclick="showRegister()">Register</button>
+</div>
 </header>
 
 <div class="container">
 
-<!-- LOGIN -->
-<div id="auth" class="card hidden">
-  <h3>Login / Register</h3>
-  <input id="email" placeholder="Email" type="email">
-  <input id="password" type="password" placeholder="Password">
-  <button onclick="login()">Login</button>
-  <button onclick="register()">Register</button>
-</div>
-
-<!-- POST -->
-<div id="postSection" class="card hidden">
-  <h3>Post Product</h3>
-  <input id="title" placeholder="Title" maxlength="100">
-  <input id="price" placeholder="Price" inputmode="numeric">
-  <select id="category"></select>
-  <input id="whatsapp" placeholder="WhatsApp 0712345678">
-  <textarea id="description" placeholder="Description" rows="3"></textarea>
-  <input type="file" id="imageFile" accept="image/*" onchange="previewImage(event)">
-  <img id="preview" class="preview">
-  <button onclick="addProduct()">Post</button>
-</div>
-
-<!-- SEARCH + CATEGORIES -->
 <div class="card">
-  <input id="search" placeholder="Search products..." oninput="renderProducts()">
-  <div class="categories" id="catBox"></div>
+<h3>Search Listings</h3>
+<input id="searchInput" class="search" placeholder="Search..." onkeyup="renderProducts()">
 </div>
 
-<!-- PRODUCTS -->
-<div id="products"><div style="text-align:center;padding:30px;color:#888">Loading...</div></div>
+<div class="card">
+<h3>Post Product</h3>
+<p>Anyone can browse ads. Login is only required when posting.</p>
 
+<input id="title" placeholder="Product title">
+<input id="price" placeholder="Price">
+<textarea id="description" placeholder="Description"></textarea>
+<input id="imageFile" type="file" accept="image/*">
+
+<button onclick="addProduct()">Publish Product</button>
+</div>
+
+<div class="card">
+<h3>Marketplace Listings</h3>
+<div id="products"></div>
+</div>
+
+</div>
+
+<!-- LOGIN MODAL -->
+<div id="loginModal" class="modal">
+<div class="modal-content">
+<h3>Login</h3>
+<input id="loginEmail" placeholder="Email">
+<input id="loginPassword" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<button onclick="closeLogin()">Close</button>
+</div>
+</div>
+
+<!-- REGISTER MODAL -->
+<div id="registerModal" class="modal">
+<div class="modal-content">
+<h3>Register</h3>
+<input id="regEmail" placeholder="Email">
+<input id="regPassword" type="password" placeholder="Password">
+<button onclick="register()">Register</button>
+<button onclick="closeRegister()">Close</button>
+</div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
-// REPLACE WITH YOUR CONFIG
 const firebaseConfig = {
-  apiKey: "YOUR_KEY",
-  authDomain: "YOUR_DOMAIN.firebaseapp.com",
-  projectId: "YOUR_ID",
-  storageBucket: "YOUR_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey:"YOUR_API_KEY",
+  authDomain:"YOUR_PROJECT.firebaseapp.com",
+  projectId:"YOUR_PROJECT_ID",
+  storageBucket:"YOUR_PROJECT.appspot.com",
+  messagingSenderId:"YOUR_SENDER_ID",
+  appId:"YOUR_APP_ID"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -90,192 +190,103 @@ const storage = getStorage(app);
 
 let currentUser = null;
 let allProducts = [];
-let userFavorites = [];
-let currentCategory = "All";
-let selectedFile = null;
 
-const CATEGORIES = ["All","Vehicles","Property","Jobs","Electronics","Furniture","Fashion","Services"];
-
-/* AUTH */
-window.showLogin = () => auth.classList.toggle("hidden");
-
+/* ---------- AUTH ---------- */
 window.register = async function(){
   try{
-    const u = await createUserWithEmailAndPassword(auth, email.value, password.value);
-    await setDoc(doc(db,"users",u.user.uid),{
-      name: email.value.split('@')[0],
-      email: email.value,
-      photo: "https://i.pravatar.cc/100?u=" + u.user.uid,
-      joined: Date.now(),
-      favorites: []
-    });
-    alert("Account created!");
+    await createUserWithEmailAndPassword(auth, regEmail.value, regPassword.value);
+    closeRegister();
   }catch(err){ alert(err.message); }
 };
 
 window.login = async function(){
-  try{ await signInWithEmailAndPassword(auth, email.value, password.value); }
-  catch(err){ alert(err.message); }
+  try{
+    await signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value);
+    closeLogin();
+  }catch(err){ alert(err.message); }
 };
 
 window.logout = async function(){ await signOut(auth); };
 
-onAuthStateChanged(auth, async function(user){
-  currentUser = user;
+onAuthStateChanged(auth,(user)=>{
+  currentUser = user || null;
   if(user){
-    auth.classList.add("hidden");
-    postSection.classList.remove("hidden");
-    userBox.innerHTML = '<span>' + user.email + '</span> <button onclick="logout()">Logout</button>';
-
-    // load user favorites
-    const userSnap = await getDoc(doc(db,"users",user.uid));
-    userFavorites = userSnap.data().favorites || [];
+    userInfo.innerHTML = `${user.email} <button onclick="logout()">Logout</button>`;
   }else{
-    auth.classList.remove("hidden");
-    postSection.classList.add("hidden");
-    userBox.innerHTML = '<button onclick="showLogin()">Login</button>';
-    userFavorites = [];
+    userInfo.innerHTML = `<button onclick="showLogin()">Login</button> <button onclick="showRegister()">Register</button>`;
   }
-  loadCategories();
-  loadProducts();
 });
 
-/* CATEGORIES */
-function loadCategories(){
-  catBox.innerHTML = "";
-  CATEGORIES.forEach(cat => {
-    catBox.innerHTML += '<button class="' + (cat===currentCategory?'active':'') + '" onclick="setCat(\'' + cat + '\',this)">' + cat + '</button>';
-  });
-}
+/* ---------- MODALS ---------- */
+window.showLogin = () => loginModal.style.display = "block";
+window.closeLogin = () => loginModal.style.display = "none";
+window.showRegister = () => registerModal.style.display = "block";
+window.closeRegister = () => registerModal.style.display = "none";
 
-window.setCat = function(cat,btn){
-  currentCategory = cat;
-  document.querySelectorAll(".categories button").forEach(b=>b.classList.remove("active"));
-  btn.classList.add("active");
-  renderProducts();
-}
-
-/* IMAGE PREVIEW */
-window.previewImage = function(e){
-  selectedFile = e.target.files[0];
-  if(selectedFile){
-    const reader = new FileReader();
-    reader.onload = function(e){ preview.src = e.target.result; preview.style.display = 'block'; }
-    reader.readAsDataURL(selectedFile);
-  }
-}
-
-/* POST PRODUCT WITH IMAGE UPLOAD */
+/* ---------- PRODUCTS ---------- */
 window.addProduct = async function(){
   if(!currentUser){ showLogin(); return; }
 
-  const title = document.getElementById("title").value.trim();
-  const price = document.getElementById("price").value.replace(/[^0-9]/g,"");
-  const description = document.getElementById("description").value.trim();
-  const whatsapp = document.getElementById("whatsapp").value.replace(/[^0-9]/g,"");
-  const category = document.getElementById("category").value;
+  const title = document.getElementById("title").value;
+  const price = document.getElementById("price").value;
+  const description = document.getElementById("description").value;
   const file = document.getElementById("imageFile").files[0];
 
-  if(!title ||!price ||!whatsapp){
-    alert("Enter title, price, WhatsApp");
-    return;
+  if(!title || !price){ alert("Enter title and price"); return; }
+
+  let imageUrl = "";
+  if(file){
+    const storageRef = ref(storage, "products/" + Date.now() + "_" + file.name);
+    await uploadBytes(storageRef, file);
+    imageUrl = await getDownloadURL(storageRef);
   }
 
   try{
-    let imageUrl = "https://picsum.photos/400/400?random=" + Date.now();
-
-    if(file){
-      const imageRef = ref(storage, "products/" + Date.now() + "_" + file.name);
-      await uploadBytes(imageRef, file);
-      imageUrl = await getDownloadURL(imageRef);
-    }
-
     await addDoc(collection(db,"products"), {
-      title,
-      price: Number(price),
-      description,
-      whatsapp,
-      category,
-      imageUrl,
+      title, price, description,
       seller: currentUser.email,
-      sellerUid: currentUser.uid,
+      imageUrl,
       createdAt: Date.now()
     });
 
-    // clear form
-    ['title','price','description','whatsapp','imageFile'].forEach(id=>document.getElementById(id).value='');
-    preview.style.display = 'none';
-    selectedFile = null;
-    alert("Product posted!");
-  }catch(err){
-    alert(err.message);
-  }
+    document.getElementById("title").value = "";
+    document.getElementById("price").value = "";
+    document.getElementById("description").value = "";
+    document.getElementById("imageFile").value = "";
+
+  }catch(err){ alert(err.message); }
 };
 
-/* LOAD PRODUCTS REALTIME */
-function loadProducts(){
-  const q = query(collection(db,"products"), orderBy("createdAt","desc"));
-  onSnapshot(q, snapshot => {
-    allProducts = [];
-    snapshot.forEach(doc => allProducts.push({id: doc.id, data: doc.data()}));
-    renderProducts();
-  });
-}
-
-/* RENDER PRODUCTS */
-window.renderProducts = function(){
-  const search = document.getElementById("search").value.toLowerCase();
-  products.innerHTML = "";
-
-  let filtered = allProducts.filter(p => {
-    const d = p.data;
-    const matchSearch = d.title.toLowerCase().includes(search) || (d.description||"").toLowerCase().includes(search);
-    const matchCat = currentCategory === "All" || d.category === currentCategory;
-    return matchSearch && matchCat;
-  });
-
-  if(filtered.length === 0){
-    products.innerHTML = '<div style="text-align:center;padding:40px;color:#888">No products yet</div>';
-    return;
-  }
-
-  filtered.forEach(p => {
-    const d = p.data;
-    const waNumber = '27' + d.whatsapp.replace(/^0/, '');
-    const isFav = userFavorites.includes(p.id);
-    const sellerName = d.seller.split('@')[0];
-
-    products.innerHTML +=
-      '<div class="product">' +
-        '<img src="' + d.imageUrl + '" loading="lazy">' +
-        '<h3>' + d.title + '</h3>' +
-        '<div class="price">R' + Number(d.price).toLocaleString() + '</div>' +
-        '<p>' + (d.description || '') + '</p>' +
-        '<div class="seller-info">⭐ Seller: ' + sellerName + ' | Member since 2026</div>' +
-        '<div style="display:flex;gap:8px;margin-top:10px">' +
-          '<a href="https://wa.me/' + waNumber + '?text=Hi, interested in ' + encodeURIComponent(d.title) + '" target="_blank" style="flex:1">' +
-            '<button class="btn-whatsapp" style="width:100%">WhatsApp Seller</button>' +
-          '</a>' +
-          (currentUser? '<button class="btn-fav" onclick="saveFavorite(\'' + p.id + '\')">' + (isFav?'❤️ Saved':'🤍 Save') + '</button>' : '') +
-        '</div>' +
-      '</div>';
-  });
-};
-
-/* SAVE FAVORITE */
-window.saveFavorite = async function(adId){
-  if(!currentUser) return;
-
-  const userRef = doc(db,"users",currentUser.uid);
-  if(userFavorites.includes(adId)){
-    userFavorites = userFavorites.filter(id => id!== adId);
-    await updateDoc(userRef, {favorites: arrayRemove(adId)});
-  }else{
-    userFavorites.push(adId);
-    await updateDoc(userRef, {favorites: arrayUnion(adId)});
-  }
+const q = query(collection(db,"products"), orderBy("createdAt","desc"));
+onSnapshot(q,(snapshot)=>{
+  allProducts = [];
+  snapshot.forEach(doc=>{ allProducts.push(doc.data()); });
   renderProducts();
-}
+});
+
+window.renderProducts = function(){
+  const search = searchInput.value.toLowerCase();
+  products.innerHTML = "";
+  allProducts.forEach(p=>{
+    if(!p.title.toLowerCase().includes(search)) return;
+    products.innerHTML += `
+      <div class="product">
+        <h4>${p.title}</h4>
+        <div class="price">R${p.price}</div>
+        ${p.imageUrl ? `<img src="${p.imageUrl}" style="max-width:200px; border-radius:8px;">` : ""}
+        <p>${p.description || ""}</p>
+        <small>Seller: ${p.seller}</small>
+      </div>
+    `;
+  });
+};
+
+/* ---------- DARK MODE ---------- */
+const darkBtn = document.createElement("button");
+darkBtn.textContent = "🌙";
+darkBtn.onclick = () => { document.body.classList.toggle("dark"); };
+document.querySelector("header").appendChild(darkBtn);
 </script>
+
 </body>
 </html>
